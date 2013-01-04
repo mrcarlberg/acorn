@@ -110,7 +110,7 @@
         cur = match.index + match[0].length;
       } else break;
     }
-    return {line: line, column: offset - cur};
+    return {line: line, column: offset - cur, lineStart: cur, lineEnd: (match ? match.index + match[0].length : input.length)};
   };
 
   // Acorn is organized as a tokenizer and a recursive-descent parser.
@@ -188,7 +188,13 @@
   function raise(pos, message) {
     if (typeof pos == "number") pos = getLineInfo(input, pos);
     message += " (" + pos.line + ":" + pos.column + ")";
-    throw new SyntaxError(message);
+    var syntaxError = new SyntaxError(message);
+    syntaxError.line = pos.line;
+    syntaxError.column = pos.column;
+    syntaxError.lineStart = pos.lineStart;
+    syntaxError.lineEnd = pos.lineEnd;
+
+    throw syntaxError;
   }
 
   // ## Token types
