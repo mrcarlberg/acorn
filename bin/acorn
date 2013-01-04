@@ -8,7 +8,7 @@ var infile, parsed, options = {}, silent = false, compact = false;
 
 function help(status) {
   console.log("usage: " + path.basename(process.argv[1]) + " infile [--ecma3|--ecma5] [--strictSemicolons]");
-  console.log("        [--trackComments] [--locations] [--compact] [--silent] [--help]");
+  console.log("        [--trackComments] [--locations] [--objj] [--compact] [--silent] [--help]");
   process.exit(status);
 }
 
@@ -19,6 +19,7 @@ for (var i = 2; i < process.argv.length; ++i) {
   else if (arg == "--strictSemicolons") options.strictSemicolons = true;
   else if (arg == "--trackComments") options.trackComments = true;
   else if (arg == "--locations") options.locations = true;
+  else if (arg == "--objj") options.objj = true;
   else if (arg == "--silent") silent = true;
   else if (arg == "--compact") compact = true;
   else if (arg == "--help") help(0);

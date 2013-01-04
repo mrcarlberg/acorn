@@ -103,7 +103,10 @@
     c(node.test, st, "Expression");
     c(node.body, st, "Statement");
   };
-  exports.DoWhileStatement = exports.WhileStatement;
+  exports.DoWhileStatement = function(node, st, c) {
+    c(node.body, st, "Statement");
+    c(node.test, st, "Expression");
+  };
   exports.ForStatement = function(node, st, c) {
     if (node.init) c(node.init, st, "ForInit");
     if (node.test) c(node.test, st, "Expression");
@@ -177,6 +180,35 @@
     if (node.computed) c(node.property, st, "Expression");
   };
   exports.Identifier = exports.Literal = ignore;
+
+  exports.ClassDeclarationStatement = function(node, st, c) {
+    if (node.ivardeclarations) for (var i = 0; i < node.ivardeclarations.length; ++i) {
+      c(node.ivardeclarations[i], st, "IvarDeclaration");
+    }
+    for (var i = 0; i < node.body.length; ++i) {
+      c(node.body[i], st, "Statement");
+    }
+  }
+
+  exports.ImportStatement = ignore;
+
+  exports.IvarDeclaration = ignore;
+
+  exports.MethodDeclarationStatement = ignore;
+
+  exports.MethodDeclarationStatement = function(node, st, c) {
+    c(node.body, st, "Statement");
+  }
+
+  exports.MessageSendExpression = function(node, st, c) {
+    if (node.object) c(node.object, st, "Expression");
+    if (node.arguments) for (var i = 0; i < node.arguments.length; ++i)
+      c(node.arguments[i], st, "Expression");
+    if (node.parameters) for (var i = 0; i < node.parameters.length; ++i)
+      c(node.parameters[i], st, "Expression");
+  }
+
+  exports.SelectorLiteralExpression = ignore;
 
   // A custom walker that keeps track of the scope chain and the
   // variables defined in it.

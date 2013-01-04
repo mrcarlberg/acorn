@@ -12,6 +12,12 @@
 // Please use the [github bug tracker][ghbt] to report issues.
 //
 // [ghbt]: https://github.com/marijnh/acorn/issues
+//
+// Objective-J extensions made by Martin Carlberg
+//
+// Git repositories for Acorn with Objective-J extension is available at
+//
+//     https://github.com/mrcarlberg/acorn.git
 
 (function(exports) {
   "use strict";
@@ -84,7 +90,9 @@
     program: null,
     // When `location` is on, you can pass this to record the source
     // file in every node's `loc` object.
-    sourceFile: null
+    sourceFile: null,
+    // Turn on objj to allow Objective-J systax
+    objj: false
   };
 
   // The `getLineInfo` function is mostly useful when the
@@ -158,6 +166,12 @@
 
   var lastStart, lastEnd, lastEndLoc;
 
+  // This is the tokenizer's state for Objective-J. `afterImport` is used
+  // to make the part between '<' and '>' to be one token if it comes after
+  // a @import token.
+
+  var tokAfterImport;
+
   // This is the parser's state. `inFunction` is used to reject
   // `return` statements outside of functions, `labels` to verify that
   // `break` and `continue` have somewhere to jump to, and `strict`
@@ -213,6 +227,7 @@
   var _throw = {keyword: "throw", beforeExpr: true}, _try = {keyword: "try"}, _var = {keyword: "var"};
   var _while = {keyword: "while", isLoop: true}, _with = {keyword: "with"}, _new = {keyword: "new", beforeExpr: true};
   var _this = {keyword: "this"};
+  var _void = {keyword: "void", prefix: true};
 
   // The keywords that denote values.
 
@@ -225,6 +240,17 @@
 
   var _in = {keyword: "in", binop: 7, beforeExpr: true};
 
+  // Objective-J @ keywords
+
+  var _implementation = {keyword: "implementation"}, _outlet = {keyword: "outlet"}, _accessors = {keyword: "accessors"};
+  var _end = {keyword: "end"}, _import = {keyword: "import", afterImport: true};
+  var _action = {keyword: "action"}, _selector = {keyword: "selector"};
+
+  // Objective-J keywords
+
+  var _filename = {keyword: "filename"}, _unsigned = {keyword: "unsigned"}, _signed = {keyword: "signed"};
+  var _byte = {keyword: "byte"}, _char = {keyword: "char"}, _short = {keyword: "short"}, _int = {keyword: "int"}, _long = {keyword: "long"};
+
   // Map keyword names to token types.
 
   var keywordTypes = {"break": _break, "case": _case, "catch": _catch,
@@ -235,8 +261,18 @@
                       "null": _null, "true": _true, "false": _false, "new": _new, "in": _in,
                       "instanceof": {keyword: "instanceof", binop: 7}, "this": _this,
                       "typeof": {keyword: "typeof", prefix: true},
-                      "void": {keyword: "void", prefix: true},
-                      "delete": {keyword: "delete", prefix: true}};
+                      "void": _void,
+                      "delete": {keyword: "delete", prefix: true} };
+
+  // Map Objective-J keyword names to token types.
+
+  var keywordTypesObjJ = {"IBAction": _action, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
+                          "short": _short, "int": _int, "long": _long };
+
+  // Map Objective-J "@" keyword names to token types.
+
+  var objJAtKeywordTypes = {"implementation": _implementation, "outlet": _outlet, "accessors": _accessors, "end": _end,
+                            "import": _import, "action": _action, "selector": _selector};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -244,6 +280,10 @@
   var _braceR = {type: "}"}, _parenL = {type: "(", beforeExpr: true}, _parenR = {type: ")"};
   var _comma = {type: ",", beforeExpr: true}, _semi = {type: ";", beforeExpr: true};
   var _colon = {type: ":", beforeExpr: true}, _dot = {type: "."}, _question = {type: "?", beforeExpr: true};
+
+  // Objective-J token types
+
+  var _at = {type: "@"}, _dotdotdot = {type: "..."}, _numberSign = {type: "#"};
 
   // Operators. These carry several kinds of properties to help the
   // parser use them properly (the presence of these properties is
@@ -337,6 +377,10 @@
   // And the keywords.
 
   var isKeyword = makePredicate("break case catch continue debugger default do else finally for function if return switch throw try var while with null true false instanceof typeof void delete new in this");
+
+  // The Objective-J keywords.
+
+  var isKeywordObjJ = makePredicate("IBAction byte char short int long unsigned signed");
 
   // ## Character categories
 
@@ -432,6 +476,7 @@
     tokVal = val;
     tokCommentsAfter = tokComments;
     tokRegexpAllowed = type.beforeExpr;
+    tokAfterImport = type.afterImport;
   }
 
   function skipBlockComment() {
@@ -442,9 +487,9 @@
     tokPos = end + 2;
   }
 
-  function skipLineComment() {
+  function skipLineComment(skipCharacters) {
     var start = tokPos;
-    var ch = input.charCodeAt(tokPos+=2);
+    var ch = input.charCodeAt(tokPos+=skipCharacters);
     while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
       ++tokPos;
       ch = input.charCodeAt(tokPos);
@@ -466,7 +511,7 @@
         if (next === 42) { // '*'
           skipBlockComment();
         } else if (next === 47) { // '/'
-          skipLineComment();
+          skipLineComment(2);
         } else break;
       } else if (ch < 14 && ch > 8) {
         ++tokPos;
@@ -474,6 +519,8 @@
         ++tokPos;
       } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
         ++tokPos;
+      } else if (ch === 35 && options.objj) {
+        skipLineComment(1);
       } else {
         break;
       }
@@ -495,6 +542,10 @@
   function readToken_dot(code) {
     var next = input.charCodeAt(tokPos+1);
     if (next >= 48 && next <= 57) return readNumber(String.fromCharCode(code));
+    if (next === 46 && options.objj && input.charCodeAt(tokPos+2) === 46) { //'.'
+      tokPos += 3;
+      return finishToken(_dotdotdot);
+    }
     ++tokPos;
     return finishToken(_dot);
   }
@@ -533,6 +584,18 @@
   }
 
   function readToken_lt_gt(code) { // '<>'
+    if (tokAfterImport && options.objj && code === 60) {  // '<'
+      var str = [];
+      for (;;) {
+        if (tokPos >= inputLen) raise(tokStart, "Unterminated import statement");
+        var ch = input.charCodeAt(++tokPos);
+        if (ch === 62) {  // '>'
+          ++tokPos;
+          return finishToken(_filename, String.fromCharCode.apply(null, str));
+        }
+        str.push(ch);
+      }
+    }
     var next = input.charCodeAt(tokPos+1);
     var size = 1;
     if (next === code) {
@@ -549,6 +612,16 @@
     var next = input.charCodeAt(tokPos+1);
     if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2);
     return finishOp(code === 61 ? _eq : _prefix, 1);
+  }
+
+  function readToken_at(code) { // '@'
+    var next = input.charCodeAt(++tokPos);
+    if (next === 34 || next === 39)  // Read string if "'" or '"'
+      return readString(next);
+    var word = readWord1(),
+        token = objJAtKeywordTypes[word];
+    if (!token) raise(tokStart, "Unrecognized Objective-J keyword '@" + word + "'");
+    return finishToken(token);
   }
 
   function getTokenFromCode(code) {
@@ -608,6 +681,11 @@
 
     case 61: case 33: // '=!'
       return readToken_eq_excl(code);
+
+    case 64: // '@'
+      if (options.objj)
+        return readToken_at(code);
+      return false;
 
     case 126: // '~'
       return finishOp(_prefix, 1);
@@ -772,7 +850,7 @@
         }
       } else {
         if (ch === 13 || ch === 10 || ch === 8232 || ch === 8329) raise(tokStart, "Unterminated string constant");
-        if (ch !== 92) rs_str.push(ch); // '\'
+        if (ch !== 92) rs_str.push(ch); // '\'   // This 'if' seems useless as the same thing is checked above..... - Martin
         ++tokPos;
       }
     }
@@ -834,6 +912,7 @@
     var type = _name;
     if (!containsEsc) {
       if (isKeyword(word)) type = keywordTypes[word];
+      else if (options.objj && isKeywordObjJ(word)) type = keywordTypesObjJ[word];
       else if (options.forbidReserved &&
                (options.ecmaVersion === 3 ? isReservedWord3 : isReservedWord5)(word) ||
                strict && isStrictReservedWord(word))
@@ -1241,6 +1320,45 @@
       next();
       return finishNode(node, "EmptyStatement");
 
+      // This is a Objective-J statement
+    case _implementation:
+      if (options.objj) {
+        next();
+        node.classname = parseIdent(true);
+        if (eat(_colon))
+          node.superclassname = parseIdent(true);
+        else if (eat(_parenL)) {
+          node.categoryname = parseIdent(true);
+          expect(_parenR);
+        }
+        if (eat(_braceL)) {
+          node.ivardeclarations = [];
+          for (;;) {
+            if (eat(_braceR)) break;
+            parseIvarDeclaration(node);
+          }
+          node.endOfIvars = tokStart;
+        }
+        node.body = [];
+        while(!eat(_end)) {
+          node.body.push(parseClassElement());
+        }
+      }
+      return finishNode(node, "ClassDeclarationStatement");
+
+      // This is a Objective-J statement
+    case _import:
+      next();
+      if (tokType === _string)
+        node.localfilepath = true;
+      else if (tokType ===_filename)
+        node.localfilepath = false;
+      else
+        unexpected();
+
+      node.filename = parseStringNumRegExpLiteral();
+      return finishNode(node, "ImportStatement");
+
       // If the statement does not start with a statement keyword or a
       // brace, it's an ExpressionStatement or LabeledStatement. We
       // simply start parsing an expression, and afterwards, if the
@@ -1264,6 +1382,127 @@
         return finishNode(node, "ExpressionStatement");
       }
     }
+  }
+
+  // CompoundIvarDeclaration =
+  //  IvarType _ IvarDeclaration (_ "," _ IvarDeclaration)* EOS
+
+  // IvarDeclaration =
+  //  Identifier _ Accessors?
+
+  // Accessors =
+  //  "@accessors" ("(" (AccessorsConfiguration (_ "," _ AccessorsConfiguration)*)? ")")?
+
+  function parseIvarDeclaration(node) {
+    var outlet;
+    if (eat(_outlet))
+      outlet = true;
+    var type = parseObjectiveJType();
+    if (strict && isStrictBadIdWord(type.name))
+      raise(type.start, "Binding " + type.name + " in strict mode");
+    for (;;) {
+      var decl = startNode();
+      if (outlet)
+        decl.outlet = outlet;
+      decl.ivartype = type;
+      decl.id = parseIdent();
+      if (strict && isStrictBadIdWord(decl.id.name))
+        raise(decl.id.start, "Binding " + decl.id.name + " in strict mode");
+      if (eat(_accessors)) {
+        decl.accessors = {};
+        if (eat(_parenL)) {
+          if (!eat(_parenR)) {
+            for (;;) {
+              var config = parseIdent(true);
+              switch(config.name) {
+                case "property":
+                case "getter":
+                  expect(_eq);
+                  decl.accessors[config.name] = parseIdent(true);
+                  break;
+
+                case "setter":
+                  expect(_eq);
+                  var setter = parseIdent(true);
+                  decl.accessors[config.name] = setter;
+                  if (eat(_colon))
+                    setter.end = tokStart;
+                  setter.name += ":"
+                  break;
+
+                case "readwrite":
+                case "readonly":
+                case "copy":
+                  decl.accessors[config.name] = true;
+                  break;
+
+                default:
+                  raise(config.start, "Unknown accessors attribute '" + config.name + "'");
+              }
+              if (!eat(_comma)) break;
+            }
+            expect(_parenR);
+          }
+        }
+      }
+      finishNode(decl, "IvarDeclaration")
+      node.ivardeclarations.push(decl);
+      if (!eat(_comma)) break;
+    }
+    semicolon();
+  }
+
+  function parseClassElement() {
+    var methodType = tokVal,
+        element = startNode();
+    if (eat(_plusmin)) {
+      element.methodtype = methodType;
+      // If we find a '(' we have a  return type to parse
+      if (eat(_parenL)) {
+        if (eat(_action))
+          element.action = true;
+        element.returntype = parseObjectiveJType();
+        expect(_parenR);
+      }
+      // Now we parse the selector
+      var first = true,
+          selectors = [],
+          args = [];
+      element.selectors = selectors;
+      element.arguments = args;
+      for (;;) {
+        if (tokType !== _colon) {
+          selectors.push(parseIdent(true));
+          if (first && tokType !== _colon) break;
+        } else
+          selectors.push(null);
+        expect(_colon);
+        var argument = {};
+        args.push(argument);
+        if (eat(_parenL)) {
+          argument.type = parseObjectiveJType();
+          expect(_parenR);
+        }
+        argument.identifier = parseIdent(false);
+        if (tokType === _braceL || eat(_semi)) break;
+        if (eat(_comma)) {
+          expect(_dotdotdot);
+          element.parameters = true;
+          break;
+        }
+        first = false;
+      }
+
+      element.startOfBody = lastEnd;
+      // Start a new scope with regard to labels and the `inFunction`
+      // flag (restore them to their old value afterwards).
+      var oldInFunc = inFunction, oldLabels = labels;
+      inFunction = true; labels = [];
+      element.body = parseBlock(true);
+      inFunction = oldInFunc; labels = oldLabels;
+      return finishNode(element, "MethodDeclarationStatement");
+    } else
+      return parseStatement();
   }
 
   // Used for constructs like `switch` and `if` that insist on
@@ -1475,7 +1714,7 @@
     } else if (!noCalls && eat(_parenL)) {
       var node = startNodeFrom(base);
       node.callee = base;
-      node.arguments = parseExprList(_parenR, false);
+      node.arguments = parseExprList(_parenR, tokType === _parenR ? null : parseExpression(true), false);
       return parseSubscripts(finishNode(node, "CallExpression"), noCalls);
     } else return base;
   }
@@ -1494,11 +1733,7 @@
     case _name:
       return parseIdent();
     case _num: case _string: case _regexp:
-      var node = startNode();
-      node.value = tokVal;
-      node.raw = input.slice(tokStart, tokEnd);
-      next();
-      return finishNode(node, "Literal");
+      return parseStringNumRegExpLiteral();
 
     case _null: case _true: case _false:
       var node = startNode();
@@ -1523,9 +1758,21 @@
       return val;
 
     case _bracketL:
-      var node = startNode();
+      var node = startNode(),
+          firstExpr = null;
       next();
-      node.elements = parseExprList(_bracketR, true, true);
+      if (tokType !== _comma && tokType !== _bracketR) {
+        firstExpr = parseExpression(true);
+        if (tokType !== _comma && tokType !== _bracketR) {
+          parseSelectorWithArguments(node, _bracketR);
+          if (firstExpr.type === "Identifier" && firstExpr.name === "super")
+            node.superObject = true;
+          else
+            node.object = firstExpr;
+          return finishNode(node, "MessageSendExpression");
+        }
+      }
+      node.elements = parseExprList(_bracketR, firstExpr, true, true);
       return finishNode(node, "ArrayExpression");
 
     case _braceL:
@@ -1539,9 +1786,64 @@
     case _new:
       return parseNew();
 
+    case _selector:
+      var node = startNode();
+      next();
+      expect(_parenL);
+      parseSelector(node, _parenR);
+      expect(_parenR);
+      return finishNode(node, "SelectorLiteralExpression");
+
     default:
       unexpected();
     }
+  }
+
+  function parseSelector(node, close) {
+      var first = true,
+          selectors = [];
+      for (;;) {
+        if (tokType !== _colon) {
+          selectors.push(parseIdent(true).name);
+          if (first && tokType === close) break;
+        }
+        expect(_colon);
+        selectors.push(":");
+        if (tokType === close) break;
+        first = false;
+      }
+      node.selector = selectors.join("");
+  }
+
+  function parseSelectorWithArguments(node, close) {
+      var first = true,
+          selectors = [],
+          args = [],
+          parameters = [];
+      node.selectors = selectors;
+      node.arguments = args;
+      for (;;) {
+        if (tokType !== _colon) {
+          selectors.push(parseIdent(true));
+          if (first && eat(close))
+            break;
+        } else {
+          selectors.push(null);
+        }
+        expect(_colon);
+        args.push(parseExpression(true));
+        if (eat(close))
+          break;
+        if (tokType === _comma) {
+          node.parameters = [];
+          while(eat(_comma)) {
+            node.parameters.push(parseExpression(true));
+          }
+          eat(close);
+          break;
+        }
+        first = false;
+      }
   }
 
   // New's precedence is slightly tricky. It must allow its argument
@@ -1552,7 +1854,8 @@
     var node = startNode();
     next();
     node.callee = parseSubscripts(parseExprAtom(false), true);
-    if (eat(_parenL)) node.arguments = parseExprList(_parenR, false);
+    if (eat(_parenL))
+      node.arguments = parseExprList(_parenR, tokType === _parenR ? null : parseExpression(true), false);
     else node.arguments = [];
     return finishNode(node, "NewExpression");
   }
@@ -1650,17 +1953,25 @@
   // `allowEmpty` can be turned on to allow subsequent commas with
   // nothing in between them to be parsed as `null` (which is needed
   // for array literals).
+  // This function is modified so the first expression is passed as a
+  // parameter. This is nessesary cause we need to check if it is a Objective-J
+  // message send expression ([expr mySelector:param1 withSecondParam:param2])
 
-  function parseExprList(close, allowTrailingComma, allowEmpty) {
+  function parseExprList(close, firstExpr, allowTrailingComma, allowEmpty) {
+    if (firstExpr && eat(close))
+      return [firstExpr];
     var elts = [], first = true;
     while (!eat(close)) {
-      if (!first) {
+      if (first) {
+        first = false;
+        if (allowEmpty && tokType === _comma && !firstExpr) elts.push(null);
+        else elts.push(firstExpr);
+      } else {
         expect(_comma);
         if (allowTrailingComma && options.allowTrailingCommas && eat(close)) break;
-      } else first = false;
-
-      if (allowEmpty && tokType === _comma) elts.push(null);
-      else elts.push(parseExpression(true));
+        if (allowEmpty && tokType === _comma) elts.push(null);
+        else elts.push(parseExpression(true));
+      }
     }
     return elts;
   }
@@ -1674,6 +1985,61 @@
     node.name = tokType === _name ? tokVal : (liberal && !options.forbidReserved && tokType.keyword) || unexpected();
     next();
     return finishNode(node, "Identifier");
+  }
+
+  function parseStringNumRegExpLiteral() {
+    var node = startNode();
+    node.value = tokVal;
+    node.raw = input.slice(tokStart, tokEnd);
+    next();
+    return finishNode(node, "Literal");
+  }
+
+  // Parse the next token as an Objective-J typ.
+  // It can be an identifier followed by a optional protocol '<CPKeyValueBinding>'
+  // It can be 'void'
+  // It can be 'signed' or 'unsigned' followed by an optional 'char', 'byte', 'short', 'int' or 'long'
+  // It can be 'char', 'byte', 'short', 'int' or 'long'
+  // 'int' can be followed by an optinal 'long'. 'long' can be followed by an optional extra 'long'
+
+  function parseObjectiveJType() {
+    var node = startNode();
+    if (tokType === _name) {
+      node.name = tokVal;
+      next();
+      if (tokVal === '<') {
+        next();
+        node.protocol = parseIdent(true);
+        if (tokVal !== '>') unexpected();
+        next();
+      }
+    } else {
+      node.name = tokType.keyword;
+      if (!eat(_void)) {
+        var nextKeyWord;
+        if (eat(_signed) || eat(_unsigned))
+          nextKeyWord = tokType.keyword;
+        if (eat(_char) || eat(_byte) || eat(_short)) {
+          if (nextKeyWord)
+            node.name += " " + nextKeyWord;
+        } else {
+          if (eat(_int)) {
+            if (nextKeyWord)
+              node.name += " " + nextKeyWord;
+            nextKeyWord = tokType.keyword;
+          }
+          if (eat(_long)) {
+            if (nextKeyWord)
+              node.name += " " + nextKeyWord;
+            nextKeyWord = tokType.keyword;
+            if (eat(_long)) {
+              node.name += " " + nextKeyWord;
+            }
+          }
+        }
+      }
+    }
+   return finishNode(node, "ObjectiveJType");
   }
 
 })(typeof exports === "undefined" ? (self.acorn = {}) : exports);
