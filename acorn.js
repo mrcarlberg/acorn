@@ -1082,11 +1082,11 @@
   }
 
   // Expect a token of a given type. If found, consume it, otherwise,
-  // raise an unexpected token error.
+  // raise with errorMessage or an unexpected token error.
 
-  function expect(type) {
+  function expect(type, errorMessage) {
     if (tokType === type) next();
-    else unexpected();
+    else errorMessage ? raise(tokStart, errorMessage) : unexpected();
   }
 
   // Raise an unexpected token error.
@@ -1183,7 +1183,7 @@
       labels.push(loopLabel);
       node.body = parseStatement();
       labels.pop();
-      expect(_while);
+      expect(_while, "Expected 'while' at end of do statement");
       node.test = parseParenExpression();
       semicolon();
       return finishNode(node, "DoWhileStatement");
@@ -1199,7 +1199,7 @@
     case _for:
       next();
       labels.push(loopLabel);
-      expect(_parenL);
+      expect(_parenL, "Expected '(' after 'for'");
       if (tokType === _semi) return parseFor(node, null);
       if (tokType === _var) {
         var init = startNode();
@@ -1240,7 +1240,7 @@
       next();
       node.discriminant = parseParenExpression();
       node.cases = [];
-      expect(_braceL);
+      expect(_braceL, "Expected '{' in switch statement");
       labels.push(switchLabel);
 
       // Statements under must be grouped (by label) in SwitchCase
@@ -1259,7 +1259,7 @@
             if (sawDefault) raise(lastStart, "Multiple default clauses"); sawDefault = true;
             cur.test = null;
           }
-          expect(_colon);
+          expect(_colon, "Expected ':' after case clause");
         } else {
           if (!cur) unexpected();
           cur.consequent.push(parseStatement());
@@ -1285,11 +1285,11 @@
       while (tokType === _catch) {
         var clause = startNode();
         next();
-        expect(_parenL);
+        expect(_parenL, "Expected '(' after 'catch'");
         clause.param = parseIdent();
         if (strict && isStrictBadIdWord(clause.param.name))
           raise(clause.param.start, "Binding " + clause.param.name + " in strict mode");
-        expect(_parenR);
+        expect(_parenR, "Expected closing ')' after catch");
         clause.guard = null;
         clause.body = parseBlock();
         node.handlers.push(finishNode(clause, "CatchClause"));
@@ -1336,7 +1336,7 @@
           node.superclassname = parseIdent(true);
         else if (eat(_parenL)) {
           node.categoryname = parseIdent(true);
-          expect(_parenR);
+          expect(_parenR, "Expected closing ')' after category name");
         }
         if (eat(_braceL)) {
           node.ivardeclarations = [];
@@ -1348,6 +1348,7 @@
         }
         node.body = [];
         while(!eat(_end)) {
+          if (tokType === _eof) raise(tokPos, "Expected '@end' after '@implementation'");
           node.body.push(parseClassElement());
         }
       }
@@ -1424,12 +1425,12 @@
               switch(config.name) {
                 case "property":
                 case "getter":
-                  expect(_eq);
+                  expect(_eq, "Expected '=' after 'getter' accessor attribute");
                   decl.accessors[config.name] = parseIdent(true);
                   break;
 
                 case "setter":
-                  expect(_eq);
+                  expect(_eq, "Expected '=' after 'setter' accessor attribute");
                   var setter = parseIdent(true);
                   decl.accessors[config.name] = setter;
                   if (eat(_colon))
@@ -1448,7 +1449,7 @@
               }
               if (!eat(_comma)) break;
             }
-            expect(_parenR);
+            expect(_parenR, "Expected closing ')' after accessor attributes");
           }
         }
       }
@@ -1483,17 +1484,17 @@
           if (first && tokType !== _colon) break;
         } else
           selectors.push(null);
-        expect(_colon);
+        expect(_colon, "Expected ':' in selector");
         var argument = {};
         args.push(argument);
         if (eat(_parenL)) {
           argument.type = parseObjectiveJType();
-          expect(_parenR);
+          expect(_parenR, "Expected closing ')' after method argument type");
         }
         argument.identifier = parseIdent(false);
         if (tokType === _braceL || eat(_semi)) break;
         if (eat(_comma)) {
-          expect(_dotdotdot);
+          expect(_dotdotdot, "Expected '...' after ',' in method declaration");
           element.parameters = true;
           break;
         }
@@ -1516,9 +1517,9 @@
   // parentheses around their expression.
 
   function parseParenExpression() {
-    expect(_parenL);
+    expect(_parenL, "Expected '(' before expression");
     var val = parseExpression();
-    expect(_parenR);
+    expect(_parenR, "Expected closing ')' after expression");
     return val;
   }
 
@@ -1529,7 +1530,7 @@
   function parseBlock(allowStrict) {
     var node = startNode(), first = true, strict = false, oldStrict;
     node.body = [];
-    expect(_braceL);
+    expect(_braceL, "Expected '{' before block");
     while (!eat(_braceR)) {
       var stmt = parseStatement();
       node.body.push(stmt);
@@ -1549,11 +1550,11 @@
 
   function parseFor(node, init) {
     node.init = init;
-    expect(_semi);
+    expect(_semi, "Expected ';' in for statement");
     node.test = tokType === _semi ? null : parseExpression();
-    expect(_semi);
+    expect(_semi, "Expected ';' in for statement");
     node.update = tokType === _parenR ? null : parseExpression();
-    expect(_parenR);
+    expect(_parenR, "Expected closing ')' in for statement");
     node.body = parseStatement();
     labels.pop();
     return finishNode(node, "ForStatement");
@@ -1564,7 +1565,7 @@
   function parseForIn(node, init) {
     node.left = init;
     node.right = parseExpression();
-    expect(_parenR);
+    expect(_parenR, "Expected closing ')' in for statement");
     node.body = parseStatement();
     labels.pop();
     return finishNode(node, "ForInStatement");
@@ -1635,7 +1636,7 @@
       var node = startNodeFrom(expr);
       node.test = expr;
       node.consequent = parseExpression(true);
-      expect(_colon);
+      expect(_colon, "Expected ':' in conditional expression");
       node.alternate = parseExpression(true, noIn);
       return finishNode(node, "ConditionalExpression");
     }
@@ -1761,7 +1762,7 @@
       }
       if (options.ranges)
         val.range = [tokStart1, tokEnd];
-      expect(_parenR);
+      expect(_parenR, "Expected closing ')' in expression");
       return val;
 
     case _bracketL:
@@ -1796,9 +1797,9 @@
     case _selector:
       var node = startNode();
       next();
-      expect(_parenL);
+      expect(_parenL, "Expected '(' after '@selector'");
       parseSelector(node, _parenR);
-      expect(_parenR);
+      expect(_parenR, "Expected closing ')' after selector");
       return finishNode(node, "SelectorLiteralExpression");
 
     default:
@@ -1814,7 +1815,7 @@
           selectors.push(parseIdent(true).name);
           if (first && tokType === close) break;
         }
-        expect(_colon);
+        expect(_colon, "Expected ':' in selector");
         selectors.push(":");
         if (tokType === close) break;
         first = false;
@@ -1837,7 +1838,7 @@
         } else {
           selectors.push(null);
         }
-        expect(_colon);
+        expect(_colon, "Expected ':' in selector");
         args.push(parseExpression(true));
         if (eat(close))
           break;
@@ -1875,7 +1876,7 @@
     next();
     while (!eat(_braceR)) {
       if (!first) {
-        expect(_comma);
+        expect(_comma, "Expected ',' in object literal");
         if (options.allowTrailingCommas && eat(_braceR)) break;
       } else first = false;
 
@@ -1926,9 +1927,9 @@
     else node.id = null;
     node.params = [];
     var first = true;
-    expect(_parenL);
+    expect(_parenL, "Expected '(' before function parameters");
     while (!eat(_parenR)) {
-      if (!first) expect(_comma); else first = false;
+      if (!first) expect(_comma, "Expected ',' between function parameters"); else first = false;
       node.params.push(parseIdent());
     }
 
@@ -1974,7 +1975,7 @@
         if (allowEmpty && tokType === _comma && !firstExpr) elts.push(null);
         else elts.push(firstExpr);
       } else {
-        expect(_comma);
+        expect(_comma, "Expected ',' between expressions");
         if (allowTrailingComma && options.allowTrailingCommas && eat(close)) break;
         if (allowEmpty && tokType === _comma) elts.push(null);
         else elts.push(parseExpression(true));
