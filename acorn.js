@@ -254,8 +254,9 @@
 
   // Objective-J keywords
 
-  var _filename = {keyword: "filename"}, _unsigned = {keyword: "unsigned"}, _signed = {keyword: "signed"};
-  var _byte = {keyword: "byte"}, _char = {keyword: "char"}, _short = {keyword: "short"}, _int = {keyword: "int"}, _long = {keyword: "long"};
+  var _filename = {keyword: "filename"}, _unsigned = {keyword: "unsigned", okAsIdent: true}, _signed = {keyword: "signed", okAsIdent: true};
+  var _byte = {keyword: "byte", okAsIdent: true}, _char = {keyword: "char", okAsIdent: true}, _short = {keyword: "short", okAsIdent: true};
+  var _int = {keyword: "int", okAsIdent: true}, _long = {keyword: "long", okAsIdent: true}, _preprocess = {keyword: "#"};
 
   // Map keyword names to token types.
 
@@ -1988,7 +1989,7 @@
 
   function parseIdent(liberal) {
     var node = startNode();
-    node.name = tokType === _name ? tokVal : (liberal && !options.forbidReserved && tokType.keyword) || unexpected();
+    node.name = tokType === _name ? tokVal : (((liberal && !options.forbidReserved) || tokType.okAsIdent) && tokType.keyword) || unexpected();
     next();
     return finishNode(node, "Identifier");
   }
@@ -2024,24 +2025,29 @@
       if (!eat(_void)) {
         var nextKeyWord;
         if (eat(_signed) || eat(_unsigned))
-          nextKeyWord = tokType.keyword;
+          nextKeyWord = tokType.keyword || true;
         if (eat(_char) || eat(_byte) || eat(_short)) {
           if (nextKeyWord)
             node.name += " " + nextKeyWord;
+          nextKeyWord = tokType.keyword || true;
         } else {
           if (eat(_int)) {
             if (nextKeyWord)
               node.name += " " + nextKeyWord;
-            nextKeyWord = tokType.keyword;
+            nextKeyWord = tokType.keyword || true;
           }
           if (eat(_long)) {
             if (nextKeyWord)
               node.name += " " + nextKeyWord;
-            nextKeyWord = tokType.keyword;
+            nextKeyWord = tokType.keyword || true;
             if (eat(_long)) {
               node.name += " " + nextKeyWord;
             }
           }
+        }
+        if (!nextKeyWord) {
+          node.name = (!options.forbidReserved && tokType.keyword) || unexpected();
+          next();
         }
       }
     }
