@@ -1493,8 +1493,10 @@
       if (eat(_parenL)) {
         if (eat(_action))
           element.action = true;
-        element.returntype = parseObjectiveJType();
-        expect(_parenR);
+        if (!eat(_parenR)) {
+          element.returntype = parseObjectiveJType();
+          expect(_parenR, "Expected closing ')' after method return type");
+        }
       }
       // Now we parse the selector
       var first = true,
@@ -1805,14 +1807,8 @@
       next();
       if (tokType !== _comma && tokType !== _bracketR) {
         firstExpr = parseExpression(true);
-        if (tokType !== _comma && tokType !== _bracketR) {
-          parseSelectorWithArguments(node, _bracketR);
-          if (firstExpr.type === "Identifier" && firstExpr.name === "super")
-            node.superObject = true;
-          else
-            node.object = firstExpr;
-          return finishNode(node, "MessageSendExpression");
-        }
+        if (tokType !== _comma && tokType !== _bracketR)
+          return parseMessageSendExpression(node, firstExpr);
       }
       node.elements = parseExprList(_bracketR, firstExpr, true, true);
       return finishNode(node, "ArrayExpression");
@@ -1839,6 +1835,15 @@
     default:
       unexpected();
     }
+  }
+
+  function parseMessageSendExpression(node, firstExpr) {
+    parseSelectorWithArguments(node, _bracketR);
+    if (firstExpr.type === "Identifier" && firstExpr.name === "super")
+      node.superObject = true;
+    else
+      node.object = firstExpr;
+    return finishNode(node, "MessageSendExpression");
   }
 
   function parseSelector(node, close) {
