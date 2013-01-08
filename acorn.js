@@ -172,6 +172,12 @@
 
   var tokAfterImport;
 
+  // This is the tokenizer's state for Objective-J. 'nodeMessageSendObjectExpression'
+  // is used to store the expression that is already parsed when a subscript was
+  // not really a subscript
+
+  var nodeMessageSendObjectExpression;
+
   // This is the parser's state. `inFunction` is used to reject
   // `return` statements outside of functions, `labels` to verify that
   // `break` and `continue` have somewhere to jump to, and `strict`
@@ -956,6 +962,7 @@
     lastStart = tokStart;
     lastEnd = tokEnd;
     lastEndLoc = tokEndLoc;
+    nodeMessageSendObjectExpression = null;
     readToken();
   }
 
@@ -1071,7 +1078,8 @@
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(input.slice(lastEnd, tokStart)));
+      (tokType === _eof || tokType === _braceR || newline.test(input.slice(lastEnd, tokStart)) ||
+        (nodeMessageSendObjectExpression && options.objj));
   }
 
   // Consume a semicolon, or, failing that, see if we are allowed to
@@ -1141,6 +1149,9 @@
   // does not help.
 
   function parseStatement() {
+    if (nodeMessageSendObjectExpression)
+      return parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
+
     if (tokType === _slash)
       readToken(true);
 
@@ -1712,19 +1723,29 @@
       node.property = parseIdent(true);
       node.computed = false;
       return parseSubscripts(finishNode(node, "MemberExpression"), noCalls);
-    } else if (eat(_bracketL)) {
-      var node = startNodeFrom(base);
-      node.object = base;
-      node.property = parseExpression();
-      node.computed = true;
-      expect(_bracketR);
-      return parseSubscripts(finishNode(node, "MemberExpression"), noCalls);
-    } else if (!noCalls && eat(_parenL)) {
-      var node = startNodeFrom(base);
-      node.callee = base;
-      node.arguments = parseExprList(_parenR, tokType === _parenR ? null : parseExpression(true), false);
-      return parseSubscripts(finishNode(node, "CallExpression"), noCalls);
-    } else return base;
+    } else {
+      if (options.objj) var messageSendNode = startNode();
+      if (eat(_bracketL)) {
+        var expr = parseExpression();
+        if (options.objj && tokType !== _bracketR) {
+          messageSendNode.object = expr;
+          nodeMessageSendObjectExpression = messageSendNode;
+          return base;
+        }
+        var node = startNodeFrom(base);
+        node.object = base;
+        node.property = expr;
+        node.computed = true;
+        expect(_bracketR, "Expected closing ']' in subscript");
+        return parseSubscripts(finishNode(node, "MemberExpression"), noCalls);
+      } else if (!noCalls && eat(_parenL)) {
+        var node = startNodeFrom(base);
+        node.callee = base;
+        node.arguments = parseExprList(_parenR, tokType === _parenR ? null : parseExpression(true), false);
+        return parseSubscripts(finishNode(node, "CallExpression"), noCalls);
+      }
+    }
+    return base;
   }
 
   // Parse an atomic expression — either a single token that is an
