@@ -68,6 +68,13 @@
     // after and before it), but never twice in the before (or after)
     // array of different nodes.
     trackComments: false,
+    // When `trackSpaces` is turned on, the parser will attach
+    // `spacesBefore` and `spacesAfter` properties to AST nodes
+    // holding arrays of strings. The same spaces may appear in both
+    // a `spacesBefore` and `spacesAfter` array (of the nodes
+    // after and before it), but never twice in the before (or after)
+    // array of different nodes.
+    trackSpaces: false,
     // When `locations` is on, `loc` properties holding objects with
     // `start` and `end` properties in `{line, column}` form (with
     // line being 1-based and column 0-based) will be attached to the
@@ -146,6 +153,11 @@
 
   var tokCommentsBefore, tokCommentsAfter;
 
+  // These are used to hold arrays of spaces when
+  // `options.trackSpaces` is true.
+
+  var tokSpacesBefore, tokSpacesAfter;
+
   // Interal state for the tokenizer. To distinguish between division
   // operators and regular expressions, it remembers whether the last
   // token was one that is allowed to be followed by an expression.
@@ -153,7 +165,7 @@
   // division operator. See the `parseStatement` function for a
   // caveat.)
 
-  var tokRegexpAllowed, tokComments;
+  var tokRegexpAllowed, tokComments, tokSpaces;
 
   // When `options.locations` is true, these are used to keep
   // track of the current line, and know when a new line has been
@@ -473,11 +485,12 @@
     tokLineStartNext = nextLineStart();
     tokRegexpAllowed = true;
     tokComments = null;
+    tokSpaces = null;
     skipSpace();
   }
 
   // Called at the end of every token. Sets `tokEnd`, `tokVal`,
-  // `tokCommentsAfter`, and `tokRegexpAllowed`, and skips the space
+  // `tokCommentsAfter`, `tokSpacesAfter`, and `tokRegexpAllowed`, and skips the space
   // after the token, so that the next one's `tokStart` will point at
   // the right position.
 
@@ -488,12 +501,14 @@
     skipSpace();
     tokVal = val;
     tokCommentsAfter = tokComments;
+    tokSpacesAfter = tokSpaces;
     tokRegexpAllowed = type.beforeExpr;
     tokAfterImport = type.afterImport;
   }
 
   function skipBlockComment() {
     var end = input.indexOf("*/", tokPos += 2);
+    tokSpaces = null;
     if (end === -1) raise(tokPos - 2, "Unterminated comment");
     if (options.trackComments)
       (tokComments || (tokComments = [])).push(input.slice(tokPos, end));
@@ -503,6 +518,7 @@
   function skipLineComment(skipCharacters) {
     var start = tokPos;
     var ch = input.charCodeAt(tokPos+=skipCharacters);
+    tokSpaces = null;
     while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
       ++tokPos;
       ch = input.charCodeAt(tokPos);
@@ -511,12 +527,24 @@
       (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
   }
 
+  function skipWhiteSpaces() {
+    var start = tokPos;
+    var ch = input.charCodeAt(++tokPos);
+    while ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) // 9 - 13, ' ', '\xa0' ....
+      ch = input.charCodeAt(++tokPos);
+    if (options.trackSpaces)
+      (tokSpaces || (tokSpaces = [])).push(input.slice(start, tokPos));
+  }
+
   // Called at the start of the parse and after every token. Skips
   // whitespace and comments, and, if `options.trackComments` is on,
-  // will store all skipped comments in `tokComments`.
+  // will store all skipped comments in `tokComments`. If
+  // `options.trackSpaces` is on, will store the last skipped spaces in
+  // `tokSpaces`.
 
   function skipSpace() {
     tokComments = null;
+    tokSpaces = null;
     while (tokPos < inputLen) {
       var ch = input.charCodeAt(tokPos);
       if (ch === 47) { // '/'
@@ -526,12 +554,8 @@
         } else if (next === 47) { // '/'
           skipLineComment(2);
         } else break;
-      } else if (ch < 14 && ch > 8) {
-        ++tokPos;
-      } else if (ch === 32 || ch === 160) { // ' ', '\xa0'
-        ++tokPos;
-      } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
-        ++tokPos;
+      } else if ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) { // 9 - 13, ' ', '\xa0' ....
+        skipWhiteSpaces();
       } else {
         break;
       }
@@ -719,6 +743,7 @@
     tokStart = tokPos;
     if (options.locations) tokStartLoc = curLineLoc();
     tokCommentsBefore = tokComments;
+    tokSpacesBefore = tokSpaces;
     if (forceRegexp) return readRegexp();
     if (tokPos >= inputLen) return finishToken(_eof);
 
@@ -1005,6 +1030,10 @@
       node.commentsBefore = tokCommentsBefore;
       tokCommentsBefore = null;
     }
+    if (options.trackSpaces && tokSpacesBefore) {
+      node.spacesBefore = tokSpacesBefore;
+      tokSpacesBefore = null;
+    }
     if (options.locations)
       node.loc = new node_loc_t();
     if (options.ranges)
@@ -1040,7 +1069,8 @@
   // We keep track of the last node that we finished, in order
   // 'bubble' `commentsAfter` properties up to the biggest node. I.e.
   // in '`1 + 1 // foo', the comment should be attached to the binary
-  // operator node, not the second literal node.
+  // operator node, not the second literal node. The same is done on
+  // `spacesAfter`
 
   var lastFinishedNode;
 
@@ -1055,6 +1085,18 @@
                  lastFinishedNode.commentsAfter) {
         node.commentsAfter = lastFinishedNode.commentsAfter;
         lastFinishedNode.commentsAfter = null;
+      }
+      if (!options.trackSpaces)
+        lastFinishedNode = node;
+    }
+    if (options.trackSpaces) {
+      if (tokSpacesAfter) {
+        node.spacesAfter = tokSpacesAfter;
+        tokSpacesAfter = null;
+      } else if (lastFinishedNode && lastFinishedNode.end === lastEnd &&
+                 lastFinishedNode.spacesAfter) {
+        node.spacesAfter = lastFinishedNode.spacesAfter;
+        lastFinishedNode.spacesAfter = null;
       }
       lastFinishedNode = node;
     }
