@@ -91,8 +91,8 @@
     // When `location` is on, you can pass this to record the source
     // file in every node's `loc` object.
     sourceFile: null,
-    // Turn on objj to allow Objective-J systax
-    objj: false
+    // Turn on objj to allow Objective-J syntax
+    objj: true
   };
 
   // The `getLineInfo` function is mostly useful when the
