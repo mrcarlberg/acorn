@@ -383,6 +383,8 @@
     return new Function("str", f);
   }
 
+  exports.makePredicate = makePredicate;
+
   // The ECMAScript 3 reserved word list.
 
   var isReservedWord3 = makePredicate("abstract boolean byte char class double enum export extends final float goto implements import int interface long native package private protected public short static super synchronized throws transient volatile");
