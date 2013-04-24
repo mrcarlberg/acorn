@@ -4,6 +4,7 @@
 if (typeof exports != "undefined") {
   var test = require("./driver.js").test;
   var testFail = require("./driver.js").testFail;
+  var testAssert = require("./driver.js").testAssert;
 }
 
 test("this\n", {
@@ -21818,8 +21819,7 @@ test("try { } catch (e) { }", {
           }
         }
       },
-      handlers: [
-        {
+      handler: {
           type: "CatchClause",
           param: {
             type: "Identifier",
@@ -21861,7 +21861,7 @@ test("try { } catch (e) { }", {
             }
           }
         }
-      ],
+      ,
       finalizer: null,
       loc: {
         start: {
@@ -21906,7 +21906,7 @@ test("try { } catch (eval) { }", {
           }
         }
       },
-      handlers: [
+      handler:
         {
           type: "CatchClause",
           param: {
@@ -21949,7 +21949,7 @@ test("try { } catch (eval) { }", {
             }
           }
         }
-      ],
+      ,
       finalizer: null,
       loc: {
         start: {
@@ -21994,7 +21994,7 @@ test("try { } catch (arguments) { }", {
           }
         }
       },
-      handlers: [
+      handler:
         {
           type: "CatchClause",
           param: {
@@ -22037,7 +22037,7 @@ test("try { } catch (arguments) { }", {
             }
           }
         }
-      ],
+      ,
       finalizer: null,
       loc: {
         start: {
@@ -22082,7 +22082,7 @@ test("try { } catch (e) { say(e) }", {
           }
         }
       },
-      handlers: [
+      handler:
         {
           type: "CatchClause",
           param: {
@@ -22182,7 +22182,7 @@ test("try { } catch (e) { say(e) }", {
             }
           }
         }
-      ],
+      ,
       finalizer: null,
       loc: {
         start: {
@@ -22227,7 +22227,7 @@ test("try { } finally { cleanup(stuff) }", {
           }
         }
       },
-      handlers: [],
+      handler: null,
       finalizer: {
         type: "BlockStatement",
         body: [
@@ -22384,7 +22384,7 @@ test("try { doThat(); } catch (e) { say(e) }", {
           }
         }
       },
-      handlers: [
+      handler:
         {
           type: "CatchClause",
           param: {
@@ -22484,7 +22484,7 @@ test("try { doThat(); } catch (e) { say(e) }", {
             }
           }
         }
-      ],
+      ,
       finalizer: null,
       loc: {
         start: {
@@ -22571,7 +22571,7 @@ test("try { doThat(); } catch (e) { say(e) } finally { cleanup(stuff) }", {
           }
         }
       },
-      handlers: [
+      handler:
         {
           type: "CatchClause",
           param: {
@@ -22671,7 +22671,7 @@ test("try { doThat(); } catch (e) { say(e) } finally { cleanup(stuff) }", {
             }
           }
         }
-      ],
+      ,
       finalizer: {
         type: "BlockStatement",
         body: [
@@ -25797,33 +25797,33 @@ test("foo: if (true) break foo;", {
   ]
 });
 
-test("(function () { 'use strict'; '\0'; }())", {
+test("(function () {\n 'use strict';\n '\0';\n}())", {
   type: "Program",
   start: 0,
-  end: 38,
+  end: 40,
   loc: {
     start: {
       line: 1,
       column: 0
     },
     end: {
-      line: 1,
-      column: 38
+      line: 4,
+      column: 4
     }
   },
   body: [
     {
       type: "ExpressionStatement",
       start: 0,
-      end: 38,
+      end: 40,
       loc: {
         start: {
           line: 1,
           column: 0
         },
         end: {
-          line: 1,
-          column: 38
+          line: 4,
+          column: 4
         }
       },
       expression: {
@@ -25835,22 +25835,22 @@ test("(function () { 'use strict'; '\0'; }())", {
             column: 0
           },
           end: {
-            line: 1,
-            column: 38
+            line: 4,
+            column: 4
           }
         },
         callee: {
           type: "FunctionExpression",
           start: 1,
-          end: 35,
+          end: 37,
           loc: {
             start: {
               line: 1,
               column: 1
             },
             end: {
-              line: 1,
-              column: 35
+              line: 4,
+              column: 1
             }
           },
           id: null,
@@ -25858,44 +25858,44 @@ test("(function () { 'use strict'; '\0'; }())", {
           body: {
             type: "BlockStatement",
             start: 13,
-            end: 35,
+            end: 37,
             loc: {
               start: {
                 line: 1,
                 column: 13
               },
               end: {
-                line: 1,
-                column: 35
+                line: 4,
+                column: 1
               }
             },
             body: [
               {
                 type: "ExpressionStatement",
-                start: 15,
-                end: 28,
+                start: 16,
+                end: 29,
                 loc: {
                   start: {
-                    line: 1,
-                    column: 15
+                    line: 2,
+                    column: 1
                   },
                   end: {
-                    line: 1,
-                    column: 28
+                    line: 2,
+                    column: 14
                   }
                 },
                 expression: {
                   type: "Literal",
-                  start: 15,
-                  end: 27,
+                  start: 16,
+                  end: 28,
                   loc: {
                     start: {
-                      line: 1,
-                      column: 15
+                      line: 2,
+                      column: 1
                     },
                     end: {
-                      line: 1,
-                      column: 27
+                      line: 2,
+                      column: 13
                     }
                   },
                   value: "use strict"
@@ -25903,30 +25903,30 @@ test("(function () { 'use strict'; '\0'; }())", {
               },
               {
                 type: "ExpressionStatement",
-                start: 29,
-                end: 33,
+                start: 31,
+                end: 35,
                 loc: {
                   start: {
-                    line: 1,
-                    column: 29
+                    line: 3,
+                    column: 1
                   },
                   end: {
-                    line: 1,
-                    column: 33
+                    line: 3,
+                    column: 5
                   }
                 },
                 expression: {
                   type: "Literal",
-                  start: 29,
-                  end: 32,
+                  start: 31,
+                  end: 34,
                   loc: {
                     start: {
-                      line: 1,
-                      column: 29
+                      line: 3,
+                      column: 1
                     },
                     end: {
-                      line: 1,
-                      column: 32
+                      line: 3,
+                      column: 4
                     }
                   },
                   value: "\u0000"
@@ -25936,7 +25936,7 @@ test("(function () { 'use strict'; '\0'; }())", {
           }
         },
         arguments: [],
-        end: 38
+        end: 40
       }
     }
   ]
@@ -25981,6 +25981,37 @@ test("123..toString(10)", {
           }
         ],
         end: 17
+      }
+    }
+  ]
+});
+
+test("123.+2", {
+  type: "Program",
+  start: 0,
+  end: 6,
+  body: [
+    {
+      type: "ExpressionStatement",
+      start: 0,
+      end: 6,
+      expression: {
+        type: "BinaryExpression",
+        start: 0,
+        left: {
+          type: "Literal",
+          start: 0,
+          end: 4,
+          value: 123
+        },
+        operator: "+",
+        right: {
+          type: "Literal",
+          start: 5,
+          end: 6,
+          value: 2
+        },
+        end: 6
       }
     }
   ]
@@ -26061,6 +26092,38 @@ test("foo: 10; foo: 20;", {
         type: "Identifier",
         name: "foo"
       }
+    }
+  ]
+});
+
+test("if(1)/  foo/", {
+  type: "Program",
+  start: 0,
+  end: 12,
+  body: [
+    {
+      type: "IfStatement",
+      start: 0,
+      end: 12,
+      test: {
+        type: "Literal",
+        start: 3,
+        end: 4,
+        value: 1,
+        raw: "1"
+      },
+      consequent: {
+        type: "ExpressionStatement",
+        start: 5,
+        end: 12,
+        expression: {
+          type: "Literal",
+          start: 5,
+          end: 12,
+          raw: "/  foo/"
+        }
+      },
+      alternate: null
     }
   ]
 });
@@ -26261,7 +26324,7 @@ testFail("1 + {",
          "Unexpected token (1:5)");
 
 testFail("1 + { t:t ",
-         "Unexpected token (1:10)");
+         "Expected ',' in object literal (1:10)");
 
 testFail("1 + { t:t,",
          "Unexpected token (1:10)");
@@ -26291,10 +26354,10 @@ testFail("\n/* Some multiline\ncomment */\n)",
          "Unexpected token (4:0)");
 
 testFail("{ set 1 }",
-         "Unexpected token (1:6)");
+         "Expected a semicolon (1:6)");
 
 testFail("{ get 2 }",
-         "Unexpected token (1:6)");
+         "Expected a semicolon (1:6)");
 
 testFail("({ set: s(if) { } })",
          "Unexpected token (1:10)");
@@ -26303,13 +26366,13 @@ testFail("({ set s(.) { } })",
          "Unexpected token (1:9)");
 
 testFail("({ set: s() { } })",
-         "Unexpected token (1:12)");
+         "Expected ',' in object literal (1:12)");
 
 testFail("({ set: s(a, b) { } })",
-         "Unexpected token (1:16)");
+         "Expected ',' in object literal (1:16)");
 
 testFail("({ get: g(d) { } })",
-         "Unexpected token (1:13)");
+         "Expected ',' in object literal (1:13)");
 
 testFail("({ get i() { }, i: 42 })",
          "Redefinition of property (1:16)");
@@ -26354,16 +26417,16 @@ testFail("function if() { }",
          "Unexpected token (1:9)");
 
 testFail("a b;",
-         "Unexpected token (1:2)");
+         "Expected a semicolon (1:2)");
 
 testFail("if.a;",
-         "Unexpected token (1:2)");
+         "Expected '(' before expression (1:2)");
 
 testFail("a if;",
-         "Unexpected token (1:2)");
+         "Expected a semicolon (1:2)");
 
 testFail("a class;",
-         "Unexpected token (1:2)");
+         "Expected a semicolon (1:2)");
 
 testFail("break\n",
          "Unsyntactic break (1:0)");
@@ -26384,10 +26447,10 @@ testFail("throw;",
          "Unexpected token (1:5)");
 
 testFail("for (var i, i2 in {});",
-         "Unexpected token (1:15)");
+         "Expected ';' in for statement (1:15)");
 
 testFail("for ((i in {}));",
-         "Unexpected token (1:14)");
+         "Expected ';' in for statement (1:14)");
 
 testFail("for (i + 1 in {});",
          "Assigning to rvalue (1:5)");
@@ -26420,7 +26483,7 @@ testFail("‿ = 10",
          "Unexpected character '‿' (1:0)");
 
 testFail("if(true) let a = 1;",
-         "Unexpected token (1:13)");
+         "Expected a semicolon (1:13)");
 
 testFail("switch (c) { default: default: }",
          "Multiple default clauses (1:22)");
@@ -26516,7 +26579,7 @@ testFail("switch (x) { default: continue; }",
          "Unsyntactic continue (1:22)");
 
 testFail("do { x } *",
-         "Unexpected token (1:9)");
+         "Expected 'while' at end of do statement (1:9)");
 
 testFail("while (true) { break x; }",
          "Unsyntactic break (1:15)");
@@ -26716,3 +26779,54 @@ testFail("(function a(package) { \"use strict\"; })",
 testFail("var this = 10;", "Unexpected token (1:4)");
 
 testFail("throw\n10;", "Illegal newline after throw (1:5)");
+
+// Assertion Tests
+(function() {
+  var actualComments = [],
+      expectedComments = [
+        " Bear class",
+        " Whatever",
+        [" 1",
+         "         2",
+         "         3"
+        ].join('\n'),
+        "stuff"
+      ];
+  testAssert(
+    function TestComments() {
+      // Bear class
+      function Bear(x,y,z) {
+        this.position = [x||0,y||0,z||0]
+      }
+
+      Bear.prototype.roar = function(message) {
+        return 'RAWWW: ' + message; // Whatever
+      };
+
+      function Cat() {
+      /* 1
+         2
+         3*/
+      }
+
+      Cat.prototype.roar = function(message) {
+        return 'MEOOWW: ' + /*stuff*/ message;
+      };
+    }.toString(),
+    function assert(ast) {
+      if (actualComments.length !== expectedComments.length) {
+        return JSON.stringify(actualComments) + " !== " + JSON.stringify(expectedComments);
+      } else {
+        for (var i=0, n=actualComments.length; i < n; i++) {
+          if (actualComments[i] !== expectedComments[i])
+            return JSON.stringify(actualComments[i]) + ' !== ' + JSON.stringify(expectedComments[i]);
+        }
+      }
+    },
+    {
+      onComment: function(isMultiline, text) {
+        actualComments.push(text);
+      }
+    }
+  );
+})();
