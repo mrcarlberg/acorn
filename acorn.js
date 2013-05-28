@@ -118,7 +118,26 @@
     // file in every node's `loc` object.
     sourceFile: null,
     // Turn on objj to allow Objective-J syntax
-    objj: true
+    objj: true,
+    // Turn on preprocess to allow C preprocess derectives.
+    // #define macro1
+    // #define macro2 console.log("Hello")
+    // #define macro3(x,y,z) if (x > y && y > z) console.log("Touchdown!!!")
+    // #if macro1
+    // #else
+    // #endif
+    preprocess: true,
+    // Preprocess add macro function
+    preprocessAddMacro: defaultAddMacro,
+    // Preprocess get macro function
+    preprocessGetMacro: defaultGetMacro,
+    // Preprocess undefine macro function. To delete a macro
+    preprocessUndefineMacro: defaultUndefineMacro,
+    // Preprocess is macro function
+    preprocessIsMacro: defaultIsMacro,
+    // Turn off lineNoInErrorMessage to exclude line number in error messages
+    // Needs to be on to run test cases
+    lineNoInErrorMessage: true
   };
 
   function setOptions(opts) {
@@ -126,6 +145,28 @@
     for (var opt in defaultOptions) if (!options.hasOwnProperty(opt))
       options[opt] = defaultOptions[opt];
     sourceFile = options.sourceFile || null;
+  }
+
+  var macros;
+  var macrosIsPredicate;
+
+  function defaultAddMacro(macro) {
+    macros[macro.identifier] = macro;
+    macrosIsPredicate = null;
+  }
+
+  function defaultGetMacro(macroIdentifier) {
+    return macros[macroIdentifier];
+  }
+
+  function defaultUndefineMacro(macroIdentifier) {
+    delete macros[macroIdentifier];
+    macrosIsPredicate = null;
+  }
+
+  function defaultIsMacro(macroIdentifier) {
+    var x = Object.keys(macros).join(" ");
+    return (macrosIsPredicate || (macrosIsPredicate = makePredicate(x)))(macroIdentifier);
   }
 
   // The `getLineInfo` function is mostly useful when the
@@ -232,7 +273,12 @@
   // track of the current line, and know when a new line has been
   // entered.
 
-  var tokCurLine, tokLineStart;
+  var tokCurLine, tokLineStart, tokLineStartNext;
+
+  // Same as input but for the current token. If options.preprocess is used
+  // this can differ due to macros.
+
+  var tokInput, preTokInput;
 
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
@@ -258,20 +304,29 @@
 
   var inFunction, labels, strict;
 
+  // These are used by the preprocess tokenizer.
+
+  var preTokPos, preTokType, preTokVal, preTokStart, preTokEnd;
+  var preLastStart, preLastEnd;
+  var preprocessStack = [];
+  var preprocessMacroParamterListMode = false;
+
   // This function is used to raise exceptions on parse errors. It
-  // takes an offset integer (into the current `input`) to indicate
-  // the location of the error, attaches the position to the end
-  // of the error message, and then raises a `SyntaxError` with that
-  // message.
+  // takes either a `{line, column}` object or an offset integer (into
+  // the current `input`) as `pos` argument. It attaches the position
+  // to the end of the error message, and then raises a `SyntaxError`
+  // with that message.
 
   function raise(pos, message) {
     if (typeof pos == "number") pos = getLineInfo(input, pos);
-    message += " (" + pos.line + ":" + pos.column + ")";
+    if (options.lineNoInErrorMessage)
+      message += " (" + pos.line + ":" + pos.column + ")";
     var syntaxError = new SyntaxError(message);
     syntaxError.line = pos.line;
     syntaxError.column = pos.column;
     syntaxError.lineStart = pos.lineStart;
     syntaxError.lineEnd = pos.lineEnd;
+    syntaxError.fileName = sourceFile;
 
     throw syntaxError;
   }
@@ -289,7 +344,7 @@
   // make them recognizeable when debugging.
 
   var _num = {type: "num"}, _regexp = {type: "regexp"}, _string = {type: "string"};
-  var _name = {type: "name"}, _eof = {type: "eof"};
+  var _name = {type: "name"}, _eof = {type: "eof"}, _eol = {type: "eol"};
 
   // Keyword tokens. The `keyword` property (also used in keyword-like
   // operators) indicates that the token originated from an
@@ -329,13 +384,31 @@
 
   var _implementation = {keyword: "implementation"}, _outlet = {keyword: "outlet"}, _accessors = {keyword: "accessors"};
   var _end = {keyword: "end"}, _import = {keyword: "import", afterImport: true};
-  var _action = {keyword: "action"}, _selector = {keyword: "selector"};
+  var _action = {keyword: "action"}, _selector = {keyword: "selector"}, _class = {keyword: "class"}, _global = {keyword: "global"};
+  var _dictionaryLiteral = {keyword: "{"}, _arrayLiteral = {keyword: "["};
+  var _ref = {keyword: "ref"}, _deref = {keyword: "deref"};
 
   // Objective-J keywords
 
   var _filename = {keyword: "filename"}, _unsigned = {keyword: "unsigned", okAsIdent: true}, _signed = {keyword: "signed", okAsIdent: true};
   var _byte = {keyword: "byte", okAsIdent: true}, _char = {keyword: "char", okAsIdent: true}, _short = {keyword: "short", okAsIdent: true};
   var _int = {keyword: "int", okAsIdent: true}, _long = {keyword: "long", okAsIdent: true}, _preprocess = {keyword: "#"};
+
+  // Preprocessor keywords
+
+  var _preDefine = {keyword: "define"};
+  var _preUndef = {keyword: "undef"};
+  var _preIfdef = {keyword: "ifdef"};
+  var _preIfndef = {keyword: "ifndef"};
+  var _preIf = {keyword: "if"};
+  var _preElse = {keyword: "else"};
+  var _preEndif = {keyword: "endif"};
+  var _preElseIf = {keyword: "elif"};
+  var _prePragma = {keyword: "pragma"};
+  var _preDefined = {keyword: "defined"};
+  var _preBackslash = {keyword: "\\"}
+
+  var _preprocessParamItem = {type: "preprocessParamItem"}
 
   // Map keyword names to token types.
 
@@ -348,17 +421,24 @@
                       "instanceof": {keyword: "instanceof", binop: 7, beforeExpr: true}, "this": _this,
                       "typeof": {keyword: "typeof", prefix: true, beforeExpr: true},
                       "void": _void,
-                      "delete": {keyword: "delete", prefix: true, beforeExpr: true}};
+                      "delete": {keyword: "delete", prefix: true, beforeExpr: true} };
 
   // Map Objective-J keyword names to token types.
 
-  var keywordTypesObjJ = {"IBAction": _action, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
+  var keywordTypesObjJ = {"IBAction": _action, "IBOutlet": _outlet, "unsigned": _unsigned, "signed": _signed, "byte": _byte, "char": _char,
                           "short": _short, "int": _int, "long": _long };
 
   // Map Objective-J "@" keyword names to token types.
 
   var objJAtKeywordTypes = {"implementation": _implementation, "outlet": _outlet, "accessors": _accessors, "end": _end,
-                            "import": _import, "action": _action, "selector": _selector};
+                            "import": _import, "action": _action, "selector": _selector, "class": _class, "global": _global,
+                            "ref": _ref, "deref": _deref};
+
+  // Map Preprocessor keyword names to token types.
+
+  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
+                                "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf,
+                                "defined": _preDefined};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -387,14 +467,14 @@
   // binary operators with a very low precedence, that should result
   // in AssignmentExpression nodes.
 
-  var _slash = {binop: 10, beforeExpr: true}, _eq = {isAssign: true, beforeExpr: true};
-  var _assign = {isAssign: true, beforeExpr: true}, _plusmin = {binop: 9, prefix: true, beforeExpr: true};
+  var _slash = {binop: 10, beforeExpr: true, preprocess: true}, _eq = {isAssign: true, beforeExpr: true, preprocess: true};
+  var _assign = {isAssign: true, beforeExpr: true}, _plusmin = {binop: 9, prefix: true, beforeExpr: true, preprocess: true};
   var _incdec = {postfix: true, prefix: true, isUpdate: true}, _prefix = {prefix: true, beforeExpr: true};
-  var _bin1 = {binop: 1, beforeExpr: true}, _bin2 = {binop: 2, beforeExpr: true};
-  var _bin3 = {binop: 3, beforeExpr: true}, _bin4 = {binop: 4, beforeExpr: true};
-  var _bin5 = {binop: 5, beforeExpr: true}, _bin6 = {binop: 6, beforeExpr: true};
-  var _bin7 = {binop: 7, beforeExpr: true}, _bin8 = {binop: 8, beforeExpr: true};
-  var _bin10 = {binop: 10, beforeExpr: true};
+  var _bin1 = {binop: 1, beforeExpr: true, preprocess: true}, _bin2 = {binop: 2, beforeExpr: true, preprocess: true};
+  var _bin3 = {binop: 3, beforeExpr: true, preprocess: true}, _bin4 = {binop: 4, beforeExpr: true, preprocess: true};
+  var _bin5 = {binop: 5, beforeExpr: true, preprocess: true}, _bin6 = {binop: 6, beforeExpr: true, preprocess: true};
+  var _bin7 = {binop: 7, beforeExpr: true, preprocess: true}, _bin8 = {binop: 8, beforeExpr: true, preprocess: true};
+  var _bin10 = {binop: 10, beforeExpr: true, preprocess: true};
 
   // Provide access to the token types for external users of the
   // tokenizer.
@@ -477,7 +557,11 @@
 
   // The Objective-J keywords.
 
-  var isKeywordObjJ = makePredicate("IBAction byte char short int long unsigned signed");
+  var isKeywordObjJ = makePredicate("IBAction IBOutlet byte char short int long unsigned signed");
+
+  // The preprocessor keywords.
+
+  var isKeywordPreprocess = makePredicate("define pragma if ifdef ifndef else elif endif defined");
 
   // ## Character categories
 
@@ -536,6 +620,7 @@
   // Reset the token state. Used at the start of a parse.
 
   function initTokenState() {
+    macros = Object.create(null);
     tokCurLine = 1;
     tokPos = tokLineStart = 0;
     tokRegexpAllowed = true;
@@ -549,11 +634,43 @@
   // after the token, so that the next one's `tokStart` will point at
   // the right position.
 
+var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
+
   function finishToken(type, val) {
+    // If we get any of these preprocess tokens skip it and read next
+    if (type in preprocessTokens) return readToken();
     tokEnd = tokPos;
     if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
     skipSpace();
+    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+      var val1 = type === _name ? val : type.keyword;
+      tokPos += 2;
+      if (val1) {
+        skipSpace();
+        readToken();
+        var val2 = tokType === _name ? tokVal : tokType.keyword;
+        if (val2) {
+          var concat = "" + val1 + val2,
+              code = concat.charCodeAt(0),
+              tok;
+          if (isIdentifierStart(code))
+            tok = readWord(concat) !== false;
+
+          // We might got a word token from the concatenation
+          if (tok) return tok;
+          // FIXME: Is not using the concatenated token
+          tok = getTokenFromCode(code, finishToken);
+          if (tok === false) {
+            unexpected();
+          }
+          // We have now got another type of token from the concatenation
+          return tok;
+        } else {
+          // FIXME: Second token was not of right type. Save second token and return the first. When readToken is called again return the second.
+        }
+      }
+    }
     tokVal = val;
     lastTokCommentsAfter = tokCommentsAfter;
     lastTokSpacesAfter = tokSpacesAfter;
@@ -579,12 +696,14 @@
     if (options.onComment)
       options.onComment(true, input.slice(start + 2, end), start, tokPos,
                         startLoc, options.locations && new line_loc_t);
+    if (options.trackComments)
+      (tokComments || (tokComments = [])).push(input.slice(start, end));
   }
 
-  function skipLineComment(skipCharacters) {
+  function skipLineComment() {
     var start = tokPos;
     var startLoc = options.onComment && options.locations && new line_loc_t;
-    var ch = input.charCodeAt(tokPos+=skipCharacters);
+    var ch = input.charCodeAt(tokPos+=2);
     while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) {
       ++tokPos;
       ch = input.charCodeAt(tokPos);
@@ -592,16 +711,21 @@
     if (options.onComment)
       options.onComment(false, input.slice(start + 2, tokPos), start, tokPos,
                         startLoc, options.locations && new line_loc_t);
+    if (options.trackComments)
+      (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
   }
 
-  function skipWhiteSpaces() {
-    var start = tokPos;
-    var ch = input.charCodeAt(++tokPos);
-    while ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) // 9 - 13, ' ', '\xa0' ....
+  function preprocesSkipRestOfLine() {
+    var ch = input.charCodeAt(tokPos);
+    var last;
+    // If the last none whitespace character is a '\' the line will continue on the the next line.
+    // Here we break the way gcc works as it joins the lines first and then tokenize it. Because of
+    // this we can't have a newline in the middle of a word.
+    while (tokPos < inputLen && ((ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) || last === 92)) { // White space and '\'
+      if (ch != 32 && ch != 9 && ch != 160 && (ch < 5760 || !nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch))))
+        last = ch;
       ch = input.charCodeAt(++tokPos);
-    if (options.trackSpaces)
-      //tokSpaces = input.slice(start, tokPos);
-      (tokSpaces || (tokSpaces = [])).push(input.slice(start, tokPos));
+    }
   }
 
   // Called at the start of the parse and after every token. Skips
@@ -613,7 +737,8 @@
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
-    while (tokPos < inputLen) {
+    var spaceStart = tokPos;
+    for(;;) {
       var ch = input.charCodeAt(tokPos);
       if (ch === 32) { // ' '
         ++tokPos;
@@ -636,12 +761,32 @@
       } else if (ch === 47) { // '/'
         var next = input.charCodeAt(tokPos+1);
         if (next === 42) { // '*'
+          if (options.trackSpaces)
+            (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
           skipBlockComment();
+          spaceStart = tokPos;
         } else if (next === 47) { // '/'
-          skipLineComment(2);
+          if (options.trackSpaces)
+            (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
+          skipLineComment();
+          spaceStart = tokPos;
         } else break;
-      } else if ((ch < 14 && ch > 8) || ch === 32 || ch === 160 || (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch)))) { // 9 - 13, ' ', '\xa0' ....
-        skipWhiteSpaces();
+      } else if (ch === 160) { // '\xa0'
+        ++tokPos;
+      } else if (ch >= 5760 && nonASCIIwhitespace.test(String.fromCharCode(ch))) {
+        ++tokPos;
+      } else if (tokPos >= inputLen) {
+        if (options.preprocess && preprocessStack.length) {
+          // If we are at the end of the input inside a macro continue at last position
+          var lastItem = preprocessStack.pop();
+          tokPos = lastItem.end;
+          input = lastItem.input;
+          inputLen = lastItem.inputLen;
+          lastEnd = lastItem.lastEnd;
+          lastStart = lastItem.lastStart;
+        } else {
+          break;
+        }
       } else {
         break;
       }
@@ -660,9 +805,9 @@
   // The `forceRegexp` parameter is used in the one case where the
   // `tokRegexpAllowed` trick does not work. See `parseStatement`.
 
-  function readToken_dot() {
+  function readToken_dot(code, finishToken) {
     var next = input.charCodeAt(tokPos+1);
-    if (next >= 48 && next <= 57) return readNumber(true);
+    if (next >= 48 && next <= 57) return readNumber(String.fromCharCode(code), finishToken);
     if (next === 46 && options.objj && input.charCodeAt(tokPos+2) === 46) { //'.'
       tokPos += 3;
       return finishToken(_dotdotdot);
@@ -671,40 +816,40 @@
     return finishToken(_dot);
   }
 
-  function readToken_slash() { // '/'
+  function readToken_slash(finishToken) { // '/'
     var next = input.charCodeAt(tokPos+1);
     if (tokRegexpAllowed) {++tokPos; return readRegexp();}
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_slash, 1);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_slash, 1, finishToken);
   }
 
-  function readToken_mult_modulo() { // '%*'
+  function readToken_mult_modulo(finishToken) { // '%*'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_bin10, 1);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_bin10, 1, finishToken);
   }
 
-  function readToken_pipe_amp(code) { // '|&'
+  function readToken_pipe_amp(code, finishToken) { // '|&'
     var next = input.charCodeAt(tokPos+1);
-    if (next === code) return finishOp(code === 124 ? _bin1 : _bin2, 2);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(code === 124 ? _bin3 : _bin5, 1);
+    if (next === code) return finishOp(code === 124 ? _bin1 : _bin2, 2, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(code === 124 ? _bin3 : _bin5, 1, finishToken);
   }
 
-  function readToken_caret() { // '^'
+  function readToken_caret(finishToken) { // '^'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_bin4, 1);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_bin4, 1, finishToken);
   }
 
-  function readToken_plus_min(code) { // '+-'
+  function readToken_plus_min(code, finishToken) { // '+-'
     var next = input.charCodeAt(tokPos+1);
-    if (next === code) return finishOp(_incdec, 2);
-    if (next === 61) return finishOp(_assign, 2);
-    return finishOp(_plusmin, 1);
+    if (next === code) return finishOp(_incdec, 2, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finishToken);
+    return finishOp(_plusmin, 1, finishToken);
   }
 
-  function readToken_lt_gt(code) { // '<>'
+  function readToken_lt_gt(code, finishToken) { // '<>'
     if (tokAfterImport && options.objj && code === 60) {  // '<'
       var str = [];
       for (;;) {
@@ -721,36 +866,216 @@
     var size = 1;
     if (next === code) {
       size = code === 62 && input.charCodeAt(tokPos+2) === 62 ? 3 : 2;
-      if (input.charCodeAt(tokPos + size) === 61) return finishOp(_assign, size + 1);
-      return finishOp(_bin8, size);
+      if (input.charCodeAt(tokPos + size) === 61) return finishOp(_assign, size + 1, finishToken);
+      return finishOp(_bin8, size, finishToken);
     }
     if (next === 61)
       size = input.charCodeAt(tokPos+2) === 61 ? 3 : 2;
-    return finishOp(_bin7, size);
+    return finishOp(_bin7, size, finishToken);
   }
 
-  function readToken_eq_excl(code) { // '=!'
+  function readToken_eq_excl(code, finishToken) { // '=!'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2);
-    return finishOp(code === 61 ? _eq : _prefix, 1);
+    if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2, finishToken);
+    return finishOp(code === 61 ? _eq : _prefix, 1, finishToken);
   }
 
-  function readToken_at(code) { // '@'
+  function readToken_at(code, finishToken) { // '@'
     var next = input.charCodeAt(++tokPos);
     if (next === 34 || next === 39)  // Read string if "'" or '"'
-      return readString(next);
+      return readString(next, finishToken);
+    if (next === 123) // Read dictionary literal if "{"
+      return finishToken(_dictionaryLiteral);
+    if (next === 91) // Ready array literal if "["
+      return finishToken(_arrayLiteral);
+
     var word = readWord1(),
         token = objJAtKeywordTypes[word];
-    if (!token) raise(tokStart, "Unrecognized Objective-J keyword '@" + word + "'");
+    if (!token) raise(tokPos, "Unrecognized Objective-J keyword '@" + word + "'");
     return finishToken(token);
   }
 
-  function getTokenFromCode(code) {
+// True if we are skipping token when finding #else or #endif after and #if
+
+var preNotSkipping = true;
+var preIfLevel = 0;
+
+  function readToken_preprocess(finishTokenFunction) { // '#'
+    ++tokPos;
+    preprocessReadToken();
+    switch (preTokType) {
+      case _preDefine:
+        preprocessReadToken();
+        var macroIdentifierEnd = preTokEnd;
+        var macroIdentifier = preprocessGetIdent();
+        // '(' Must follow directly after identifier to be a valid macro with parameters
+        if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
+          preprocessExpect(_parenL);
+          var parameters = [];
+          var first = true;
+          while (!preprocessEat(_parenR)) {
+            if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
+            parameters.push(preprocessGetIdent());
+          }
+        }
+        var start = tokPos = preTokStart;
+        preprocesSkipRestOfLine();
+        var macroString = input.slice(start, tokPos);
+        macroString = macroString.replace(/\\/g, " ");
+        options.preprocessAddMacro(new Macro(macroIdentifier, macroString, parameters));
+        break;
+
+      case _preUndef:
+        preprocessReadToken();
+        options.preprocessUndefineMacro(preprocessGetIdent());
+        preprocesSkipRestOfLine();
+        break;
+
+      case _preIf:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var expr = preprocessParseExpression();
+          var test = preprocessEvalExpression(expr);
+          if (!test)
+            preNotSkipping = false
+          preprocessSkipToElseOrEndif(!test);
+        } else {
+          return finishTokenFunction(_preIf);
+        }
+        break;
+
+      case _preIfdef:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var ident = preprocessGetIdent();
+          var test = options.preprocessGetMacro(ident);
+          if (!test)
+            preNotSkipping = false
+          //preprocessExpect(_eol);
+          preprocessSkipToElseOrEndif(!test);
+        } else {
+          //preprocesSkipRestOfLine();
+          return finishTokenFunction(_preIfdef);
+        }
+        break;
+
+      case _preIfndef:
+        if (preNotSkipping) {
+          preIfLevel++;
+          preprocessReadToken();
+          var ident = preprocessGetIdent();
+          var test = options.preprocessGetMacro(ident);
+          if (test)
+            preNotSkipping = false
+          //preprocessExpect(_eol);
+          preprocessSkipToElseOrEndif(test);
+        } else {
+          //preprocesSkipRestOfLine();
+          return finishTokenFunction(_preIfndef);
+        }
+        break;
+
+      case _preElse:
+        if (preIfLevel) {
+          if (preNotSkipping) {
+            preNotSkipping = false;
+            finishTokenFunction(_preElse);
+            preprocessReadToken();
+            preprocessSkipToElseOrEndif(true, true); // no else
+          } else {
+            return finishTokenFunction(_preElse);
+          }
+        } else
+          raise(preTokStart, "#else without #if");
+        break;
+
+      case _preEndif:
+        if (preIfLevel) {
+          if (preNotSkipping) {
+            preIfLevel--;
+            break;
+          }
+        } else {
+          raise(preTokStart, "#endif without #if");
+        }
+        return finishTokenFunction(_preEndif);
+        break;
+
+      case _prePragma:
+        preprocesSkipRestOfLine();
+        break;
+
+      case _prefix:
+        preprocesSkipRestOfLine();
+        break;
+
+      default:
+        raise(preTokStart, "Invalid preprocessing directive");
+        preprocesSkipRestOfLine();
+        // Return the complete line as a token to make it possible to create a PreProcessStatement if we are between two statements
+        return finishTokenFunction(_preprocess);
+        //raise(tokPos, "Invalid preprocessing directive '" + (preTokType.keyword || preTokVal) + "' " + input.slice(tokStart, tokPos));
+    }
+    // Drop this token and read next non preprocess token
+    finishToken(_preprocess);
+    return readToken();
+  }
+
+  function preprocessEvalExpression(expr) {
+    return exports.walk.recursive(expr, {}, {
+      BinaryExpression: function(node, st, c) {
+        var left = node.left, right = node.right;
+        switch(node.operator) {
+          case "+":
+            return c(left, st) + c(right, st);
+          case "-":
+            return c(left, st) - c(right, st);
+          case "*":
+            return c(left, st) * c(right, st);
+          case "/":
+            return c(left, st) / c(right, st);
+          case "%":
+            return c(left, st) % c(right, st);
+          case "<":
+            return c(left, st) < c(right, st);
+          case ">":
+            return c(left, st) > c(right, st);
+          case "=":
+          case "==":
+          case "===":
+            return c(left, st) === c(right, st);
+          case "<=":
+            return c(left, st) <= c(right, st);
+          case ">=":
+            return c(left, st) >= c(right, st);
+          case "&&":
+            return c(left, st) && c(right, st);
+          case "||":
+            return c(left, st) || c(right, st);
+        }
+      },
+      Literal: function(node, st, c) {
+        return node.value;
+      },
+      Identifier: function(node, st, c) {
+        var name = node.name,
+            macro = options.preprocessGetMacro(name);
+        return (macro && parseInt(macro.macro)) || 0;
+      },
+      DefinedExpression: function(node, st, c) {
+        return !!options.preprocessGetMacro(node.id.name);
+      }
+    }, {});
+  }
+
+  function getTokenFromCode(code, finishToken, allowEndOfLineToken) {
     switch(code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit.
     case 46: // '.'
-      return readToken_dot();
+      return readToken_dot(code, finishToken);
 
       // Punctuation tokens.
     case 40: ++tokPos; return finishToken(_parenL);
@@ -767,15 +1092,15 @@
       // '0x' is a hexadecimal number.
     case 48: // '0'
       var next = input.charCodeAt(tokPos+1);
-      if (next === 120 || next === 88) return readHexNumber();
+      if (next === 120 || next === 88) return readHexNumber(finishToken);
       // Anything else beginning with a digit is an integer, octal
       // number, or float.
     case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: // 1-9
-      return readNumber(false);
+      return readNumber(false, finishToken);
 
       // Quotes produce strings.
     case 34: case 39: // '"', "'"
-      return readString(code);
+      return readString(code, finishToken);
 
     // Operators are parsed inline in tiny state machines. '=' (61) is
     // often referred to. `finishOp` simply skips the amount of
@@ -783,46 +1108,283 @@
     // of the type given by its first argument.
 
     case 47: // '/'
-      return readToken_slash(code);
+      return readToken_slash(finishToken);
 
     case 37: case 42: // '%*'
-      return readToken_mult_modulo();
+      return readToken_mult_modulo(finishToken);
 
     case 124: case 38: // '|&'
-      return readToken_pipe_amp(code);
+      return readToken_pipe_amp(code, finishToken);
 
     case 94: // '^'
-      return readToken_caret();
+      return readToken_caret(finishToken);
 
     case 43: case 45: // '+-'
-      return readToken_plus_min(code);
+      return readToken_plus_min(code, finishToken);
 
     case 60: case 62: // '<>'
-      return readToken_lt_gt(code);
+      return readToken_lt_gt(code, finishToken, finishToken);
 
     case 61: case 33: // '=!'
-      return readToken_eq_excl(code);
+      return readToken_eq_excl(code, finishToken);
+
+    case 126: // '~'
+      return finishOp(_prefix, 1, finishToken);
 
     case 64: // '@'
       if (options.objj)
-        return readToken_at(code);
+        return readToken_at(code, finishToken);
       return false;
 
     case 35: // '#'
-      if (options.objj) {
-        var start = tokPos;
-        var ch = input.charCodeAt(++tokPos);
-        while (tokPos < inputLen && ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) // End of line
-          ch = input.charCodeAt(++tokPos);
-        return finishToken(_preprocess, input.slice(start, tokPos));
+      if (options.preprocess) {
+        return readToken_preprocess(finishToken);
       }
       return false;
 
-    case 126: // '~'
-      return finishOp(_prefix, 1);
+    case 92: // '\'
+      if (options.preprocess) {
+        return finishOp(_preBackslash, 1, finishToken);
+      }
+      return false;
+    }
+
+    if (allowEndOfLineToken && newline.test(String.fromCharCode(code))) {
+      return finishOp(_eol, 1, finishToken);
     }
 
     return false;
+}
+
+// Returns true if it stops at a line break
+
+  function preprocessSkipSpace() {
+    while (tokPos < inputLen) {
+      var ch = input.charCodeAt(tokPos);
+      if (ch === 32 || ch === 9 || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
+        ++tokPos;
+      } else if (ch === 92) { // '\'
+        // Check if we have an escaped newline. We are using a relaxed treatment of escaped newlines like gcc.
+        // We allow spaces, horizontal and vertical tabs, and form feeds between the backslash and the subsequent newline
+        var pos = tokPos + 1;
+        ch = input.charCodeAt(pos);
+        while (pos < inputLen && (ch === 32 || ch === 9 || ch === 11 || ch === 12 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))))
+          ch = input.charCodeAt(++pos);
+        lineBreak.lastIndex = 0;
+        var match = lineBreak.exec(input.slice(pos, pos + 2));
+        if (match && match.index === 0) {
+          tokPos = pos + match[0].length;
+        } else {
+          return false;
+        }
+      } else {
+        lineBreak.lastIndex = 0;
+        var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
+        return match && match.index === 0;
+      }
+    }
+  }
+
+  function preprocessSkipToElseOrEndif(test, skipElse) {
+    if (test) {
+      var ifLevel = 0;
+      while (ifLevel > 0 || (preTokType != _preEndif && (preTokType != _preElse || skipElse))) {
+        switch (preTokType) {
+          case _preIf:
+          case _preIfdef:
+          case _preIfndef:
+            ifLevel++;
+            break;
+
+          case _preEndif:
+            ifLevel--;
+            break;
+
+          case _eof:
+            preNotSkipping = true;
+            raise(preTokStart, "Missing #endif");
+        }
+        preprocessReadToken();
+      }
+      preNotSkipping = true;
+      if (preTokType === _preEndif)
+        preIfLevel--;
+    }
+  }
+
+  function preprocessReadToken() {
+    preTokStart = tokPos;
+    preTokInput = input;
+    if (tokPos >= inputLen) return _eof;
+    var code = input.charCodeAt(tokPos);
+    if (preprocessMacroParamterListMode && code !== 41 && code !== 44) { // ')', ','
+      var parenLevel = 0;
+      // If we are parsing a macro parameter list parentheses within each argument must balance
+      while(tokPos < inputLen && (parenLevel || (code !== 41 && code !== 44))) { // ')', ','
+        if (code === 40) // '('
+          parenLevel++;
+        if (code === 41) // ')'
+          parenLevel--;
+        code = input.charCodeAt(++tokPos);
+      }
+      return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
+    }
+    if (isIdentifierStart(code) || (code === 92 /* '\' */ && input.charCodeAt(tokPos +1) === 117 /* 'u' */)) return preprocessReadWord();
+    if (getTokenFromCode(code, preprocessFinishToken, true) === false) {
+      // If we are here, we either found a non-ASCII identifier
+      // character, or something that's entirely disallowed.
+      var ch = String.fromCharCode(code);
+      if (ch === "\\" || nonASCIIidentifierStart.test(ch)) return preprocessReadWord();
+      raise(tokPos, "Unexpected character '" + ch + "'");
+    }
+  }
+
+  function preprocessReadWord() {
+    var word = readWord1();
+    preprocessFinishToken(isKeywordPreprocess(word) ? keywordTypesPreprocess[word] : _name, word);
+  }
+
+  function preprocessFinishToken(type, val) {
+    preTokType = type;
+    preTokVal = val;
+    preTokEnd = tokPos;
+    preprocessSkipSpace();
+  }
+
+  // Continue to the next token.
+
+  function preprocessNext() {
+    preLastStart = tokStart;
+    preLastEnd = tokEnd;
+    //lastEndLoc = tokEndLoc;
+    return preprocessReadToken();
+  }
+
+  // Predicate that tests whether the next token is of the given
+  // type, and if yes, consumes it as a side effect.
+
+  function preprocessEat(type) {
+    if (preTokType === type) {
+      preprocessNext();
+      return true;
+    }
+  }
+
+  // Expect a token of a given type. If found, consume it, otherwise,
+  // raise with errorMessage or an unexpected token error.
+
+  function preprocessExpect(type, errorMessage) {
+    if (preTokType === type) preprocessReadToken();
+    else raise(preTokStart, errorMessage || "Unexpected token");
+  }
+
+  function preprocessGetIdent() {
+    var ident = preTokType === _name ? preTokVal : ((!options.forbidReserved || preTokType.okAsIdent) && preTokType.keyword) || raise(preTokStart, "Expected Macro identifier");
+    preprocessNext();
+    return ident;
+  }
+
+  function preprocessParseIdent() {
+    var node = startNode();
+    node.name = preprocessGetIdent();
+    return preprocessFinishNode(node, "Identifier");
+  }
+
+  // Parse an  expression — either a single token that is an
+  // expression, an expression started by a keyword like `defined`,
+  // or an expression wrapped in punctuation like `()`.
+
+  function preprocessParseExpression() {
+    return preprocessParseExprOps();
+  }
+
+  // Start the precedence parser.
+
+  function preprocessParseExprOps() {
+    return preprocessParseExprOp(preprocessParseMaybeUnary(), -1);
+  }
+
+  // Parse binary operators with the operator precedence parsing
+  // algorithm. `left` is the left-hand side of the operator.
+  // `minPrec` provides context that allows the function to stop and
+  // defer further parser to one of its callers when it encounters an
+  // operator that has a lower precedence than the set it is parsing.
+
+  function preprocessParseExprOp(left, minPrec) {
+    var prec = preTokType.binop;
+    if (prec) {
+      if (!preTokType.preprocess) raise(preTokStart, "Unsupported macro operator");
+      if (prec > minPrec) {
+        var node = startNodeFrom(left);
+        node.left = left;
+        node.operator = preTokVal;
+        preprocessNext();
+        node.right = preprocessParseExprOp(preprocessParseMaybeUnary(), prec);
+        var node = preprocessFinishNode(node, /*/&&|\|\|/.test(node.operator) ? "LogicalExpression" : */"BinaryExpression");
+        return preprocessParseExprOp(node, minPrec);
+      }
+    }
+    return left;
+  }
+
+  // Parse an unary expression if possible
+
+  function preprocessParseMaybeUnary() {
+    if (preTokType.preprocess && preTokType.prefix) {
+      var node = startNode();
+      node.operator = tokVal;
+      node.prefix = true;
+      preprocessNext();
+      node.argument = preprocessParseMaybeUnary();
+      return preprocessFinishNode(node, "UnaryExpression");
+    }
+    return preprocessParseExprAtom();
+  }
+
+  // Parse an atomic macro expression — either a single token that is an
+  // expression, an expression started by a keyword like `defined`,
+  // or an expression wrapped in punctuation like `()`.
+
+  function preprocessParseExprAtom() {
+    switch (preTokType) {
+    case _name:
+      return preprocessParseIdent();
+
+    case _num: case _string:
+      return preprocessParseStringNumLiteral();
+
+    case _parenL:
+      var tokStart1 = preTokStart;
+      preprocessNext();
+      var val = preprocessParseExpression();
+      val.start = tokStart1;
+      val.end = preTokEnd;
+      preprocessExpect(_parenR, "Expected closing ')' in macro expression");
+      return val;
+
+    case _preDefined:
+      var node = startNode();
+      preprocessNext();
+      node.id = preprocessParseIdent();
+      return preprocessFinishNode(node, "DefinedExpression");
+
+    default:
+      unexpected();
+    }
+  }
+
+  function preprocessParseStringNumLiteral() {
+    var node = startNode();
+    node.value = preTokVal;
+    node.raw = preTokInput.slice(preTokStart, preTokEnd);
+    preprocessNext();
+    return preprocessFinishNode(node, "Literal");
+  }
+
+  function preprocessFinishNode(node, type) {
+    node.type = type;
+    node.end = preLastEnd;
+    return node;
   }
 
   function readToken(forceRegexp) {
@@ -830,6 +1392,7 @@
     tokSpacesBefore = tokSpaces;
     if (!forceRegexp) tokStart = tokPos;
     else tokPos = tokStart + 1;
+    tokInput = input;
     if (options.locations) tokStartLoc = new line_loc_t;
     if (forceRegexp) return readRegexp();
     if (tokPos >= inputLen) return finishToken(_eof);
@@ -839,7 +1402,7 @@
     // identifiers, so '\' also dispatches to that.
     if (isIdentifierStart(code) || code === 92 /* '\' */) return readWord();
 
-    var tok = getTokenFromCode(code);
+    var tok = getTokenFromCode(code, finishToken);
 
     if (tok === false) {
       // If we are here, we either found a non-ASCII identifier
@@ -851,7 +1414,7 @@
     return tok;
   }
 
-  function finishOp(type, size) {
+  function finishOp(type, size, finishToken) {
     var str = input.slice(tokPos, tokPos + size);
     tokPos += size;
     finishToken(type, str);
@@ -904,7 +1467,7 @@
     return total;
   }
 
-  function readHexNumber() {
+  function readHexNumber(finishToken) {
     tokPos += 2; // 0x
     var val = readInt(16);
     if (val == null) raise(tokStart + 2, "Expected hexadecimal number");
@@ -914,7 +1477,7 @@
 
   // Read an integer, octal integer, or floating-point number.
 
-  function readNumber(startsWithDot) {
+  function readNumber(startsWithDot, finishToken) {
     var start = tokPos, isFloat = false, octal = input.charCodeAt(tokPos) === 48;
     if (!startsWithDot && readInt(10) === null) raise(start, "Invalid number");
     if (input.charCodeAt(tokPos) === 46) {
@@ -941,7 +1504,9 @@
 
   // Read a string value, interpreting backslash-escapes.
 
-  function readString(quote) {
+  var rs_str = [];
+
+  function readString(quote, finishToken) {
     tokPos++;
     var out = "";
     for (;;) {
@@ -1038,11 +1603,68 @@
   }
 
   // Read an identifier or keyword token. Will check for reserved
-  // words when necessary.
+  // words when necessary. Argument preReadWord is used to concatenate
+  // The word is then passed in from caller.
 
-  function readWord() {
-    var word = readWord1();
+  function readWord(preReadWord) {
+    var word = preReadWord || readWord1();
     var type = _name;
+    var reservedError;
+    if (options.preprocess) {
+      var macro;
+      var i = preprocessStack.length;
+      if (i > 0) {
+        var lastItem = preprocessStack[i - 1];
+        // If the current macro has parameters check if this word is one of them and should be translated
+        if (lastItem.parameterDict && lastItem.macro.isParameterFunction()(word)) {
+          macro = lastItem.parameterDict[word];
+        }
+      }
+      // Does the word match agains any of the know macro names
+      if (!macro && options.preprocessIsMacro(word))
+        macro = options.preprocessGetMacro(word);
+      if (macro) {
+        var macroStart = tokStart;
+        var parameters;
+        var hasParameters = macro.parameters;
+        var nextIsParenL;
+        if (hasParameters)
+          nextIsParenL = tokPos < inputLen && input.charCodeAt(tokPos) === 40; // '('
+        if (!hasParameters || nextIsParenL) {
+          // Now we know that we have a matching macro. Get parameters if needed
+          var macroString = macro.macro;
+          var lastTokPos = tokPos;
+          if (nextIsParenL) {
+            var first = true;
+            var noParams = 0;
+            parameters = Object.create(null);
+            preprocessReadToken();
+            preprocessMacroParamterListMode = true;
+            preprocessExpect(_parenL);
+            lastTokPos = tokPos;
+            while (!preprocessEat(_parenR)) {
+              if (!first) preprocessExpect(_comma, "Expected ',' between macro parameters"); else first = false;
+              var ident = hasParameters[noParams++];
+              var val = preTokVal;
+              preprocessExpect(_preprocessParamItem);
+              parameters[ident] = new Macro(ident, val);
+              lastTokPos = tokPos;
+            }
+            preprocessMacroParamterListMode = false;
+          }
+          // If the macro defines anything add it to the preprocess input stack
+          if (macroString) {
+            preprocessStack.push({macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen, lastStart: tokStart, lastEnd: lastTokPos});
+            input = macroString;
+            inputLen = macroString.length;
+            tokPos = 0;
+          }
+          // Now read the next token
+          return next();
+        }
+      }
+    }
+
     if (!containsEsc) {
       if (isKeyword(word)) type = keywordTypes[word];
       else if (options.objj && isKeywordObjJ(word)) type = keywordTypesObjJ[word];
@@ -1052,6 +1674,17 @@
         raise(tokStart, "The keyword '" + word + "' is reserved");
     }
     return finishToken(type, word);
+  }
+
+  function Macro(ident, macro, parameters) {
+    this.identifier = ident;
+    if (macro) this.macro = macro;
+    if (parameters) this.parameters = parameters;
+  }
+
+  Macro.prototype.isParameterFunction = function() {
+    var y = (this.parameters || []).join(" ");
+    return this.isParameterFunctionVar || (this.isParameterFunctionVar = makePredicate(y));
   }
 
   // ## Parser
@@ -1100,7 +1733,8 @@
     readToken();
   }
 
-  // Start an AST node, attaching a start offset.
+  // Start an AST node, attaching a start offset and optionally a
+  // `commentsBefore` property to it.
 
   function node_t() {
     this.type = null;
@@ -1131,9 +1765,10 @@
     return node;
   }
 
-  // Start a node whose start offset information should be based on
-  // the start of another node. For example, a binary operator node is
-  // only started after its left-hand side has already been parsed.
+  // Start a node whose start offset/comments information should be
+  // based on the start of another node. For example, a binary
+  // operator node is only started after its left-hand side has
+  // already been parsed.
 
   function startNodeFrom(other) {
     var node = new node_t();
@@ -1221,7 +1856,7 @@
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(input.slice(lastEnd, tokStart)) ||
+      (tokType === _eof || tokType === _braceR || newline.test(tokInput.slice(lastEnd, tokStart)) ||
         (nodeMessageSendObjectExpression && options.objj));
   }
 
@@ -1250,7 +1885,7 @@
   // to.
 
   function checkLVal(expr) {
-    if (expr.type !== "Identifier" && expr.type !== "MemberExpression")
+    if (expr.type !== "Identifier" && expr.type !== "MemberExpression" && expr.type !== "Dereference")
       raise(expr.start, "Assigning to rvalue");
     if (strict && expr.type === "Identifier" && isStrictBadIdWord(expr.name))
       raise(expr.start, "Assigning to " + expr.name + " in strict mode");
@@ -1291,13 +1926,17 @@
   // does not help.
 
   function parseStatement() {
-    if (nodeMessageSendObjectExpression)
-      return parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
-
     if (tokType === _slash)
       readToken(true);
 
     var starttype = tokType, node = startNode();
+
+    // This is a special case when trying figure out if this is a subscript to the former line or a new send message statement on this line...
+    if (nodeMessageSendObjectExpression) {
+        node.expression = parseMessageSendExpression(nodeMessageSendObjectExpression, nodeMessageSendObjectExpression.object);
+        semicolon();
+        return finishNode(node, "ExpressionStatement");
+    }
 
     // Most types of statements are recognized by the keyword they
     // start with. Many are trivial to parse, some require a bit of
@@ -1425,7 +2064,7 @@
 
     case _throw:
       next();
-      if (newline.test(input.slice(lastEnd, tokStart)))
+      if (newline.test(tokInput.slice(lastEnd, tokStart)))
         raise(lastEnd, "Illegal newline after throw");
       node.argument = parseExpression();
       semicolon();
@@ -1524,6 +2163,18 @@
     case _preprocess:
       next();
       return finishNode(node, "PreprocessStatement");
+
+      // This is a Objective-J statement
+    case _class:
+      next();
+      node.id = parseIdent(false);
+      return finishNode(node, "ClassStatement");
+
+      // This is a Objective-J statement
+    case _global:
+      next();
+      node.id = parseIdent(false);
+      return finishNode(node, "GlobalStatement");
 
       // If the statement does not start with a statement keyword or a
       // brace, it's an ExpressionStatement or LabeledStatement. We
@@ -1916,7 +2567,7 @@
     case _null: case _true: case _false:
       var node = startNode();
       node.value = tokType.atomValue;
-      node.raw = tokType.keyword
+      node.raw = tokType.keyword;
       next();
       return finishNode(node, "Literal");
 
@@ -1935,17 +2586,39 @@
       expect(_parenR, "Expected closing ')' in expression");
       return val;
 
+    case _arrayLiteral:
+      var node = startNode(),
+          firstExpr = null;
+
+      next();
+      expect(_bracketL, "Expected '[' at beginning of array literal");
+
+      if (tokType !== _bracketR)
+        firstExpr = parseExpression(true, true);
+
+      node.elements = parseExprList(_bracketR, firstExpr, true, true);
+      return finishNode(node, "ArrayLiteral");
+
     case _bracketL:
       var node = startNode(),
           firstExpr = null;
       next();
       if (tokType !== _comma && tokType !== _bracketR) {
-        firstExpr = parseExpression(true);
+        firstExpr = parseExpression(true, true);
         if (tokType !== _comma && tokType !== _bracketR)
           return parseMessageSendExpression(node, firstExpr);
       }
       node.elements = parseExprList(_bracketR, firstExpr, true, true);
       return finishNode(node, "ArrayExpression");
+
+    case _dictionaryLiteral:
+      var node = startNode();
+      next();
+
+      var r = parseDictionary();
+      node.keys = r[0];
+      node.values = r[1];
+      return finishNode(node, "DictionaryLiteral");
 
     case _braceL:
       return parseObj();
@@ -1965,6 +2638,22 @@
       parseSelector(node, _parenR);
       expect(_parenR, "Expected closing ')' after selector");
       return finishNode(node, "SelectorLiteralExpression");
+
+    case _ref:
+      var node = startNode();
+      next();
+      expect(_parenL, "Expected '(' after '@ref'");
+      node.element = parseIdent(node, _parenR);
+      expect(_parenR, "Expected closing ')' after ref");
+      return finishNode(node, "Reference");
+
+    case _deref:
+      var node = startNode();
+      next();
+      expect(_parenL, "Expected '(' after '@deref'");
+      node.expr = parseExpression(true, true);
+      expect(_parenR, "Expected closing ')' after deref");
+      return finishNode(node, "Dereference");
 
     default:
       unexpected();
@@ -2012,13 +2701,13 @@
           selectors.push(null);
         }
         expect(_colon, "Expected ':' in selector");
-        args.push(parseExpression(true));
+        args.push(parseExpression(true, true));
         if (eat(close))
           break;
         if (tokType === _comma) {
           node.parameters = [];
           while(eat(_comma)) {
-            node.parameters.push(parseExpression(true));
+            node.parameters.push(parseExpression(true, true));
           }
           eat(close);
           break;
@@ -2034,7 +2723,7 @@
   function parseNew() {
     var node = startNode();
     next();
-    node.callee = parseSubscripts(parseExprAtom(), true);
+    node.callee = parseSubscripts(parseExprAtom(false), true);
     if (eat(_parenL))
       node.arguments = parseExprList(_parenR, tokType === _parenR ? null : parseExpression(true), false);
     else node.arguments = [];
@@ -2157,6 +2846,26 @@
     return elts;
   }
 
+  // Parses a comma-separated list of <key>:<value> pairs and returns them as
+  // [arrayOfKeyExpressions, arrayOfValueExpressions].
+  function parseDictionary() {
+    expect(_braceL, "Expected '{' before dictionary");
+
+    var keys = [], values = [], first = true;
+    while (!eat(_braceR)) {
+      if (!first) {
+        expect(_comma, "Expected ',' between expressions");
+        if (options.allowTrailingCommas && eat(_braceR)) break;
+      }
+
+      keys.push(parseExpression(true, true));
+      expect(_colon, "Expected ':' between dictionary key and value");
+      values.push(parseExpression(true, true));
+      first = false;
+    }
+    return [keys, values];
+  }
+
   // Parse the next token as an identifier. If `liberal` is true (used
   // when parsing properties), it will also convert keywords into
   // identifiers.
@@ -2171,7 +2880,7 @@
   function parseStringNumRegExpLiteral() {
     var node = startNode();
     node.value = tokVal;
-    node.raw = input.slice(tokStart, tokEnd);
+    node.raw = tokInput.slice(tokStart, tokEnd);
     next();
     return finishNode(node, "Literal");
   }
