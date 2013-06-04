@@ -1,6 +1,6 @@
 {
     "name": "objj-acorn",
-    "description": "ECMAScript and Objective-J parser with preprocessor",
+    "description": "JavaScript (ECMAScript) and Objective-J parser with preprocessor",
     "homepage": "http://github.com/mrcarlberg/acorn",
     "main": "acorn.js",
     "version": "0.2.01",
