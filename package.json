@@ -1,5 +1,5 @@
 {
-    "name": "acorn",
+    "name": "objj-acorn",
     "description": "ECMAScript and Objective-J parser with preprocessor",
     "homepage": "http://github.com/mrcarlberg/acorn",
     "main": "acorn.js",
@@ -7,10 +7,7 @@
     "engines": {"node": ">=0.4.0"},
     "maintainers": [{"name": "Martin Carlberg",
                      "email": "martin@carlberg.org",
-                     "web": "http://carlberg.org"},
-                     {"name": "Marijn Haverbeke",
-                     "email": "marijnh@gmail.com",
-                     "web": "http://marijnhaverbeke.nl"}],
+                     "web": "http://carlberg.org"}],
     "repository": {"type": "git",
                    "url": "http://github.com/mrcarlberg/acorn"},
     "licenses": [{"type": "MIT",
