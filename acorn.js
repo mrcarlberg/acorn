@@ -1676,7 +1676,7 @@ var preIfLevel = 0;
     return finishToken(type, word);
   }
 
-  function Macro(ident, macro, parameters) {
+  var Macro = exports.Macro = function Macro(ident, macro, parameters) {
     this.identifier = ident;
     if (macro) this.macro = macro;
     if (parameters) this.parameters = parameters;
