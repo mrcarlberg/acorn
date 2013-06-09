@@ -1808,7 +1808,7 @@ var preIfLevel = 0;
     if (options.trackComments) {
       if (lastTokCommentsAfter) {
         node.commentsAfter = lastTokCommentsAfter;
-        tokCommentsAfter = null;
+        lastTokCommentsAfter = null;
       } else if (lastFinishedNode && lastFinishedNode.end === lastEnd &&
                  lastFinishedNode.commentsAfter) {
         node.commentsAfter = lastFinishedNode.commentsAfter;
