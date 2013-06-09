@@ -697,7 +697,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       options.onComment(true, input.slice(start + 2, end), start, tokPos,
                         startLoc, options.locations && new line_loc_t);
     if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(start, end));
+      (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
   }
 
   function skipLineComment() {
