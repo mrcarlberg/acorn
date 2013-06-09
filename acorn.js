@@ -77,6 +77,10 @@
     // after and before it), but never twice in the before (or after)
     // array of different nodes.
     trackComments: false,
+    // When `trackCommentsIncludeLineBreak` is turned on, the parser will
+    // include, if present, the line break before the comment and all
+    // the whitespaces inbetween.
+    trackCommentsIncludeLineBreak: true,
     // When `trackSpaces` is turned on, the parser will attach
     // `spacesBefore` and `spacesAfter` properties to AST nodes
     // holding arrays of strings. The same spaces may appear in both
@@ -680,7 +684,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     tokAfterImport = type.afterImport;
   }
 
-  function skipBlockComment() {
+  function skipBlockComment(lastIsNewlinePos) {
     var startLoc = options.onComment && options.locations && new line_loc_t;
     var start = tokPos, end = input.indexOf("*/", tokPos += 2);
     if (end === -1) raise(tokPos - 2, "Unterminated comment");
@@ -697,10 +701,10 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       options.onComment(true, input.slice(start + 2, end), start, tokPos,
                         startLoc, options.locations && new line_loc_t);
     if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
+      (tokComments || (tokComments = [])).push(input.slice(lastIsNewlinePos !== undefined && options.trackCommentsIncludeLineBreak ? lastIsNewlinePos : start, tokPos));
   }
 
-  function skipLineComment() {
+  function skipLineComment(lastIsNewlinePos) {
     var start = tokPos;
     var startLoc = options.onComment && options.locations && new line_loc_t;
     var ch = input.charCodeAt(tokPos+=2);
@@ -712,7 +716,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       options.onComment(false, input.slice(start + 2, tokPos), start, tokPos,
                         startLoc, options.locations && new line_loc_t);
     if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(start, tokPos));
+      (tokComments || (tokComments = [])).push(input.slice(lastIsNewlinePos !== undefined && options.trackCommentsIncludeLineBreak ? lastIsNewlinePos : start, tokPos));
   }
 
   function preprocesSkipRestOfLine() {
@@ -737,12 +741,14 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
-    var spaceStart = tokPos;
+    var spaceStart = tokPos,
+        lastIsNewlinePos;
     for(;;) {
       var ch = input.charCodeAt(tokPos);
       if (ch === 32) { // ' '
         ++tokPos;
       } else if(ch === 13) {
+        lastIsNewlinePos = tokPos;
         ++tokPos;
         var next = input.charCodeAt(tokPos);
         if(next === 10) {
@@ -753,6 +759,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
           tokLineStart = tokPos;
         }
       } else if (ch === 10) {
+        lastIsNewlinePos = tokPos;
         ++tokPos;
         ++tokCurLine;
         tokLineStart = tokPos;
@@ -763,12 +770,12 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         if (next === 42) { // '*'
           if (options.trackSpaces)
             (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
-          skipBlockComment();
+          skipBlockComment(lastIsNewlinePos);
           spaceStart = tokPos;
         } else if (next === 47) { // '/'
           if (options.trackSpaces)
             (tokSpaces || (tokSpaces = [])).push(input.slice(spaceStart, tokPos));
-          skipLineComment();
+          skipLineComment(lastIsNewlinePos);
           spaceStart = tokPos;
         } else break;
       } else if (ch === 160) { // '\xa0'
