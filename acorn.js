@@ -391,6 +391,8 @@
   var _action = {keyword: "action"}, _selector = {keyword: "selector"}, _class = {keyword: "class"}, _global = {keyword: "global"};
   var _dictionaryLiteral = {keyword: "{"}, _arrayLiteral = {keyword: "["};
   var _ref = {keyword: "ref"}, _deref = {keyword: "deref"};
+  var _protocol = {keyword: "protocol"}, _optional = {keyword: "optional"}, _required = {keyword: "required"};
+  var _interface = {keyword: "interface"};
 
   // Objective-J keywords
 
@@ -436,7 +438,8 @@
 
   var objJAtKeywordTypes = {"implementation": _implementation, "outlet": _outlet, "accessors": _accessors, "end": _end,
                             "import": _import, "action": _action, "selector": _selector, "class": _class, "global": _global,
-                            "ref": _ref, "deref": _deref};
+                            "ref": _ref, "deref": _deref, "protocol": _protocol, "optional": _optional, "required": _required,
+                            "interface": _interface};
 
   // Map Preprocessor keyword names to token types.
 
@@ -2127,6 +2130,33 @@ var preIfLevel = 0;
       return finishNode(node, "EmptyStatement");
 
       // This is a Objective-J statement
+    case _interface:
+      if (options.objj) {
+        next();
+        node.classname = parseIdent(true);
+        if (eat(_colon))
+          node.superclassname = parseIdent(true);
+        else if (eat(_parenL)) {
+          node.categoryname = parseIdent(true);
+          expect(_parenR, "Expected closing ')' after category name");
+        }
+        if (eat(_braceL)) {
+          node.ivardeclarations = [];
+          for (;;) {
+            if (eat(_braceR)) break;
+            parseIvarDeclaration(node);
+          }
+          node.endOfIvars = tokStart;
+        }
+        node.body = [];
+        while(!eat(_end)) {
+          if (tokType === _eof) raise(tokPos, "Expected '@end' after '@interface'");
+          node.body.push(parseClassElement());
+        }
+      }
+      return finishNode(node, "InterfaceDeclarationStatement");
+
+      // This is a Objective-J statement
     case _implementation:
       if (options.objj) {
         next();
@@ -2152,6 +2182,38 @@ var preIfLevel = 0;
         }
       }
       return finishNode(node, "ClassDeclarationStatement");
+
+      // This is a Objective-J statement
+    case _protocol:
+      if (options.objj) {
+        next();
+        node.protocolname = parseIdent(true);
+        if (tokVal === '<') {
+          next();
+          var implementsProtocols = [],
+              first = true;
+          node.implementsProtocols = implementsProtocols;
+          while (tokVal !== '>') {
+            if (!first)
+              expect(_comma, "Expected ',' between protocol names");
+            else first = false;
+            implementsProtocols.push(parseIdent(true));
+          }
+          next();
+        }
+        node.required = [];
+        while(!eat(_end)) {
+          if (tokType === _eof) raise(tokPos, "Expected '@end' after '@implementation'");
+          if (eat(_optional)) {
+            while(!eat(_required && tokType !== _end)) {
+              (node.optional || (node.optional = [])).push(parseProtocolClassElement());
+            }
+          } else {
+            (node.required || (node.required = [])).push(parseProtocolClassElement());
+          }
+        }
+      }
+      return finishNode(node, "ProtocolDeclarationStatement");
 
       // This is a Objective-J statement
     case _import:
@@ -2207,15 +2269,6 @@ var preIfLevel = 0;
       }
     }
   }
-
-  // CompoundIvarDeclaration =
-  //  IvarType _ IvarDeclaration (_ "," _ IvarDeclaration)* EOS
-
-  // IvarDeclaration =
-  //  Identifier _ Accessors?
-
-  // Accessors =
-  //  "@accessors" ("(" (AccessorsConfiguration (_ "," _ AccessorsConfiguration)*)? ")")?
 
   function parseIvarDeclaration(node) {
     var outlet;
@@ -2276,49 +2329,53 @@ var preIfLevel = 0;
     semicolon();
   }
 
-  function parseClassElement() {
-    var methodType = tokVal,
-        element = startNode();
-    if (eat(_plusmin)) {
-      element.methodtype = methodType;
-      // If we find a '(' we have a  return type to parse
+  function parseMethodDeclaration(node) {
+    node.methodtype = tokVal;
+    expect(_plusmin, "Method declaration must start with '+' or '-'");
+    // If we find a '(' we have a return type to parse
+    if (eat(_parenL)) {
+      if (eat(_action))
+        node.action = true;
+      if (!eat(_parenR)) {
+        node.returntype = parseObjectiveJType();
+        expect(_parenR, "Expected closing ')' after method return type");
+      }
+    }
+    // Now we parse the selector
+    var first = true,
+        selectors = [],
+        args = [];
+    node.selectors = selectors;
+    node.arguments = args;
+    for (;;) {
+      if (tokType !== _colon) {
+        selectors.push(parseIdent(true));
+        if (first && tokType !== _colon) break;
+      } else
+        selectors.push(null);
+      expect(_colon, "Expected ':' in selector");
+      var argument = {};
+      args.push(argument);
       if (eat(_parenL)) {
-        if (eat(_action))
-          element.action = true;
-        if (!eat(_parenR)) {
-          element.returntype = parseObjectiveJType();
-          expect(_parenR, "Expected closing ')' after method return type");
-        }
+        argument.type = parseObjectiveJType();
+        expect(_parenR, "Expected closing ')' after method argument type");
       }
-      // Now we parse the selector
-      var first = true,
-          selectors = [],
-          args = [];
-      element.selectors = selectors;
-      element.arguments = args;
-      for (;;) {
-        if (tokType !== _colon) {
-          selectors.push(parseIdent(true));
-          if (first && tokType !== _colon) break;
-        } else
-          selectors.push(null);
-        expect(_colon, "Expected ':' in selector");
-        var argument = {};
-        args.push(argument);
-        if (eat(_parenL)) {
-          argument.type = parseObjectiveJType();
-          expect(_parenR, "Expected closing ')' after method argument type");
-        }
-        argument.identifier = parseIdent(false);
-        if (tokType === _braceL || eat(_semi)) break;
-        if (eat(_comma)) {
-          expect(_dotdotdot, "Expected '...' after ',' in method declaration");
-          element.parameters = true;
-          break;
-        }
-        first = false;
+      argument.identifier = parseIdent(false);
+      if (tokType === _braceL || tokType === _semi) break;
+      if (eat(_comma)) {
+        expect(_dotdotdot, "Expected '...' after ',' in method declaration");
+        node.parameters = true;
+        break;
       }
+      first = false;
+    }
+  }
 
+  function parseClassElement() {
+    var element = startNode();
+    if (tokVal === '+' || tokVal === '-') {
+      parseMethodDeclaration(element);
+      eat(_semi);
       element.startOfBody = lastEnd;
       // Start a new scope with regard to labels and the `inFunction`
       // flag (restore them to their old value afterwards).
@@ -2329,6 +2386,14 @@ var preIfLevel = 0;
       return finishNode(element, "MethodDeclarationStatement");
     } else
       return parseStatement();
+  }
+
+  function parseProtocolClassElement() {
+    var element = startNode();
+    parseMethodDeclaration(element);
+
+    semicolon();
+    return finishNode(element, "MethodDeclarationStatement");
   }
 
   // Used for constructs like `switch` and `if` that insist on
