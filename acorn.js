@@ -33,7 +33,7 @@
 })(function(exports) {
   "use strict";
 
-  exports.version = "0.2.01";
+  exports.version = "0.3.2";
 
   // The main exported interface (under `self.acorn` when in the
   // browser) is a `parse` function that takes a code string and
@@ -490,7 +490,7 @@
                       parenL: _parenL, parenR: _parenR, comma: _comma, semi: _semi, colon: _colon,
                       dot: _dot, question: _question, slash: _slash, eq: _eq, name: _name, eof: _eof,
                       num: _num, regexp: _regexp, string: _string};
-  for (var kw in keywordTypes) exports.tokTypes[kw] = keywordTypes[kw];
+  for (var kw in keywordTypes) exports.tokTypes["_" + kw] = keywordTypes[kw];
 
   // This is a trick taken from Esprima. It turns out that, on
   // non-Chrome browsers, to check whether a string is in a set, a
@@ -1500,7 +1500,7 @@ var preIfLevel = 0;
     if (next === 69 || next === 101) { // 'eE'
       next = input.charCodeAt(++tokPos);
       if (next === 43 || next === 45) ++tokPos; // '+-'
-      if (readInt(10) === null) raise(start, "Invalid number")
+      if (readInt(10) === null) raise(start, "Invalid number");
       isFloat = true;
     }
     if (isIdentifierStart(input.charCodeAt(tokPos))) raise(tokPos, "Identifier directly after number");
