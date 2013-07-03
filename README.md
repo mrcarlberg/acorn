@@ -1,11 +1,17 @@
 
 # Objective-J Acorn
 
-A tiny, fast JavaScript and Objective-J parser with built in preprocessor. Written in JavaScript.
+A tiny, fast JavaScript and/or [Objective-J][objj] parser with built in preprocessor. Written in JavaScript.
 
-It is extended from the Acorn JavaScript parser by Marijn Haverbeke:
+[objj]: http://www.cappuccino-project.org/learn/objective-j.html
 
-See http://marijnhaverbeke.nl/acorn/
+It is extended from the [Acorn][acorn] JavaScript parser by Marijn Haverbeke:
+
+[acorn]: http://marijnhaverbeke.nl/acorn/
+
+Is used by the [Objectiv-J compiler][objj-compiler]
+
+[objj-compiler]: https://github.com/mrcarlberg/ObjJAcornCompiler
 
 It is 100% compatable with JavaScript with two extra options.
 
