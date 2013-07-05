@@ -2188,7 +2188,8 @@ var preIfLevel = 0;
 
       // This is a Objective-J statement
     case _protocol:
-      if (options.objj) {
+      // If next token is a left parenthesis it is a ProtocolLiternal expression so bail out
+      if (options.objj && input.charCodeAt(tokPos) !== 40) { // '('
         next();
         node.protocolname = parseIdent(true);
         if (tokVal === '<') {
@@ -2729,6 +2730,14 @@ var preIfLevel = 0;
       parseSelector(node, _parenR);
       expect(_parenR, "Expected closing ')' after selector");
       return finishNode(node, "SelectorLiteralExpression");
+
+    case _protocol:
+      var node = startNode();
+      next();
+      expect(_parenL, "Expected '(' after '@protocol'");
+      node.id = parseIdent(true);
+      expect(_parenR, "Expected closing ')' after protocol name");
+      return finishNode(node, "ProtocolLiteralExpression");
 
     case _ref:
       var node = startNode();
