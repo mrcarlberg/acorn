@@ -2194,14 +2194,14 @@ var preIfLevel = 0;
         node.protocolname = parseIdent(true);
         if (tokVal === '<') {
           next();
-          var implementsProtocols = [],
+          var protocols = [],
               first = true;
-          node.implementsProtocols = implementsProtocols;
+          node.protocols = protocols;
           while (tokVal !== '>') {
             if (!first)
               expect(_comma, "Expected ',' between protocol names");
             else first = false;
-            implementsProtocols.push(parseIdent(true));
+            protocols.push(parseIdent(true));
           }
           next();
         }
