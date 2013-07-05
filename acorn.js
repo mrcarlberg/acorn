@@ -2141,6 +2141,19 @@ var preIfLevel = 0;
           node.categoryname = parseIdent(true);
           expect(_parenR, "Expected closing ')' after category name");
         }
+        if (tokVal === '<') {
+          next();
+          var protocols = [],
+              first = true;
+          node.protocols = protocols;
+          while (tokVal !== '>') {
+            if (!first)
+              expect(_comma, "Expected ',' between protocol names");
+            else first = false;
+            protocols.push(parseIdent(true));
+          }
+          next();
+        }
         if (eat(_braceL)) {
           node.ivardeclarations = [];
           for (;;) {
@@ -2168,6 +2181,19 @@ var preIfLevel = 0;
         else if (eat(_parenL)) {
           node.categoryname = parseIdent(true);
           expect(_parenR, "Expected closing ')' after category name");
+        }
+        if (tokVal === '<') {
+          next();
+          var protocols = [],
+              first = true;
+          node.protocols = protocols;
+          while (tokVal !== '>') {
+            if (!first)
+              expect(_comma, "Expected ',' between protocol names");
+            else first = false;
+            protocols.push(parseIdent(true));
+          }
+          next();
         }
         if (eat(_braceL)) {
           node.ivardeclarations = [];
