@@ -2154,8 +2154,9 @@ var preIfLevel = 0;
           if (tokType === _eof) raise(tokPos, "Expected '@end' after '@interface'");
           node.body.push(parseClassElement());
         }
+        return finishNode(node, "InterfaceDeclarationStatement");
       }
-      return finishNode(node, "InterfaceDeclarationStatement");
+      break;
 
       // This is a Objective-J statement
     case _implementation:
@@ -2181,8 +2182,9 @@ var preIfLevel = 0;
           if (tokType === _eof) raise(tokPos, "Expected '@end' after '@implementation'");
           node.body.push(parseClassElement());
         }
+        return finishNode(node, "ClassDeclarationStatement");
       }
-      return finishNode(node, "ClassDeclarationStatement");
+      break;
 
       // This is a Objective-J statement
     case _protocol:
@@ -2213,38 +2215,56 @@ var preIfLevel = 0;
             (node.required || (node.required = [])).push(parseProtocolClassElement());
           }
         }
+        return finishNode(node, "ProtocolDeclarationStatement");
       }
-      return finishNode(node, "ProtocolDeclarationStatement");
+      break;
 
       // This is a Objective-J statement
     case _import:
-      next();
-      if (tokType === _string)
-        node.localfilepath = true;
-      else if (tokType ===_filename)
-        node.localfilepath = false;
-      else
-        unexpected();
+      if (options.objj) {
+        next();
+        if (tokType === _string)
+          node.localfilepath = true;
+        else if (tokType ===_filename)
+          node.localfilepath = false;
+        else
+          unexpected();
 
-      node.filename = parseStringNumRegExpLiteral();
-      return finishNode(node, "ImportStatement");
+        node.filename = parseStringNumRegExpLiteral();
+        return finishNode(node, "ImportStatement");
+      }
+      break;
 
       // This is a Objective-J statement
     case _preprocess:
-      next();
-      return finishNode(node, "PreprocessStatement");
+      if (options.objj) {
+        next();
+        return finishNode(node, "PreprocessStatement");
+      }
+      break;
 
       // This is a Objective-J statement
     case _class:
-      next();
-      node.id = parseIdent(false);
-      return finishNode(node, "ClassStatement");
+      if (options.objj) {
+        next();
+        node.id = parseIdent(false);
+        return finishNode(node, "ClassStatement");
+      }
+      break;
 
       // This is a Objective-J statement
     case _global:
-      next();
-      node.id = parseIdent(false);
-      return finishNode(node, "GlobalStatement");
+      if (options.objj) {
+        next();
+        node.id = parseIdent(false);
+        return finishNode(node, "GlobalStatement");
+      }
+      break;
+
+    }
+
+      // The indentation is one step to the right here to make sure it
+      // is the same as in the original acorn parser. Easier merge
 
       // If the statement does not start with a statement keyword or a
       // brace, it's an ExpressionStatement or LabeledStatement. We
@@ -2252,7 +2272,6 @@ var preIfLevel = 0;
       // next token is a colon and the expression was a simple
       // Identifier node, we switch to interpreting it as a label.
 
-    default:
       var maybeName = tokVal, expr = parseExpression();
       if (starttype === _name && expr.type === "Identifier" && eat(_colon)) {
         for (var i = 0; i < labels.length; ++i)
@@ -2268,7 +2287,6 @@ var preIfLevel = 0;
         semicolon();
         return finishNode(node, "ExpressionStatement");
       }
-    }
   }
 
   function parseIvarDeclaration(node) {
