@@ -3,7 +3,7 @@
     "description": "JavaScript (ECMAScript) and Objective-J parser with preprocessor",
     "homepage": "http://github.com/mrcarlberg/acorn",
     "main": "acorn.js",
-    "version": "0.3.2",
+    "version": "0.3.2.1",
     "engines": {"node": ">=0.4.0"},
     "maintainers": [{"name": "Martin Carlberg",
                      "email": "martin@carlberg.org",
