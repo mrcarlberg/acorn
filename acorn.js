@@ -902,7 +902,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
 
     var word = readWord1(),
         token = objJAtKeywordTypes[word];
-    if (!token) raise(tokPos, "Unrecognized Objective-J keyword '@" + word + "'");
+    if (!token) raise(tokStart, "Unrecognized Objective-J keyword '@" + word + "'");
     return finishToken(token);
   }
 
