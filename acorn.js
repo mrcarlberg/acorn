@@ -2782,6 +2782,9 @@ var preIfLevel = 0;
       return finishNode(node, "Dereference");
 
     default:
+      if(tokType.okAsIdent)
+        return parseIdent();
+
       unexpected();
     }
   }
