@@ -2231,7 +2231,6 @@ var preIfLevel = 0;
           }
           next();
         }
-        node.required = [];
         while(!eat(_end)) {
           if (tokType === _eof) raise(tokPos, "Expected '@end' after '@protocol'");
           if (eat(_optional)) {
