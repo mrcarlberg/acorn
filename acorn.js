@@ -3020,12 +3020,21 @@ var preIfLevel = 0;
   function parseObjectiveJType() {
     var node = startNode();
     if (tokType === _name) {
-      node.name = tokVal;
+      var type = tokVal;
+      node.name = type;
       next();
-      if (tokVal === '<') {
-        next();
-        node.protocol = parseIdent(true);
-        if (tokVal !== '>') unexpected();
+      if (type === "id" && tokVal === '<') {
+        var first = true,
+            protocols = [];
+        node.protocols = protocols;
+        do {
+          next();
+          if (first)
+            first = false;
+          else
+            eat(_comma);
+          protocols.push(parseIdent(true));
+        } while (tokVal !== '>');
         next();
       }
     } else {
