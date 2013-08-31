@@ -313,7 +313,7 @@
   var preTokPos, preTokType, preTokVal, preTokStart, preTokEnd;
   var preLastStart, preLastEnd;
   var preprocessStack = [];
-  var preprocessMacroParamterListMode = false;
+  var preprocessMacroParameterListMode = false;
 
   // This function is used to raise exceptions on parse errors. It
   // takes either a `{line, column}` object or an offset integer (into
@@ -1229,7 +1229,7 @@ var preIfLevel = 0;
     preTokInput = input;
     if (tokPos >= inputLen) return _eof;
     var code = input.charCodeAt(tokPos);
-    if (preprocessMacroParamterListMode && code !== 41 && code !== 44) { // ')', ','
+    if (preprocessMacroParameterListMode && code !== 41 && code !== 44) { // ')', ','
       var parenLevel = 0;
       // If we are parsing a macro parameter list parentheses within each argument must balance
       while(tokPos < inputLen && (parenLevel || (code !== 41 && code !== 44))) { // ')', ','
@@ -1651,7 +1651,7 @@ var preIfLevel = 0;
             var noParams = 0;
             parameters = Object.create(null);
             preprocessReadToken();
-            preprocessMacroParamterListMode = true;
+            preprocessMacroParameterListMode = true;
             preprocessExpect(_parenL);
             lastTokPos = tokPos;
             while (!preprocessEat(_parenR)) {
@@ -1662,7 +1662,7 @@ var preIfLevel = 0;
               parameters[ident] = new Macro(ident, val);
               lastTokPos = tokPos;
             }
-            preprocessMacroParamterListMode = false;
+            preprocessMacroParameterListMode = false;
           }
           // If the macro defines anything add it to the preprocess input stack
           if (macroString) {
