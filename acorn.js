@@ -27,10 +27,10 @@
 // [walk]: util/walk.js
 
 (function(mod) {
-  if (typeof exports == "object" && typeof module == "object") return mod(exports); // CommonJS
-  if (typeof define == "function" && define.amd) return define(["exports"], mod); // AMD
-  mod(this.acorn || (this.acorn = {})); // Plain browser env
-})(function(exports) {
+  if (typeof exports == "object" && typeof module == "object") return mod(exports, require("objj-acorn/util/walk")); // CommonJS
+  if (typeof define == "function" && define.amd) return define(["exports", "objj-acorn/util/walk"], mod); // AMD
+  mod(this.acorn || (this.acorn = {}), acorn.walk); // Plain browser env
+})(function(exports, walk) {
   "use strict";
 
   exports.version = "0.3.3-objj-2";
@@ -1036,7 +1036,7 @@ var preIfLevel = 0;
   }
 
   function preprocessEvalExpression(expr) {
-    return exports.walk.recursive(expr, {}, {
+    return walk.recursive(expr, {}, {
       BinaryExpression: function(node, st, c) {
         var left = node.left, right = node.right;
         switch(node.operator) {
