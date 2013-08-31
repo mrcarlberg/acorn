@@ -169,8 +169,7 @@
   }
 
   function defaultIsMacro(macroIdentifier) {
-    var x = Object.keys(macros).join(" ");
-    return (macrosIsPredicate || (macrosIsPredicate = makePredicate(x)))(macroIdentifier);
+    return (macrosIsPredicate || (macrosIsPredicate = makePredicate(Object.keys(macros).join(" "))))(macroIdentifier);
   }
 
   // The `getLineInfo` function is mostly useful when the
@@ -313,6 +312,7 @@
   var preTokPos, preTokType, preTokVal, preTokStart, preTokEnd;
   var preLastStart, preLastEnd;
   var preprocessStack = [];
+  var preprocessStackLastItem;
   var preprocessMacroParameterListMode = false;
 
   // This function is used to raise exceptions on parse errors. It
@@ -647,12 +647,13 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
 
   function finishToken(type, val) {
     // If we get any of these preprocess tokens skip it and read next
-    if (type in preprocessTokens) return readToken();
+    var preprocess = options.preprocess;
+    if (preprocess && (type in preprocessTokens)) return readToken();
     tokEnd = tokPos;
     if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
     skipSpace();
-    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+    if (preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = type === _name ? val : type.keyword;
       tokPos += 2;
       if (val1) {
@@ -796,6 +797,9 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
           inputLen = lastItem.inputLen;
           lastEnd = lastItem.lastEnd;
           lastStart = lastItem.lastStart;
+          // Set the last item
+          var lastIndex = preprocessStack.length;
+          preprocessStackLastItem = lastIndex ? preprocessStack[lastIndex - 1] : null;
         } else {
           break;
         }
@@ -1624,15 +1628,13 @@ var preIfLevel = 0;
     var reservedError;
     if (options.preprocess) {
       var macro;
-      var i = preprocessStack.length;
-      if (i > 0) {
-        var lastItem = preprocessStack[i - 1];
+      if (preprocessStackLastItem) {
         // If the current macro has parameters check if this word is one of them and should be translated
-        if (lastItem.parameterDict && lastItem.macro.isParameterFunction()(word)) {
-          macro = lastItem.parameterDict[word];
+        if (preprocessStackLastItem.parameterDict && preprocessStackLastItem.macro.isParameterFunction()(word)) {
+          macro = preprocessStackLastItem.parameterDict[word];
         }
       }
-      // Does the word match agains any of the know macro names
+      // Does the word match agains any of the known macro names
       if (!macro && options.preprocessIsMacro(word))
         macro = options.preprocessGetMacro(word);
       if (macro) {
@@ -1666,7 +1668,8 @@ var preIfLevel = 0;
           }
           // If the macro defines anything add it to the preprocess input stack
           if (macroString) {
-            preprocessStack.push({macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen, lastStart: tokStart, lastEnd: lastTokPos});
+            preprocessStackLastItem = {macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen, lastStart: tokStart, lastEnd: lastTokPos};
+            preprocessStack.push(preprocessStackLastItem);
             input = macroString;
             inputLen = macroString.length;
             tokPos = 0;
@@ -1695,8 +1698,7 @@ var preIfLevel = 0;
   }
 
   Macro.prototype.isParameterFunction = function() {
-    var y = (this.parameters || []).join(" ");
-    return this.isParameterFunctionVar || (this.isParameterFunctionVar = makePredicate(y));
+    return this.isParameterFunctionVar || (this.isParameterFunctionVar = makePredicate((this.parameters || []).join(" ")));
   }
 
   // ## Parser
