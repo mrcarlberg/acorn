@@ -9,7 +9,7 @@ It is extended from the [Acorn][acorn] JavaScript parser by Marijn Haverbeke:
 
 [acorn]: http://marijnhaverbeke.nl/acorn/
 
-Is used by the [Objectiv-J compiler][objj-compiler]
+Is used by the [Objective-J compiler][objj-compiler]
 
 [objj-compiler]: https://github.com/mrcarlberg/ObjJAcornCompiler
 
