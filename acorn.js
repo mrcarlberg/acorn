@@ -80,7 +80,7 @@
     // When `trackCommentsIncludeLineBreak` is turned on, the parser will
     // include, if present, the line break before the comment and all
     // the whitespaces inbetween.
-    trackCommentsIncludeLineBreak: true,
+    trackCommentsIncludeLineBreak: false,
     // When `trackSpaces` is turned on, the parser will attach
     // `spacesBefore` and `spacesAfter` properties to AST nodes
     // holding arrays of strings. The same spaces may appear in both
