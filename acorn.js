@@ -650,9 +650,12 @@
 var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
 
   function finishToken(type, val) {
-    // If we get any of these preprocess tokens skip it and read next
+    // Do we need to do this, it is very time consuming?: If we get any of these preprocess tokens skip it and read next
     var preprocess = options.preprocess;
-    if (preprocess && (type in preprocessTokens)) return readToken();
+    if (preprocess && (type in preprocessTokens)) {
+      console.error("Acorn: ERROR when finishing token '" + JSON.stringify(type) + "' at file position " + tokPos + ". Please report this error on http://github.com/mrcarlberg/acorn. Trying to recover...");
+      return readToken();
+    }
     tokEnd = tokPos;
     if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
