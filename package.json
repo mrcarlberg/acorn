@@ -1,17 +1,28 @@
 {
     "name": "objj-acorn",
-    "description": "JavaScript (ECMAScript) and Objective-J parser with preprocessor",
+    "description": "JavaScript (ECMAScript) and Objective-J parser with preprocessor.",
     "homepage": "http://github.com/mrcarlberg/acorn",
     "main": "acorn.js",
-    "version": "0.3.3-objj-2",
+    "version": "0.3.3-objj-3",
     "engines": {"node": ">=0.4.0"},
-    "maintainers": [{"name": "Martin Carlberg",
+    "contributors": [{"name": "Martin Carlberg",
                      "email": "martin@carlberg.org",
                      "web": "http://carlberg.org"}],
     "repository": {"type": "git",
-                   "url": "http://github.com/mrcarlberg/acorn"},
+                   "url": "https://github.com/mrcarlberg/acorn.git"},
+    "bugs": "https://github.com/mrcarlberg/acorn/issues",
     "licenses": [{"type": "MIT",
                   "url": "http://marijnhaverbeke.nl/acorn/LICENSE"}],
     "scripts": {"test": "node test/run.js"},
-    "bin": {"acorn": "./bin/acorn"}
+    "bin": {"acorn": "./bin/acorn"},
+    "keywords": [
+        "JavaScript",
+        "ECMAScript",
+        "Objective-J",
+        "parser",
+        "preprocessor",
+        "pre-processor",
+        "pre processor",
+        "processor"
+   ]
 }
