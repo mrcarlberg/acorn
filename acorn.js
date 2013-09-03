@@ -79,7 +79,7 @@
     trackComments: false,
     // When `trackCommentsIncludeLineBreak` is turned on, the parser will
     // include, if present, the line break before the comment and all
-    // the whitespaces inbetween.
+    // the whitespace in between.
     trackCommentsIncludeLineBreak: false,
     // When `trackSpaces` is turned on, the parser will attach
     // `spacesBefore` and `spacesAfter` properties to AST nodes
@@ -911,10 +911,10 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     return finishToken(token);
   }
 
-// True if we are skipping token when finding #else or #endif after and #if
+  // True if we are skipping token when finding #else or #endif after and #if
 
-var preNotSkipping = true;
-var preIfLevel = 0;
+  var preNotSkipping = true;
+  var preIfLevel = 0;
 
   function readToken_preprocess(finishTokenFunction) { // '#'
     ++tokPos;
@@ -1170,9 +1170,9 @@ var preIfLevel = 0;
     }
 
     return false;
-}
+  }
 
-// Returns true if it stops at a line break
+  // Returns true if it stops at a line break
 
   function preprocessSkipSpace() {
     while (tokPos < inputLen) {
