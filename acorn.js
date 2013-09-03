@@ -27,8 +27,8 @@
 // [walk]: util/walk.js
 
 (function(mod) {
-  if (typeof exports == "object" && typeof module == "object") return mod(exports, require("objj-acorn/util/walk")); // CommonJS
-  if (typeof define == "function" && define.amd) return define(["exports", "objj-acorn/util/walk"], mod); // AMD
+  if (typeof exports == "object" && typeof module == "object") return mod(exports, require("./util/walk")); // CommonJS
+  if (typeof define == "function" && define.amd) return define(["exports", "./util/walk"], mod); // AMD
   mod(this.acorn || (this.acorn = {}), acorn.walk); // Plain browser env
 })(function(exports, walk) {
   "use strict";
