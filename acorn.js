@@ -953,9 +953,10 @@ var preIfLevel = 0;
           preprocessReadToken();
           var expr = preprocessParseExpression();
           var test = preprocessEvalExpression(expr);
-          if (!test)
-            preNotSkipping = false
-          preprocessSkipToElseOrEndif(!test);
+          if (!test) {
+            preNotSkipping = false;
+            preprocessSkipToElseOrEndif();
+          }
         } else {
           return finishTokenFunction(_preIf);
         }
@@ -967,10 +968,10 @@ var preIfLevel = 0;
           preprocessReadToken();
           var ident = preprocessGetIdent();
           var test = options.preprocessGetMacro(ident);
-          if (!test)
+          if (!test) {
             preNotSkipping = false
-          //preprocessExpect(_eol);
-          preprocessSkipToElseOrEndif(!test);
+            preprocessSkipToElseOrEndif();
+          }
         } else {
           //preprocesSkipRestOfLine();
           return finishTokenFunction(_preIfdef);
@@ -983,10 +984,10 @@ var preIfLevel = 0;
           preprocessReadToken();
           var ident = preprocessGetIdent();
           var test = options.preprocessGetMacro(ident);
-          if (test)
+          if (test) {
             preNotSkipping = false
-          //preprocessExpect(_eol);
-          preprocessSkipToElseOrEndif(test);
+            preprocessSkipToElseOrEndif();
+          }
         } else {
           //preprocesSkipRestOfLine();
           return finishTokenFunction(_preIfndef);
@@ -999,7 +1000,7 @@ var preIfLevel = 0;
             preNotSkipping = false;
             finishTokenFunction(_preElse);
             preprocessReadToken();
-            preprocessSkipToElseOrEndif(true, true); // no else
+            preprocessSkipToElseOrEndif(true); // no else
           } else {
             return finishTokenFunction(_preElse);
           }
@@ -1201,31 +1202,29 @@ var preIfLevel = 0;
     }
   }
 
-  function preprocessSkipToElseOrEndif(test, skipElse) {
-    if (test) {
-      var ifLevel = 0;
-      while (ifLevel > 0 || (preTokType != _preEndif && (preTokType != _preElse || skipElse))) {
-        switch (preTokType) {
-          case _preIf:
-          case _preIfdef:
-          case _preIfndef:
-            ifLevel++;
-            break;
+  function preprocessSkipToElseOrEndif(skipElse) {
+    var ifLevel = 0;
+    while (ifLevel > 0 || (preTokType != _preEndif && (preTokType != _preElse || skipElse))) {
+      switch (preTokType) {
+        case _preIf:
+        case _preIfdef:
+        case _preIfndef:
+          ifLevel++;
+          break;
 
-          case _preEndif:
-            ifLevel--;
-            break;
+        case _preEndif:
+          ifLevel--;
+          break;
 
-          case _eof:
-            preNotSkipping = true;
-            raise(preTokStart, "Missing #endif");
-        }
-        preprocessReadToken();
+        case _eof:
+          preNotSkipping = true;
+          raise(preTokStart, "Missing #endif");
       }
-      preNotSkipping = true;
-      if (preTokType === _preEndif)
-        preIfLevel--;
+      preprocessReadToken();
     }
+    preNotSkipping = true;
+    if (preTokType === _preEndif)
+      preIfLevel--;
   }
 
   function preprocessReadToken() {
