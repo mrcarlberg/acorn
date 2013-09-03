@@ -2,7 +2,7 @@
 
 var path = require('path');
 var fs = require('fs');
-var acorn = require(path.join(path.dirname(fs.realpathSync(__filename)), "../acorn.js"));
+var acorn = require("../acorn.js");
 
 var infile, parsed, options = {}, silent = false, compact = false;
 
