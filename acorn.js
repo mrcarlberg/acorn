@@ -26,14 +26,14 @@
 // [dammit]: acorn_loose.js
 // [walk]: util/walk.js
 
-(function(mod) {
+(function(root, mod) {
   if (typeof exports == "object" && typeof module == "object") return mod(exports, require("./util/walk")); // CommonJS
   if (typeof define == "function" && define.amd) return define(["exports", "./util/walk"], mod); // AMD
-  mod(this.acorn || (this.acorn = {}), acorn.walk); // Plain browser env
-})(function(exports, walk) {
+  mod(root.acorn || (root.acorn = {}), root.acorn.walk || (root.acorn.walk = {})); // Plain browser env
+})(this, function(exports, walk) {
   "use strict";
 
-  exports.version = "0.3.3-objj-2";
+  exports.version = "0.3.3-objj-3";
 
   // The main exported interface (under `self.acorn` when in the
   // browser) is a `parse` function that takes a code string and
@@ -213,14 +213,14 @@
     getToken.jumpTo = function(pos, reAllowed) {
       tokPos = pos;
       if (options.locations) {
-        tokCurLine = tokLineStart = lineBreak.lastIndex = 0;
+        tokCurLine = 1;
+        tokLineStart = lineBreak.lastIndex = 0;
         var match;
         while ((match = lineBreak.exec(input)) && match.index < pos) {
           ++tokCurLine;
           tokLineStart = match.index + match[0].length;
         }
       }
-      var ch = input.charAt(pos - 1);
       tokRegexpAllowed = reAllowed;
       skipSpace();
     };
@@ -334,6 +334,10 @@
 
     throw syntaxError;
   }
+
+  // Reused empty array added for node fields that are always empty.
+
+  var empty = [];
 
   // ## Token types
 
@@ -1939,7 +1943,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
   // does not help.
 
   function parseStatement() {
-    if (tokType === _slash)
+    if (tokType === _slash || tokType === _assign && tokVal == "/=")
       readToken(true);
 
     var starttype = tokType, node = startNode();
@@ -2099,6 +2103,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         clause.body = parseBlock();
         node.handler = finishNode(clause, "CatchClause");
       }
+      node.guardedHandlers = empty;
       node.finalizer = eat(_finally) ? parseBlock() : null;
       if (!node.handler && !node.finalizer)
         raise(node.start, "Missing catch or finally clause");
@@ -2468,11 +2473,11 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     while (!eat(_braceR)) {
       var stmt = parseStatement();
       node.body.push(stmt);
-      if (first && isUseStrict(stmt)) {
+      if (first && allowStrict && isUseStrict(stmt)) {
         oldStrict = strict;
         setStrict(strict = true);
       }
-      first = false
+      first = false;
     }
     if (strict && !oldStrict) setStrict(false);
     return finishNode(node, "BlockStatement");
@@ -2580,7 +2585,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
   // Start the precedence parser.
 
   function parseExprOps(noIn) {
-    return parseExprOp(parseMaybeUnary(noIn), -1, noIn);
+    return parseExprOp(parseMaybeUnary(), -1, noIn);
   }
 
   // Parse binary operators with the operator precedence parsing
@@ -2597,7 +2602,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         node.left = left;
         node.operator = tokVal;
         next();
-        node.right = parseExprOp(parseMaybeUnary(noIn), prec, noIn);
+        node.right = parseExprOp(parseMaybeUnary(), prec, noIn);
         var node = finishNode(node, /&&|\|\|/.test(node.operator) ? "LogicalExpression" : "BinaryExpression");
         return parseExprOp(node, minPrec, noIn);
       }
@@ -2607,13 +2612,14 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
 
   // Parse unary operators, both prefix and postfix.
 
-  function parseMaybeUnary(noIn) {
+  function parseMaybeUnary() {
     if (tokType.prefix) {
       var node = startNode(), update = tokType.isUpdate;
       node.operator = tokVal;
       node.prefix = true;
+      tokRegexpAllowed = true;
       next();
-      node.argument = parseMaybeUnary(noIn);
+      node.argument = parseMaybeUnary();
       if (update) checkLVal(node.argument);
       else if (strict && node.operator === "delete" &&
                node.argument.type === "Identifier")
@@ -2860,7 +2866,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     node.callee = parseSubscripts(parseExprAtom(false), true);
     if (eat(_parenL))
       node.arguments = parseExprList(_parenR, tokType === _parenR ? null : parseExpression(true), false);
-    else node.arguments = [];
+    else node.arguments = empty;
     return finishNode(node, "NewExpression");
   }
 
@@ -3007,6 +3013,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
   function parseIdent(liberal) {
     var node = startNode();
     node.name = tokType === _name ? tokVal : (((liberal && !options.forbidReserved) || tokType.okAsIdent) && tokType.keyword) || unexpected();
+    tokRegexpAllowed = false;
     next();
     return finishNode(node, "Identifier");
   }
