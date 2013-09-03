@@ -26283,6 +26283,59 @@ test("{}/=/", {
   ]
 });
 
+// Preprocessor test
+
+test("#define martin\n#ifdef carlberg\nvar b;\n#else\n#ifdef martin\nthis\n#else\nvar i;\n#endif\n#endif\n", {
+  "type": "Program",
+  "start": 58,
+  "end": 62,
+  "loc": {
+    "start": {
+      "line": 3,
+      "column": 14
+    },
+    "end": {
+      "line": 3,
+      "column": 18
+    }
+  },
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "start": 58,
+      "end": 62,
+      "loc": {
+        "start": {
+          "line": 3,
+          "column": 14
+        },
+        "end": {
+          "line": 3,
+          "column": 18
+        },
+      },
+      "expression": {
+        "type": "ThisExpression",
+        "start": 58,
+        "end": 62,
+        "loc": {
+          "start": {
+            "line": 3,
+            "column": 14
+          },
+          "end": {
+            "line": 3,
+            "column": 18
+          },
+        }
+      }
+    }
+  ]
+}, {
+  locations: true,
+  preprocess: true
+});
+
 // Failure tests
 
 testFail("{",
