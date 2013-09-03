@@ -40,9 +40,9 @@
   exports.recursive = function(node, state, funcs, base) {
     var visitor = funcs ? exports.make(funcs, base) : base;
     function c(node, st, override) {
-      visitor[override || node.type](node, st, c);
+      return visitor[override || node.type](node, st, c);
     }
-    c(node, state);
+    return c(node, state);
   };
 
   function makeTest(test) {
