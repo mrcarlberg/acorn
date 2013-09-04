@@ -828,51 +828,51 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
   // The `forceRegexp` parameter is used in the one case where the
   // `tokRegexpAllowed` trick does not work. See `parseStatement`.
 
-  function readToken_dot(code, finishToken) {
+  function readToken_dot(code, finisher) {
     var next = input.charCodeAt(tokPos+1);
-    if (next >= 48 && next <= 57) return readNumber(String.fromCharCode(code), finishToken);
+    if (next >= 48 && next <= 57) return readNumber(String.fromCharCode(code), finisher);
     if (next === 46 && options.objj && input.charCodeAt(tokPos+2) === 46) { //'.'
       tokPos += 3;
-      return finishToken(_dotdotdot);
+      return finisher(_dotdotdot);
     }
     ++tokPos;
-    return finishToken(_dot);
+    return finisher(_dot);
   }
 
-  function readToken_slash(finishToken) { // '/'
+  function readToken_slash(finisher) { // '/'
     var next = input.charCodeAt(tokPos+1);
     if (tokRegexpAllowed) {++tokPos; return readRegexp();}
-    if (next === 61) return finishOp(_assign, 2, finishToken);
-    return finishOp(_slash, 1, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finisher);
+    return finishOp(_slash, 1, finisher);
   }
 
-  function readToken_mult_modulo(finishToken) { // '%*'
+  function readToken_mult_modulo(finisher) { // '%*'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_assign, 2, finishToken);
-    return finishOp(_bin10, 1, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finisher);
+    return finishOp(_bin10, 1, finisher);
   }
 
-  function readToken_pipe_amp(code, finishToken) { // '|&'
+  function readToken_pipe_amp(code, finisher) { // '|&'
     var next = input.charCodeAt(tokPos+1);
-    if (next === code) return finishOp(code === 124 ? _bin1 : _bin2, 2, finishToken);
-    if (next === 61) return finishOp(_assign, 2, finishToken);
-    return finishOp(code === 124 ? _bin3 : _bin5, 1, finishToken);
+    if (next === code) return finishOp(code === 124 ? _bin1 : _bin2, 2, finisher);
+    if (next === 61) return finishOp(_assign, 2, finisher);
+    return finishOp(code === 124 ? _bin3 : _bin5, 1, finisher);
   }
 
-  function readToken_caret(finishToken) { // '^'
+  function readToken_caret(finisher) { // '^'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_assign, 2, finishToken);
-    return finishOp(_bin4, 1, finishToken);
+    if (next === 61) return finishOp(_assign, 2, finisher);
+    return finishOp(_bin4, 1, finisher);
   }
 
-  function readToken_plus_min(code, finishToken) { // '+-'
+  function readToken_plus_min(code, finisher) { // '+-'
     var next = input.charCodeAt(tokPos+1);
-    if (next === code) return finishOp(_incdec, 2, finishToken);
-    if (next === 61) return finishOp(_assign, 2, finishToken);
-    return finishOp(_plusmin, 1, finishToken);
+    if (next === code) return finishOp(_incdec, 2, finisher);
+    if (next === 61) return finishOp(_assign, 2, finisher);
+    return finishOp(_plusmin, 1, finisher);
   }
 
-  function readToken_lt_gt(code, finishToken) { // '<>'
+  function readToken_lt_gt(code, finisher) { // '<>'
     if (tokAfterImport && options.objj && code === 60) {  // '<'
       var str = [];
       for (;;) {
@@ -880,7 +880,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         var ch = input.charCodeAt(++tokPos);
         if (ch === 62) {  // '>'
           ++tokPos;
-          return finishToken(_filename, String.fromCharCode.apply(null, str));
+          return finisher(_filename, String.fromCharCode.apply(null, str));
         }
         str.push(ch);
       }
@@ -889,33 +889,33 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     var size = 1;
     if (next === code) {
       size = code === 62 && input.charCodeAt(tokPos+2) === 62 ? 3 : 2;
-      if (input.charCodeAt(tokPos + size) === 61) return finishOp(_assign, size + 1, finishToken);
-      return finishOp(_bin8, size, finishToken);
+      if (input.charCodeAt(tokPos + size) === 61) return finishOp(_assign, size + 1, finisher);
+      return finishOp(_bin8, size, finisher);
     }
     if (next === 61)
       size = input.charCodeAt(tokPos+2) === 61 ? 3 : 2;
-    return finishOp(_bin7, size, finishToken);
+    return finishOp(_bin7, size, finisher);
   }
 
-  function readToken_eq_excl(code, finishToken) { // '=!'
+  function readToken_eq_excl(code, finisher) { // '=!'
     var next = input.charCodeAt(tokPos+1);
-    if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2, finishToken);
-    return finishOp(code === 61 ? _eq : _prefix, 1, finishToken);
+    if (next === 61) return finishOp(_bin6, input.charCodeAt(tokPos+2) === 61 ? 3 : 2, finisher);
+    return finishOp(code === 61 ? _eq : _prefix, 1, finisher);
   }
 
-  function readToken_at(code, finishToken) { // '@'
+  function readToken_at(code, finisher) { // '@'
     var next = input.charCodeAt(++tokPos);
     if (next === 34 || next === 39)  // Read string if "'" or '"'
-      return readString(next, finishToken);
+      return readString(next, finisher);
     if (next === 123) // Read dictionary literal if "{"
-      return finishToken(_dictionaryLiteral);
+      return finisher(_dictionaryLiteral);
     if (next === 91) // Ready array literal if "["
-      return finishToken(_arrayLiteral);
+      return finisher(_arrayLiteral);
 
     var word = readWord1(),
         token = objJAtKeywordTypes[word];
     if (!token) raise(tokStart, "Unrecognized Objective-J keyword '@" + word + "'");
-    return finishToken(token);
+    return finisher(token);
   }
 
   // True if we are skipping token when finding #else or #endif after and #if
@@ -923,7 +923,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
   var preNotSkipping = true;
   var preIfLevel = 0;
 
-  function readToken_preprocess(finishTokenFunction) { // '#'
+  function readToken_preprocess(finisher) { // '#'
     ++tokPos;
     preprocessReadToken();
     switch (preTokType) {
@@ -965,7 +965,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
             preprocessSkipToElseOrEndif();
           }
         } else {
-          return finishTokenFunction(_preIf);
+          return finisher(_preIf);
         }
         break;
 
@@ -981,7 +981,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
           }
         } else {
           //preprocesSkipRestOfLine();
-          return finishTokenFunction(_preIfdef);
+          return finisher(_preIfdef);
         }
         break;
 
@@ -997,7 +997,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
           }
         } else {
           //preprocesSkipRestOfLine();
-          return finishTokenFunction(_preIfndef);
+          return finisher(_preIfndef);
         }
         break;
 
@@ -1005,11 +1005,11 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         if (preIfLevel) {
           if (preNotSkipping) {
             preNotSkipping = false;
-            finishTokenFunction(_preElse);
+            finisher(_preElse);
             preprocessReadToken();
             preprocessSkipToElseOrEndif(true); // no else
           } else {
-            return finishTokenFunction(_preElse);
+            return finisher(_preElse);
           }
         } else
           raise(preTokStart, "#else without #if");
@@ -1024,7 +1024,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         } else {
           raise(preTokStart, "#endif without #if");
         }
-        return finishTokenFunction(_preEndif);
+        return finisher(_preEndif);
         break;
 
       case _prePragma:
@@ -1039,7 +1039,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
         raise(preTokStart, "Invalid preprocessing directive");
         preprocesSkipRestOfLine();
         // Return the complete line as a token to make it possible to create a PreProcessStatement if we are between two statements
-        return finishTokenFunction(_preprocess);
+        return finisher(_preprocess);
         //raise(tokPos, "Invalid preprocessing directive '" + (preTokType.keyword || preTokVal) + "' " + input.slice(tokStart, tokPos));
     }
     // Drop this token and read next non preprocess token
@@ -1094,37 +1094,37 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     }, {});
   }
 
-  function getTokenFromCode(code, finishToken, allowEndOfLineToken) {
+  function getTokenFromCode(code, finisher, allowEndOfLineToken) {
     switch(code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit.
     case 46: // '.'
-      return readToken_dot(code, finishToken);
+      return readToken_dot(code, finisher);
 
       // Punctuation tokens.
-    case 40: ++tokPos; return finishToken(_parenL);
-    case 41: ++tokPos; return finishToken(_parenR);
-    case 59: ++tokPos; return finishToken(_semi);
-    case 44: ++tokPos; return finishToken(_comma);
-    case 91: ++tokPos; return finishToken(_bracketL);
-    case 93: ++tokPos; return finishToken(_bracketR);
-    case 123: ++tokPos; return finishToken(_braceL);
-    case 125: ++tokPos; return finishToken(_braceR);
-    case 58: ++tokPos; return finishToken(_colon);
-    case 63: ++tokPos; return finishToken(_question);
+    case 40: ++tokPos; return finisher(_parenL);
+    case 41: ++tokPos; return finisher(_parenR);
+    case 59: ++tokPos; return finisher(_semi);
+    case 44: ++tokPos; return finisher(_comma);
+    case 91: ++tokPos; return finisher(_bracketL);
+    case 93: ++tokPos; return finisher(_bracketR);
+    case 123: ++tokPos; return finisher(_braceL);
+    case 125: ++tokPos; return finisher(_braceR);
+    case 58: ++tokPos; return finisher(_colon);
+    case 63: ++tokPos; return finisher(_question);
 
       // '0x' is a hexadecimal number.
     case 48: // '0'
       var next = input.charCodeAt(tokPos+1);
-      if (next === 120 || next === 88) return readHexNumber(finishToken);
+      if (next === 120 || next === 88) return readHexNumber(finisher);
       // Anything else beginning with a digit is an integer, octal
       // number, or float.
     case 49: case 50: case 51: case 52: case 53: case 54: case 55: case 56: case 57: // 1-9
-      return readNumber(false, finishToken);
+      return readNumber(false, finisher);
 
       // Quotes produce strings.
     case 34: case 39: // '"', "'"
-      return readString(code, finishToken);
+      return readString(code, finisher);
 
     // Operators are parsed inline in tiny state machines. '=' (61) is
     // often referred to. `finishOp` simply skips the amount of
@@ -1132,49 +1132,49 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     // of the type given by its first argument.
 
     case 47: // '/'
-      return readToken_slash(finishToken);
+      return readToken_slash(finisher);
 
     case 37: case 42: // '%*'
-      return readToken_mult_modulo(finishToken);
+      return readToken_mult_modulo(finisher);
 
     case 124: case 38: // '|&'
-      return readToken_pipe_amp(code, finishToken);
+      return readToken_pipe_amp(code, finisher);
 
     case 94: // '^'
-      return readToken_caret(finishToken);
+      return readToken_caret(finisher);
 
     case 43: case 45: // '+-'
-      return readToken_plus_min(code, finishToken);
+      return readToken_plus_min(code, finisher);
 
     case 60: case 62: // '<>'
-      return readToken_lt_gt(code, finishToken, finishToken);
+      return readToken_lt_gt(code, finisher);
 
     case 61: case 33: // '=!'
-      return readToken_eq_excl(code, finishToken);
+      return readToken_eq_excl(code, finisher);
 
     case 126: // '~'
-      return finishOp(_prefix, 1, finishToken);
+      return finishOp(_prefix, 1, finisher);
 
     case 64: // '@'
       if (options.objj)
-        return readToken_at(code, finishToken);
+        return readToken_at(code, finisher);
       return false;
 
     case 35: // '#'
       if (options.preprocess) {
-        return readToken_preprocess(finishToken);
+        return readToken_preprocess(finisher);
       }
       return false;
 
     case 92: // '\'
       if (options.preprocess) {
-        return finishOp(_preBackslash, 1, finishToken);
+        return finishOp(_preBackslash, 1, finisher);
       }
       return false;
     }
 
     if (allowEndOfLineToken && newline.test(String.fromCharCode(code))) {
-      return finishOp(_eol, 1, finishToken);
+      return finishOp(_eol, 1, finisher);
     }
 
     return false;
@@ -1436,10 +1436,10 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     return tok;
   }
 
-  function finishOp(type, size, finishToken) {
+  function finishOp(type, size, finisher) {
     var str = input.slice(tokPos, tokPos + size);
     tokPos += size;
-    finishToken(type, str);
+    finisher(type, str);
   }
 
   // Parse a regular expression. Some context-awareness is necessary,
@@ -1489,17 +1489,17 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     return total;
   }
 
-  function readHexNumber(finishToken) {
+  function readHexNumber(finisher) {
     tokPos += 2; // 0x
     var val = readInt(16);
     if (val == null) raise(tokStart + 2, "Expected hexadecimal number");
     if (isIdentifierStart(input.charCodeAt(tokPos))) raise(tokPos, "Identifier directly after number");
-    return finishToken(_num, val);
+    return finisher(_num, val);
   }
 
   // Read an integer, octal integer, or floating-point number.
 
-  function readNumber(startsWithDot, finishToken) {
+  function readNumber(startsWithDot, finisher) {
     var start = tokPos, isFloat = false, octal = input.charCodeAt(tokPos) === 48;
     if (!startsWithDot && readInt(10) === null) raise(start, "Invalid number");
     if (input.charCodeAt(tokPos) === 46) {
@@ -1521,14 +1521,14 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
     else if (!octal || str.length === 1) val = parseInt(str, 10);
     else if (/[89]/.test(str) || strict) raise(start, "Invalid number");
     else val = parseInt(str, 8);
-    return finishToken(_num, val);
+    return finisher(_num, val);
   }
 
   // Read a string value, interpreting backslash-escapes.
 
   var rs_str = [];
 
-  function readString(quote, finishToken) {
+  function readString(quote, finisher) {
     tokPos++;
     var out = "";
     for (;;) {
@@ -1536,7 +1536,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       var ch = input.charCodeAt(tokPos);
       if (ch === quote) {
         ++tokPos;
-        return finishToken(_string, out);
+        return finisher(_string, out);
       }
       if (ch === 92) { // '\'
         ch = input.charCodeAt(++tokPos);
