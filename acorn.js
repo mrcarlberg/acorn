@@ -296,7 +296,7 @@
 
   // This is the tokenizer's state for Objective-J. 'nodeMessageSendObjectExpression'
   // is used to store the expression that is already parsed when a subscript was
-  // not really a subscript
+  // not really a subscript.
 
   var nodeMessageSendObjectExpression;
 
@@ -448,7 +448,7 @@
 
   // Map Preprocessor keyword names to token types.
 
-  var keywordTypesPreprocess = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
+  var keywordTypesPreprocessor = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
                                 "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf,
                                 "defined": _preDefined};
 
@@ -573,7 +573,7 @@
 
   // The preprocessor keywords.
 
-  var isKeywordPreprocess = makePredicate("define pragma if ifdef ifndef else elif endif defined");
+  var isKeywordPreprocessor = makePredicate("define pragma if ifdef ifndef else elif endif defined");
 
   // ## Character categories
 
@@ -647,12 +647,13 @@
   // after the token, so that the next one's `tokStart` will point at
   // the right position.
 
-var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
+  var preprocessorTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
 
   function finishToken(type, val) {
-    // Do we need to do this, it is very time consuming?: If we get any of these preprocess tokens skip it and read next
+    // FIXME: Do we need to do this? It is very time consuming.
+    // If we get any of the preprocessor tokens skip it and read next
     var preprocess = options.preprocess;
-    if (preprocess && (type in preprocessTokens)) {
+    if (preprocess && (type in preprocessorTokens)) {
       console.error("Acorn: ERROR when finishing token '" + JSON.stringify(type) + "' at file position " + tokPos + ". Please report this error on http://github.com/mrcarlberg/acorn. Trying to recover...");
       return readToken();
     }
@@ -1263,7 +1264,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
 
   function preprocessReadWord() {
     var word = readWord1();
-    preprocessFinishToken(isKeywordPreprocess(word) ? keywordTypesPreprocess[word] : _name, word);
+    preprocessFinishToken(isKeywordPreprocessor(word) ? keywordTypesPreprocessor[word] : _name, word);
   }
 
   function preprocessFinishToken(type, val) {
@@ -1640,7 +1641,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
           macro = preprocessStackLastItem.parameterDict[word];
         }
       }
-      // Does the word match agains any of the known macro names
+      // Does the word match against any of the known macro names
       if (!macro && options.preprocessIsMacro(word))
         macro = options.preprocessGetMacro(word);
       if (macro) {
@@ -2140,7 +2141,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       next();
       return finishNode(node, "EmptyStatement");
 
-      // This is a Objective-J statement
+      // This is an Objective-J statement
     case _interface:
       if (options.objj) {
         next();
@@ -2181,7 +2182,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       }
       break;
 
-      // This is a Objective-J statement
+      // This is an Objective-J statement
     case _implementation:
       if (options.objj) {
         next();
@@ -2222,7 +2223,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       }
       break;
 
-      // This is a Objective-J statement
+      // This is an Objective-J statement
     case _protocol:
       // If next token is a left parenthesis it is a ProtocolLiternal expression so bail out
       if (options.objj && input.charCodeAt(tokPos) !== 40) { // '('
@@ -2256,7 +2257,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       }
       break;
 
-      // This is a Objective-J statement
+      // This is an Objective-J statement
     case _import:
       if (options.objj) {
         next();
@@ -2272,7 +2273,7 @@ var preprocessTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _pr
       }
       break;
 
-      // This is a Objective-J statement
+      // This is an Objective-J statement
     case _preprocess:
       if (options.objj) {
         next();
