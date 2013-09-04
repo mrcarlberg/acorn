@@ -1595,7 +1595,7 @@
   // to whether the word contained a '\u' escape.
   //
   // Only builds up the word character-by-character when it actually
-  // containeds an escape, as a micro-optimization.
+  // contained an escape, as a micro-optimization.
 
   function readWord1() {
     containsEsc = false;
@@ -1626,7 +1626,7 @@
   }
 
   // Read an identifier or keyword token. Will check for reserved
-  // words when necessary. Argument preReadWord is used to concatenate
+  // words when necessary. Argument preReadWord is used to concatenate.
   // The word is then passed in from caller.
 
   function readWord(preReadWord) {
@@ -2141,174 +2141,151 @@
       next();
       return finishNode(node, "EmptyStatement");
 
-      // This is an Objective-J statement
-    case _interface:
-      if (options.objj) {
-        next();
-        node.classname = parseIdent(true);
-        if (eat(_colon))
-          node.superclassname = parseIdent(true);
-        else if (eat(_parenL)) {
-          node.categoryname = parseIdent(true);
-          expect(_parenR, "Expected closing ')' after category name");
-        }
-        if (tokVal === '<') {
-          next();
-          var protocols = [],
-              first = true;
-          node.protocols = protocols;
-          while (tokVal !== '>') {
-            if (!first)
-              expect(_comma, "Expected ',' between protocol names");
-            else first = false;
-            protocols.push(parseIdent(true));
-          }
-          next();
-        }
-        if (eat(_braceL)) {
-          node.ivardeclarations = [];
-          for (;;) {
-            if (eat(_braceR)) break;
-            parseIvarDeclaration(node);
-          }
-          node.endOfIvars = tokStart;
-        }
-        node.body = [];
-        while(!eat(_end)) {
-          if (tokType === _eof) raise(tokPos, "Expected '@end' after '@interface'");
-          node.body.push(parseClassElement());
-        }
-        return finishNode(node, "InterfaceDeclarationStatement");
-      }
-      break;
-
-      // This is an Objective-J statement
-    case _implementation:
-      if (options.objj) {
-        next();
-        node.classname = parseIdent(true);
-        if (eat(_colon))
-          node.superclassname = parseIdent(true);
-        else if (eat(_parenL)) {
-          node.categoryname = parseIdent(true);
-          expect(_parenR, "Expected closing ')' after category name");
-        }
-        if (tokVal === '<') {
-          next();
-          var protocols = [],
-              first = true;
-          node.protocols = protocols;
-          while (tokVal !== '>') {
-            if (!first)
-              expect(_comma, "Expected ',' between protocol names");
-            else first = false;
-            protocols.push(parseIdent(true));
-          }
-          next();
-        }
-        if (eat(_braceL)) {
-          node.ivardeclarations = [];
-          for (;;) {
-            if (eat(_braceR)) break;
-            parseIvarDeclaration(node);
-          }
-          node.endOfIvars = tokStart;
-        }
-        node.body = [];
-        while(!eat(_end)) {
-          if (tokType === _eof) raise(tokPos, "Expected '@end' after '@implementation'");
-          node.body.push(parseClassElement());
-        }
-        return finishNode(node, "ClassDeclarationStatement");
-      }
-      break;
-
-      // This is an Objective-J statement
-    case _protocol:
-      // If next token is a left parenthesis it is a ProtocolLiternal expression so bail out
-      if (options.objj && input.charCodeAt(tokPos) !== 40) { // '('
-        next();
-        node.protocolname = parseIdent(true);
-        if (tokVal === '<') {
-          next();
-          var protocols = [],
-              first = true;
-          node.protocols = protocols;
-          while (tokVal !== '>') {
-            if (!first)
-              expect(_comma, "Expected ',' between protocol names");
-            else first = false;
-            protocols.push(parseIdent(true));
-          }
-          next();
-        }
-        while(!eat(_end)) {
-          if (tokType === _eof) raise(tokPos, "Expected '@end' after '@protocol'");
-          if (eat(_required)) continue;
-          if (eat(_optional)) {
-            while(!eat(_required) && tokType !== _end) {
-              (node.optional || (node.optional = [])).push(parseProtocolClassElement());
-            }
-          } else {
-            (node.required || (node.required = [])).push(parseProtocolClassElement());
-          }
-        }
-        return finishNode(node, "ProtocolDeclarationStatement");
-      }
-      break;
-
-      // This is an Objective-J statement
-    case _import:
-      if (options.objj) {
-        next();
-        if (tokType === _string)
-          node.localfilepath = true;
-        else if (tokType ===_filename)
-          node.localfilepath = false;
-        else
-          unexpected();
-
-        node.filename = parseStringNumRegExpLiteral();
-        return finishNode(node, "ImportStatement");
-      }
-      break;
-
-      // This is an Objective-J statement
-    case _preprocess:
-      if (options.objj) {
-        next();
-        return finishNode(node, "PreprocessStatement");
-      }
-      break;
-
-      // This is a Objective-J statement
-    case _class:
-      if (options.objj) {
-        next();
-        node.id = parseIdent(false);
-        return finishNode(node, "ClassStatement");
-      }
-      break;
-
-      // This is a Objective-J statement
-    case _global:
-      if (options.objj) {
-        next();
-        node.id = parseIdent(false);
-        return finishNode(node, "GlobalStatement");
-      }
-      break;
-
-    }
-
-      // The indentation is one step to the right here to make sure it
-      // is the same as in the original acorn parser. Easier merge
-
       // If the statement does not start with a statement keyword or a
       // brace, it's an ExpressionStatement or LabeledStatement. We
       // simply start parsing an expression, and afterwards, if the
       // next token is a colon and the expression was a simple
       // Identifier node, we switch to interpreting it as a label.
+
+    default:
+      // All Objective-J statements are handled here. There is no point
+      // in comparing starttype to Objective-J statements if it isn't supported.
+      if (options.objj) {
+        switch (starttype) {
+        case _interface:
+          next();
+          node.classname = parseIdent(true);
+          if (eat(_colon))
+            node.superclassname = parseIdent(true);
+          else if (eat(_parenL)) {
+            node.categoryname = parseIdent(true);
+            expect(_parenR, "Expected closing ')' after category name");
+          }
+          if (tokVal === '<') {
+            next();
+            var protocols = [],
+                first = true;
+            node.protocols = protocols;
+            while (tokVal !== '>') {
+              if (!first)
+                expect(_comma, "Expected ',' between protocol names");
+              else first = false;
+              protocols.push(parseIdent(true));
+            }
+            next();
+          }
+          if (eat(_braceL)) {
+            node.ivardeclarations = [];
+            for (;;) {
+              if (eat(_braceR)) break;
+              parseIvarDeclaration(node);
+            }
+            node.endOfIvars = tokStart;
+          }
+          node.body = [];
+          while(!eat(_end)) {
+            if (tokType === _eof) raise(tokPos, "Expected '@end' after '@interface'");
+            node.body.push(parseClassElement());
+          }
+          return finishNode(node, "InterfaceDeclarationStatement");
+
+        case _implementation:
+          next();
+          node.classname = parseIdent(true);
+          if (eat(_colon))
+            node.superclassname = parseIdent(true);
+          else if (eat(_parenL)) {
+            node.categoryname = parseIdent(true);
+            expect(_parenR, "Expected closing ')' after category name");
+          }
+          if (tokVal === '<') {
+            next();
+            var protocols = [],
+                first = true;
+            node.protocols = protocols;
+            while (tokVal !== '>') {
+              if (!first)
+                expect(_comma, "Expected ',' between protocol names");
+              else first = false;
+              protocols.push(parseIdent(true));
+            }
+            next();
+          }
+          if (eat(_braceL)) {
+            node.ivardeclarations = [];
+            for (;;) {
+              if (eat(_braceR)) break;
+              parseIvarDeclaration(node);
+            }
+            node.endOfIvars = tokStart;
+          }
+          node.body = [];
+          while(!eat(_end)) {
+            if (tokType === _eof) raise(tokPos, "Expected '@end' after '@implementation'");
+            node.body.push(parseClassElement());
+          }
+          return finishNode(node, "ClassDeclarationStatement");
+
+        case _protocol:
+          // If next token is a left parenthesis it is a ProtocolLiteral expression so bail out
+          if (input.charCodeAt(tokPos) === 40) { // '('
+            break;
+          }
+          next();
+          node.protocolname = parseIdent(true);
+          if (tokVal === '<') {
+            next();
+            var protocols = [],
+                first = true;
+            node.protocols = protocols;
+            while (tokVal !== '>') {
+              if (!first)
+                expect(_comma, "Expected ',' between protocol names");
+              else first = false;
+              protocols.push(parseIdent(true));
+            }
+            next();
+          }
+          while(!eat(_end)) {
+            if (tokType === _eof) raise(tokPos, "Expected '@end' after '@protocol'");
+            if (eat(_required)) continue;
+            if (eat(_optional)) {
+              while(!eat(_required) && tokType !== _end) {
+                (node.optional || (node.optional = [])).push(parseProtocolClassElement());
+              }
+            } else {
+              (node.required || (node.required = [])).push(parseProtocolClassElement());
+            }
+          }
+          return finishNode(node, "ProtocolDeclarationStatement");
+
+        case _import:
+          next();
+          if (tokType === _string)
+            node.localfilepath = true;
+          else if (tokType ===_filename)
+            node.localfilepath = false;
+          else
+            unexpected();
+
+          node.filename = parseStringNumRegExpLiteral();
+          return finishNode(node, "ImportStatement");
+
+        case _preprocess:
+          next();
+          return finishNode(node, "PreprocessStatement");
+
+        case _class:
+          next();
+          node.id = parseIdent(false);
+          return finishNode(node, "ClassStatement");
+
+        case _global:
+          next();
+          node.id = parseIdent(false);
+          return finishNode(node, "GlobalStatement");
+        }
+      }
 
       var maybeName = tokVal, expr = parseExpression();
       if (starttype === _name && expr.type === "Identifier" && eat(_colon)) {
@@ -2325,6 +2302,7 @@
         semicolon();
         return finishNode(node, "ExpressionStatement");
       }
+    }
   }
 
   function parseIvarDeclaration(node) {
