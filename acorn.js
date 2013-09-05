@@ -875,15 +875,12 @@
 
   function readToken_lt_gt(code, finisher) { // '<>'
     if (tokAfterImport && options.objj && code === 60) {  // '<'
-      var str = [];
+      var start = tokPos + 1;
       for (;;) {
         if (tokPos >= inputLen) raise(tokStart, "Unterminated import statement");
-        var ch = input.charCodeAt(++tokPos);
-        if (ch === 62) {  // '>'
-          ++tokPos;
-          return finisher(_filename, String.fromCharCode.apply(null, str));
+        if (input.charCodeAt(++tokPos) === 62) {  // '>'
+          return finisher(_filename, input.slice(start, tokPos++));
         }
-        str.push(ch);
       }
     }
     var next = input.charCodeAt(tokPos+1);
