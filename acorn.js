@@ -907,7 +907,7 @@
       return readString(next, finisher);
     if (next === 123) // Read dictionary literal if "{"
       return finisher(_dictionaryLiteral);
-    if (next === 91) // Ready array literal if "["
+    if (next === 91) // Read array literal if "["
       return finisher(_arrayLiteral);
 
     var word = readWord1(),
