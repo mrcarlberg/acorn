@@ -2222,7 +2222,7 @@
 
     // Objective-J
     case _protocol:
-      // If next token is a left parenthesis it is a ProtocolLiternal expression so bail out
+      // If next token is a left parenthesis it is a ProtocolLiteral expression so bail out
       if (options.objj && input.charCodeAt(tokPos) !== 40) { // '('
         next();
         node.protocolname = parseIdent(true);
