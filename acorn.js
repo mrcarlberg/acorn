@@ -875,10 +875,9 @@
 
   function readToken_lt_gt(code, finisher) { // '<>'
     if (tokAfterImport && options.objj && code === 60) {  // '<'
-      var start = tokPos + 1;
-      for (;;) {
-        if (tokPos >= inputLen) raise(tokStart, "Unterminated import statement");
-        if (input.charCodeAt(++tokPos) === 62) {  // '>'
+      for (var start = ++tokPos; ; ++tokPos) {
+        if (tokPos >= inputLen || newline.test(input.charAt(tokPos))) raise(tokStart, "Unterminated import statement");
+        if (input.charCodeAt(tokPos) === 62) {  // '>'
           return finisher(_filename, input.slice(start, tokPos++));
         }
       }
