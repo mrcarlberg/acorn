@@ -2138,7 +2138,7 @@
       next();
       return finishNode(node, "EmptyStatement");
 
-      // This is an Objective-J statement
+    // Objective-J
     case _interface:
       if (options.objj) {
         next();
@@ -2179,7 +2179,7 @@
       }
       break;
 
-      // This is an Objective-J statement
+    // Objective-J
     case _implementation:
       if (options.objj) {
         next();
@@ -2220,7 +2220,7 @@
       }
       break;
 
-      // This is an Objective-J statement
+    // Objective-J
     case _protocol:
       // If next token is a left parenthesis it is a ProtocolLiternal expression so bail out
       if (options.objj && input.charCodeAt(tokPos) !== 40) { // '('
@@ -2254,7 +2254,7 @@
       }
       break;
 
-      // This is an Objective-J statement
+    // Objective-J
     case _import:
       if (options.objj) {
         next();
@@ -2270,7 +2270,7 @@
       }
       break;
 
-      // This is an Objective-J statement
+    // Objective-J
     case _preprocess:
       if (options.objj) {
         next();
@@ -2278,7 +2278,7 @@
       }
       break;
 
-      // This is a Objective-J statement
+    // Objective-J
     case _class:
       if (options.objj) {
         next();
@@ -2287,7 +2287,7 @@
       }
       break;
 
-      // This is a Objective-J statement
+    // Objective-J
     case _global:
       if (options.objj) {
         next();
@@ -2295,7 +2295,6 @@
         return finishNode(node, "GlobalStatement");
       }
       break;
-
     }
 
       // The indentation is one step to the right here to make sure it
@@ -2794,7 +2793,7 @@
       return finishNode(node, "Dereference");
 
     default:
-      if(tokType.okAsIdent)
+      if (tokType.okAsIdent)
         return parseIdent();
 
       unexpected();
