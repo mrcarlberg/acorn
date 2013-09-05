@@ -2794,7 +2794,7 @@
       return finishNode(node, "Dereference");
 
     default:
-      if(tokType.okAsIdent)
+      if (tokType.okAsIdent)
         return parseIdent();
 
       unexpected();
