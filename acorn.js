@@ -288,12 +288,6 @@
 
   var lastStart, lastEnd, lastEndLoc;
 
-  // This is the tokenizer's state for Objective-J. `afterImport` is used
-  // to make the part between '<' and '>' to be one token if it comes after
-  // a @import token.
-
-  var tokAfterImport;
-
   // This is the tokenizer's state for Objective-J. 'nodeMessageSendObjectExpression'
   // is used to store the expression that is already parsed when a subscript was
   // not really a subscript.
@@ -391,7 +385,7 @@
   // Objective-J @ keywords
 
   var _implementation = {keyword: "implementation"}, _outlet = {keyword: "outlet"}, _accessors = {keyword: "accessors"};
-  var _end = {keyword: "end"}, _import = {keyword: "import", afterImport: true};
+  var _end = {keyword: "end"}, _import = {keyword: "import"};
   var _action = {keyword: "action"}, _selector = {keyword: "selector"}, _class = {keyword: "class"}, _global = {keyword: "global"};
   var _dictionaryLiteral = {keyword: "{"}, _arrayLiteral = {keyword: "["};
   var _ref = {keyword: "ref"}, _deref = {keyword: "deref"};
@@ -695,7 +689,6 @@
     tokCommentsAfter = tokComments;
     tokSpacesAfter = tokSpaces;
     tokRegexpAllowed = type.beforeExpr;
-    tokAfterImport = type.afterImport;
   }
 
   function skipBlockComment(lastIsNewlinePos) {
@@ -874,7 +867,7 @@
   }
 
   function readToken_lt_gt(code, finisher) { // '<>'
-    if (tokAfterImport && options.objj && code === 60) {  // '<'
+    if (tokType === _import && options.objj && code === 60) {  // '<'
       var str = [];
       for (;;) {
         if (tokPos >= inputLen) raise(tokStart, "Unterminated import statement");
