@@ -276,7 +276,7 @@
   // track of the current line, and know when a new line has been
   // entered.
 
-  var tokCurLine, tokLineStart, tokLineStartNext;
+  var tokCurLine, tokLineStart;
 
   // Same as input but for the current token. If options.preprocess is used
   // this can differ due to macros.
@@ -1622,7 +1622,6 @@
   function readWord(preReadWord) {
     var word = preReadWord || readWord1();
     var type = _name;
-    var reservedError;
     if (options.preprocess) {
       var macro;
       if (preprocessStackLastItem) {
