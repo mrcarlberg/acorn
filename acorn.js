@@ -691,7 +691,7 @@
     tokRegexpAllowed = type.beforeExpr;
   }
 
-  function skipBlockComment(lastIsNewlinePos) {
+  function skipBlockComment(lastIsNewlinePos, dontTrack) {
     var startLoc = options.onComment && options.locations && new line_loc_t;
     var start = tokPos, end = input.indexOf("*/", tokPos += 2);
     if (end === -1) raise(tokPos - 2, "Unterminated comment");
@@ -704,14 +704,16 @@
         tokLineStart = match.index + match[0].length;
       }
     }
-    if (options.onComment)
-      options.onComment(true, input.slice(start + 2, end), start, tokPos,
-                        startLoc, options.locations && new line_loc_t);
-    if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(lastIsNewlinePos !== undefined && options.trackCommentsIncludeLineBreak ? lastIsNewlinePos : start, tokPos));
+    if (!dontTrack) {
+      if (options.onComment)
+        options.onComment(true, input.slice(start + 2, end), start, tokPos,
+                          startLoc, options.locations && new line_loc_t);
+      if (options.trackComments)
+        (tokComments || (tokComments = [])).push(input.slice(lastIsNewlinePos !== undefined && options.trackCommentsIncludeLineBreak ? lastIsNewlinePos : start, tokPos));
+    }
   }
 
-  function skipLineComment(lastIsNewlinePos) {
+  function skipLineComment(lastIsNewlinePos, dontTrack) {
     var start = tokPos;
     var startLoc = options.onComment && options.locations && new line_loc_t;
     var ch = input.charCodeAt(tokPos+=2);
@@ -719,11 +721,13 @@
       ++tokPos;
       ch = input.charCodeAt(tokPos);
     }
-    if (options.onComment)
-      options.onComment(false, input.slice(start + 2, tokPos), start, tokPos,
-                        startLoc, options.locations && new line_loc_t);
-    if (options.trackComments)
-      (tokComments || (tokComments = [])).push(input.slice(lastIsNewlinePos !== undefined && options.trackCommentsIncludeLineBreak ? lastIsNewlinePos : start, tokPos));
+    if (!dontTrack) {
+      if (options.onComment)
+        options.onComment(false, input.slice(start + 2, tokPos), start, tokPos,
+                          startLoc, options.locations && new line_loc_t);
+      if (options.trackComments)
+        (tokComments || (tokComments = [])).push(input.slice(lastIsNewlinePos !== undefined && options.trackCommentsIncludeLineBreak ? lastIsNewlinePos : start, tokPos));
+    }
   }
 
   function preprocesSkipRestOfLine() {
@@ -918,7 +922,7 @@
 
   function readToken_preprocess(finisher) { // '#'
     ++tokPos;
-    preprocessReadToken();
+    preprocessReadToken(false, true); // Dont track and it is a preprocessToken
     switch (preTokType) {
       case _preDefine:
         preprocessReadToken();
@@ -1171,7 +1175,7 @@
 
   // Returns true if it stops at a line break
 
-  function preprocessSkipSpace() {
+  function preprocessSkipSpace(skipComments) {
     while (tokPos < inputLen) {
       var ch = input.charCodeAt(tokPos);
       if (ch === 32 || ch === 9 || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
@@ -1190,6 +1194,13 @@
         } else {
           return false;
         }
+      } else if (skipComments && ch === 47) { // '/'
+        var next = input.charCodeAt(tokPos+1);
+        if (next === 42) { // '*'
+          skipBlockComment(null, true); // 'true' for don't track comments
+        } else if (next === 47) { // '/'
+          skipLineComment(null, true); // 'true' for don't track comments
+        } else break;
       } else {
         lineBreak.lastIndex = 0;
         var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
@@ -1241,7 +1252,7 @@
       return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
     }
     if (isIdentifierStart(code) || (code === 92 /* '\' */ && input.charCodeAt(tokPos +1) === 117 /* 'u' */)) return preprocessReadWord();
-    if (getTokenFromCode(code, preprocessFinishToken, true) === false) {
+    if (getTokenFromCode(code, skipComments ? preprocessFinishTokenSkipComments : preprocessFinishToken) === false) {
       // If we are here, we either found a non-ASCII identifier
       // character, or something that's entirely disallowed.
       var ch = String.fromCharCode(code);
@@ -1260,6 +1271,13 @@
     preTokVal = val;
     preTokEnd = tokPos;
     preprocessSkipSpace();
+  }
+
+  function preprocessFinishTokenSkipComments(type, val) {
+    preTokType = type;
+    preTokVal = val;
+    preTokEnd = tokPos;
+    preprocessSkipSpace(true); // 'true' for skip comments
   }
 
   // Continue to the next token.
