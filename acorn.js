@@ -414,6 +414,7 @@
   var _preBackslash = {keyword: "\\"}
 
   var _preprocessParamItem = {type: "preprocessParamItem"}
+  var _preprocessSkipLine = {type: "skipLine"}
 
   // Map keyword names to token types.
 
@@ -1178,7 +1179,7 @@
   function preprocessSkipSpace(skipComments) {
     while (tokPos < inputLen) {
       var ch = input.charCodeAt(tokPos);
-      if (ch === 32 || ch === 9 || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
+      if (ch === 32 || (ch > 8 && ch < 14) || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
         ++tokPos;
       } else if (ch === 92) { // '\'
         // Check if we have an escaped newline. We are using a relaxed treatment of escaped newlines like gcc.
@@ -1227,19 +1228,25 @@
           preNotSkipping = true;
           raise(preTokStart, "Missing #endif");
       }
-      preprocessReadToken();
+      preprocessReadToken(true);
     }
     preNotSkipping = true;
     if (preTokType === _preEndif)
       preIfLevel--;
   }
 
-  function preprocessReadToken() {
+// preprocessToken is used to cancel preNotSkipping when calling from readToken_preprocess.
+// FIXME: Refactor to not use this parameter preprocessToken. It is kind of confusing and it should be possible to do in another way
+  function preprocessReadToken(skipComments, preprocessToken) {
     preTokStart = tokPos;
     preTokInput = input;
     if (tokPos >= inputLen) return _eof;
     var code = input.charCodeAt(tokPos);
-    if (preprocessMacroParameterListMode && code !== 41 && code !== 44) { // ')', ','
+    if (!preprocessToken && !preNotSkipping && code !== 35) { // '#'
+      // If we are skipping take the whole line if the token does not start with '#' (preprocess tokens)
+      preprocesSkipRestOfLine();
+      return preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos));
+    } else if (preprocessMacroParameterListMode && code !== 41 && code !== 44) { // ')', ','
       var parenLevel = 0;
       // If we are parsing a macro parameter list parentheses within each argument must balance
       while(tokPos < inputLen && (parenLevel || (code !== 41 && code !== 44))) { // ')', ','
