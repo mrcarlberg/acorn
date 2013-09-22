@@ -346,7 +346,7 @@
   // make them recognizeable when debugging.
 
   var _num = {type: "num"}, _regexp = {type: "regexp"}, _string = {type: "string"};
-  var _name = {type: "name"}, _eof = {type: "eof"}, _eol = {type: "eol"};
+  var _name = {type: "name"}, _eof = {type: "eof"};
 
   // Keyword tokens. The `keyword` property (also used in keyword-like
   // operators) indicates that the token originated from an
@@ -1085,7 +1085,7 @@
     }, {});
   }
 
-  function getTokenFromCode(code, finisher, allowEndOfLineToken) {
+  function getTokenFromCode(code, finisher) {
     switch(code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit.
@@ -1162,10 +1162,6 @@
         return finishOp(_preBackslash, 1, finisher);
       }
       return false;
-    }
-
-    if (allowEndOfLineToken && newline.test(String.fromCharCode(code))) {
-      return finishOp(_eol, 1, finisher);
     }
 
     return false;
