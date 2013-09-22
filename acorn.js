@@ -732,7 +732,7 @@
     // If the last none whitespace character is a '\' the line will continue on the the next line.
     // Here we break the way gcc works as it joins the lines first and then tokenize it. Because of
     // this we can't have a newline in the middle of a word.
-    while (tokPos < inputLen && ((ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8329) || last === 92)) { // White space and '\'
+    while (tokPos < inputLen && ((ch !== 10 && ch !== 13 && ch !== 8232 && ch !== 8233) || last === 92)) { // White space and '\'
       if (ch != 32 && ch != 9 && ch != 160 && (ch < 5760 || !nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch))))
         last = ch;
       ch = input.charCodeAt(++tokPos);
@@ -874,7 +874,7 @@
         var ch = input.charCodeAt(++tokPos);
         if (ch === 62)  // '>'
           return finisher(_filename, input.slice(start, tokPos++));
-        if (tokPos >= inputLen || ch === 13 || ch === 10 || ch === 8232 || ch === 8329)
+        if (tokPos >= inputLen || ch === 13 || ch === 10 || ch === 8232 || ch === 8233)
           raise(tokStart, "Unterminated import statement");
       }
     }
@@ -1558,7 +1558,7 @@
           }
         }
       } else {
-        if (ch === 13 || ch === 10 || ch === 8232 || ch === 8329) raise(tokStart, "Unterminated string constant");
+        if (ch === 13 || ch === 10 || ch === 8232 || ch === 8233) raise(tokStart, "Unterminated string constant");
         out += String.fromCharCode(ch); // '\'
         ++tokPos;
       }
