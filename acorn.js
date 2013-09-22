@@ -794,13 +794,15 @@
           // If we are at the end of the input inside a macro continue at last position
           var lastItem = preprocessStack.pop();
           tokPos = lastItem.end;
-          input = lastItem.input;
+          tokInput = input = lastItem.input;
           inputLen = lastItem.inputLen;
+          tokStart= lastItem.tokStart;
           lastEnd = lastItem.lastEnd;
           lastStart = lastItem.lastStart;
           // Set the last item
           var lastIndex = preprocessStack.length;
           preprocessStackLastItem = lastIndex ? preprocessStack[lastIndex - 1] : null;
+          skipSpace();
         } else {
           break;
         }
@@ -1660,7 +1662,8 @@
           }
           // If the macro defines anything add it to the preprocess input stack
           if (macroString) {
-            preprocessStackLastItem = {macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, input: input, inputLen: inputLen, lastStart: tokStart, lastEnd: lastTokPos};
+            preprocessStackLastItem = {macro: macro, parameterDict: parameters, start: macroStart, end:lastTokPos, inputLen: inputLen, tokStart: tokStart, lastStart: lastStart, lastEnd: lastEnd};
+            preprocessStackLastItem.input = input;
             preprocessStack.push(preprocessStackLastItem);
             input = macroString;
             inputLen = macroString.length;
