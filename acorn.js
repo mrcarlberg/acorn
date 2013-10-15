@@ -276,12 +276,12 @@
   // track of the current line, and know when a new line has been
   // entered.
 
-  var tokCurLine, tokLineStart;
+  var tokCurLine, tokLineStart, tokLineStartNext;
 
   // Same as input but for the current token. If options.preprocess is used
   // this can differ due to macros.
 
-  var tokInput, preTokInput;
+  var tokInput, lastTokInput, preTokInput, realTokStart;
 
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
@@ -308,6 +308,7 @@
   var preprocessStack = [];
   var preprocessStackLastItem;
   var preprocessMacroParameterListMode = false;
+  var preprocessIsParsingPreprocess = false;
 
   // This function is used to raise exceptions on parse errors. It
   // takes either a `{line, column}` object or an offset integer (into
@@ -346,7 +347,7 @@
   // make them recognizeable when debugging.
 
   var _num = {type: "num"}, _regexp = {type: "regexp"}, _string = {type: "string"};
-  var _name = {type: "name"}, _eof = {type: "eof"};
+  var _name = {type: "name"}, _eof = {type: "eof"}, _eol = {type: "eol"};
 
   // Keyword tokens. The `keyword` property (also used in keyword-like
   // operators) indicates that the token originated from an
@@ -645,18 +646,11 @@
   var preprocessorTokens = [_preIf, _preIfdef, _preIfndef, _preElse, _preElseIf, _preEndif];
 
   function finishToken(type, val) {
-    // FIXME: Do we need to do this? It is very time consuming.
-    // If we get any of the preprocessor tokens skip it and read next
-    var preprocess = options.preprocess;
-    if (preprocess && (type in preprocessorTokens)) {
-      console.error("Acorn: ERROR when finishing token '" + JSON.stringify(type) + "' at file position " + tokPos + ". Please report this error on http://github.com/mrcarlberg/acorn. Trying to recover...");
-      return readToken();
-    }
     tokEnd = tokPos;
     if (options.locations) tokEndLoc = new line_loc_t;
     tokType = type;
     skipSpace();
-    if (preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = type === _name ? val : type.keyword;
       tokPos += 2;
       if (val1) {
@@ -801,7 +795,7 @@
           tokPos = lastItem.end;
           tokInput = input = lastItem.input;
           inputLen = lastItem.inputLen;
-          tokStart= lastItem.tokStart;
+          tokStart = lastItem.tokStart;
           lastEnd = lastItem.lastEnd;
           lastStart = lastItem.lastStart;
           // Set the last item
@@ -926,6 +920,7 @@
     preprocessReadToken(false, true); // Dont track and it is a preprocessToken
     switch (preTokType) {
       case _preDefine:
+        preprocessIsParsingPreprocess = true;
         preprocessReadToken();
         var macroIdentifierEnd = preTokEnd;
         var macroIdentifier = preprocessGetIdent();
@@ -939,11 +934,14 @@
             parameters.push(preprocessGetIdent());
           }
         }
-        var start = tokPos = preTokStart;
-        preprocesSkipRestOfLine();
-        var macroString = input.slice(start, tokPos);
+        var start = preTokStart;
+        while(preTokType !== _eol && preTokType !== _eof)
+          preprocessReadToken();
+
+        var macroString = input.slice(start, preTokStart);
         macroString = macroString.replace(/\\/g, " ");
         options.preprocessAddMacro(new Macro(macroIdentifier, macroString, parameters));
+        preprocessIsParsingPreprocess = false;
         break;
 
       case _preUndef:
@@ -1034,13 +1032,22 @@
         break;
 
       default:
+        if (preprocessStackLastItem) {
+          // If the current macro has parameters check if this word is one of them and should be stringifyed
+          if (preprocessStackLastItem.parameterDict && preprocessStackLastItem.macro.isParameterFunction()(preTokVal)) {
+            var macro = preprocessStackLastItem.parameterDict[preTokVal];
+            if (macro) {
+              return finishToken(_string, macro.macro);
+            }
+          }
+        }
         raise(preTokStart, "Invalid preprocessing directive");
         preprocesSkipRestOfLine();
         // Return the complete line as a token to make it possible to create a PreProcessStatement if we are between two statements
         return finisher(_preprocess);
         //raise(tokPos, "Invalid preprocessing directive '" + (preTokType.keyword || preTokVal) + "' " + input.slice(tokStart, tokPos));
     }
-    // Drop this token and read next non preprocess token
+    // Drop the regular token as this was a preprocess token and then read next token
     finishToken(_preprocess);
     return readToken();
   }
@@ -1092,7 +1099,7 @@
     }, {});
   }
 
-  function getTokenFromCode(code, finisher) {
+  function getTokenFromCode(code, finisher, allowEndOfLineToken) {
     switch(code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit.
@@ -1160,6 +1167,10 @@
 
     case 35: // '#'
       if (options.preprocess) {
+        if (preprocessIsParsingPreprocess) {
+          ++tokPos;
+          return finisher(_preprocess);
+        }
         return readToken_preprocess(finisher);
       }
       return false;
@@ -1171,15 +1182,22 @@
       return false;
     }
 
+    if (allowEndOfLineToken) {
+      if (code === 13) {
+        return finishOp(_eol, input.charCodeAt(tokPos+1) === 10 ? 2 : 1, finisher);
+      } else if (code === 10 || code === 8232 || code === 8233)
+        return finishOp(_eol, 1, finisher);
+    }
+
     return false;
   }
 
-  // Returns true if it stops at a line break
+  // Returns true if it stops at a line break.
 
   function preprocessSkipSpace(skipComments) {
     while (tokPos < inputLen) {
       var ch = input.charCodeAt(tokPos);
-      if (ch === 32 || (ch > 8 && ch < 14) || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
+      if (ch === 32 || ch === 9 || ch === 11 || ch === 12 || ch === 160 || (ch >= 5760 && nonASCIIwhitespaceNoNewLine.test(String.fromCharCode(ch)))) {
         ++tokPos;
       } else if (ch === 92) { // '\'
         // Check if we have an escaped newline. We are using a relaxed treatment of escaped newlines like gcc.
@@ -1245,7 +1263,7 @@
     if (!preprocessToken && !preNotSkipping && code !== 35) { // '#'
       // If we are skipping take the whole line if the token does not start with '#' (preprocess tokens)
       preprocesSkipRestOfLine();
-      return preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos));
+      return preprocessFinishToken(_preprocessSkipLine, input.slice(preTokStart, tokPos++));
     } else if (preprocessMacroParameterListMode && code !== 41 && code !== 44) { // ')', ','
       var parenLevel = 0;
       // If we are parsing a macro parameter list parentheses within each argument must balance
@@ -1259,7 +1277,7 @@
       return preprocessFinishToken(_preprocessParamItem, input.slice(preTokStart, tokPos));
     }
     if (isIdentifierStart(code) || (code === 92 /* '\' */ && input.charCodeAt(tokPos +1) === 117 /* 'u' */)) return preprocessReadWord();
-    if (getTokenFromCode(code, skipComments ? preprocessFinishTokenSkipComments : preprocessFinishToken) === false) {
+    if (getTokenFromCode(code, skipComments ? preprocessFinishTokenSkipComments : preprocessFinishToken, true) === false) { // Allow _eol token
       // If we are here, we either found a non-ASCII identifier
       // character, or something that's entirely disallowed.
       var ch = String.fromCharCode(code);
@@ -1540,8 +1558,6 @@
 
   // Read a string value, interpreting backslash-escapes.
 
-  var rs_str = [];
-
   function readString(quote, finisher) {
     tokPos++;
     var out = "";
@@ -1645,6 +1661,7 @@
   function readWord(preReadWord) {
     var word = preReadWord || readWord1();
     var type = _name;
+    var reservedError;
     if (options.preprocess) {
       var macro;
       if (preprocessStackLastItem) {
@@ -1749,7 +1766,9 @@
     lastStart = tokStart;
     lastEnd = tokEnd;
     lastEndLoc = tokEndLoc;
+    lastTokInput = tokInput;
     nodeMessageSendObjectExpression = null;
+    realTokStart = tokPos;
     readToken();
   }
 
@@ -1890,7 +1909,7 @@
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(tokInput.slice(lastEnd, tokStart)) ||
+      (tokType === _eof || tokType === _braceR || newline.test(lastTokInput.slice(lastEnd, realTokStart)) ||
         (nodeMessageSendObjectExpression && options.objj));
   }
 
