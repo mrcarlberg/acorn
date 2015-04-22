@@ -286,7 +286,7 @@
 
   base.IvarDeclaration = ignore;
 
-  base.MethodDeclarationStatement = ignore;
+  base.TypeDefStatement = ignore;
 
   base.MethodDeclarationStatement = function(node, st, c) {
     c(node.body, st, "Statement");
