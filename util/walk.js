@@ -286,10 +286,23 @@
 
   base.IvarDeclaration = ignore;
 
+  base.PreprocessStatement = ignore;
+  base.ClassStatement = ignore;
+  base.GlobalStatement = ignore;
+
+  base.ProtocolDeclarationStatement = function(node, st, c) {
+    if (node.required) for (var i = 0; i < node.required.length; ++i) {
+      c(node.required[i], st, "Statement");
+    }
+    if (node.optional) for (var i = 0; i < node.optional.length; ++i) {
+      c(node.optional[i], st, "Statement");
+    }
+  }
+
   base.TypeDefStatement = ignore;
 
   base.MethodDeclarationStatement = function(node, st, c) {
-    c(node.body, st, "Statement");
+    if (node.body) c(node.body, st, "Statement");
   }
 
   base.MessageSendExpression = function(node, st, c) {
