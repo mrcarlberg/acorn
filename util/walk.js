@@ -299,6 +299,10 @@
     }
   }
 
+  base.ProtocolLiteralExpression = function(node, st, c) {
+    c(node.id, st, "Identifier");
+  }
+
   base.TypeDefStatement = ignore;
 
   base.MethodDeclarationStatement = function(node, st, c) {
