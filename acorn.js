@@ -3731,12 +3731,12 @@
                 }
               }
             }
-          }
-          if (!nextKeyWord) {
-            // It must be a class name if it was not a basic type. // FIXME: This is not true
-            node.name = (!options.forbidReserved && tokType.keyword) || unexpected();
-            node.typeisclass = true;
-            next();
+            if (!nextKeyWord) {
+              // It must be a class name if it was not a basic type. // FIXME: This is not true
+              node.name = (!options.forbidReserved && tokType.keyword) || unexpected();
+              node.typeisclass = true;
+              next();
+            }
           }
         }
       }
