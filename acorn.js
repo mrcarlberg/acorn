@@ -945,12 +945,10 @@
           inputLen = lastItem.inputLen;
           tokCurLine = lastItem.currentLine;
           tokLineStart = lastItem.currentLineStart;
-          /*tokStart = *///tokFirstStart = lastItem.tokStart;
-          //lastEnd = lastItem.lastEnd;
-          //lastStart = lastItem.lastStart;
           preprocessOnlyTransformArgumentsForLastToken = lastItem.onlyTransformArgumentsForLastToken;
           preprocessParameterScope = lastItem.parameterScope;
           tokPosMacroOffset = lastItem.macroOffset;
+          sourceFile = lastItem.sourceFile;
           // Set the last item
           var lastIndex = preprocessStack.length;
           preprocessStackLastItem = lastIndex ? preprocessStack[lastIndex - 1] : null;
