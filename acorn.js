@@ -133,7 +133,14 @@
     // #if macro1
     // #else
     // #endif
+    // etc...
     preprocess: true,
+    // Preprocess get include file function. It should return an object with two attributes
+    // 'include': a string with the file to be included
+    // 'sourceFile': is optional and should be a string with the filename. It will
+    // be included in the locations property as 'source'
+    // Return null if file can't be found. The parser will raise an exception
+    preprocessGetIncludeFile: defaultGetIncludeFile,
     // Preprocess add macro function
     preprocessAddMacro: defaultAddMacro,
     // Preprocess get macro function
@@ -169,6 +176,10 @@
                               __BROWSER__: function() {return macrosMakeBuiltin("__BROWSER__", typeof(window) !== "undefined" ? "1" : null, tokPos)},
                               __LINE__: function() {return macrosMakeBuiltin("__LINE__", String(options.locations ? tokCurLine : getLineInfo(input, tokPos).line), tokPos)},
                             }
+
+  function defaultGetIncludeFile(filename) {
+    return {include: "var a = 42;\n", sourceFile: filename};
+  }
 
   function defaultAddMacro(macro) {
     macros[macro.identifier] = macro;
@@ -491,6 +502,7 @@
   var _preWarning = {keyword: "warning"};
   var _preprocessParamItem = {type: "preprocessParamItem"}
   var _preprocessSkipLine = {type: "skipLine"}
+  var _preInclude = {keyword: "include"};
 
   // Map keyword names to token types.
 
@@ -522,7 +534,7 @@
 
   var keywordTypesPreprocessor = {"define": _preDefine, "pragma": _prePragma, "ifdef": _preIfdef, "ifndef": _preIfndef,
                                 "undef": _preUndef, "if": _preIf, "endif": _preEndif, "else": _preElse, "elif": _preElseIf,
-                                "defined": _preDefined, "warning": _preWarning, "error": _preError};
+                                "defined": _preDefined, "warning": _preWarning, "error": _preError, "include": _preInclude};
 
   // Punctuation token types. Again, the `type` property is purely for debugging.
 
@@ -645,7 +657,7 @@
 
   // The preprocessor keywords.
 
-  var isKeywordPreprocessor = makePredicate("define undef pragma if ifdef ifndef else elif endif defined error warning");
+  var isKeywordPreprocessor = makePredicate("define undef pragma if ifdef ifndef else elif endif defined error warning include");
 
   // ## Character categories
 
@@ -1213,6 +1225,22 @@
         preprocessReadToken(false, false, true);
         var expr = preprocessParseExpression();
         raise(start, "Error: " + String(preprocessEvalExpression(expr)));
+        break;
+
+      case _preInclude:
+        preprocessReadToken();
+        if (preTokType === _string)
+          var localfilepath = true;
+        else if (preTokType ===_filename)
+          var localfilepath = false;
+        else
+          raise(preTokStart, "Expected \"FILENAME\" or <FILENAME>");
+        var includeDict = options.preprocessGetIncludeFile(preTokVal, localfilepath) || raise(preTokStart, "'" + preTokVal + "' file not found");
+        var includeString = includeDict.include;
+        var includeMacro = new Macro(null, includeString, null, 0, false, null, false, null, includeDict.sourceFile);
+        preprocessFinishToken(_preprocess, null, null, true); // skipEOL
+        return readTokenFromMacro(includeMacro, tokPosMacroOffset, null, null, tokPos, next);
+
         break;
 
       default:
@@ -2288,7 +2316,7 @@
     // If we are evaluation a macro expresion an empty macro definition means true or '1'
     if(!macroString && nextFinisher === preprocessNext) macroString = "1";
     if (macroString) {
-      preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart/*, lastStart: lastStart, lastEnd: lastEnd*/};
+      preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
       if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
       preprocessStackLastItem.input = input;
       preprocessStack.push(preprocessStackLastItem);
@@ -2299,6 +2327,7 @@
       tokPos = 0;
       tokCurLine = 0;
       tokLineStart = 0;
+      if (macro.sourceFile) sourceFile = macro.sourceFile;
     } else if (preConcatenating) {
       // If we are concatenating or stringifying and the macro is empty just make an empty string.
       finishToken(_name, "");
@@ -2318,7 +2347,7 @@
   // parameterScope is the parameter scope
   // varadicName is the name of the varadic parameter if it is a varadic macro
   // locationOffset is the current line that the macro starts at and the position on the line
-  var Macro = exports.Macro = function Macro(ident, macro, parameters, start, isArgument, parameterScope, variadicName, locationOffset) {
+  var Macro = exports.Macro = function Macro(ident, macro, parameters, start, isArgument, parameterScope, variadicName, locationOffset, aSourceFile) {
     this.identifier = ident;
     if (macro != null) this.macro = macro;
     if (parameters) this.parameters = parameters;
@@ -2327,6 +2356,7 @@
     if (parameterScope) this.parameterScope = parameterScope;
     if (variadicName) this.variadicName = variadicName;
     if (locationOffset) this.locationOffset = locationOffset;
+    if (aSourceFile) this.sourceFile = aSourceFile;
   }
 
   Macro.prototype.isParameterFunction = function() {
@@ -2396,7 +2426,7 @@
   function node_loc_t() {
     this.start = tokStartLoc;
     this.end = null;
-    if (sourceFile !== null) this.source = sourceFile;
+    if (sourceFile != null) this.source = sourceFile;
   }
 
   function startNode() {
