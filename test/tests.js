@@ -7,52 +7,6 @@ if (typeof exports != "undefined") {
   var testAssert = require("./driver.js").testAssert;
 }
 
-// `defined` may be used to test existence of a macro. Both 'defined FOO' and 'defined(FOO)' are accepted.
-test("#define FOO(arg) arg * 2\n\n#if defined FOO && defined(FOO)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 58,
-  "end": 63,
-  "body": [
-    {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 63,
-      "expression": {
-        "type": "Literal",
-        "start": 58,
-        "end": 62,
-        "value": true,
-        "raw": "true"
-      }
-    }
-  ]
-}, {
-  preprocess: true
-});
-
-// `defined` may be used to test existence of a macro. Both 'defined FOO' and 'defined(FOO)' are accepted.
-test("#define FOO(arg) arg * 2\n\n#if defined FOO && defined(FOO)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 58,
-  "end": 63,
-  "body": [
-    {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 63,
-      "expression": {
-        "type": "Literal",
-        "start": 58,
-        "end": 62,
-        "value": true,
-        "raw": "true"
-      }
-    }
-  ]
-}, {
-  preprocess: true
-});
-
 test("this\n", {
   type: "Program",
   body: [
