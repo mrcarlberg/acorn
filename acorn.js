@@ -390,8 +390,8 @@
     if (options.lineNoInErrorMessage)
       message += " (" + pos.line + ":" + pos.column + ")";
     var syntaxError = new SyntaxError(message);
-    syntaxError.line = pos.line;
-    syntaxError.column = pos.column;
+    syntaxError.messageOnLine = pos.line;
+    syntaxError.messageOnColumn = pos.column;
     syntaxError.lineStart = pos.lineStart;
     syntaxError.lineEnd = pos.lineEnd;
     syntaxError.fileName = sourceFile;
