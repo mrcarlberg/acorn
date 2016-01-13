@@ -782,8 +782,8 @@
       if (options.locations) tokEndLoc = new line_loc_t;
     }
     tokType = type;
-    skipSpace();
-    if (options.preprocess && input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
+    var ch = skipSpace();
+    if (ch === 35 && options.preprocess && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = val != null ? val : type.keyword || type.type;
       tokPos += 2;
       if (val1 != null) {
@@ -885,21 +885,26 @@
   // will store all skipped comments in `tokComments`. If
   // `options.trackSpaces` is on, will store the last skipped spaces in
   // `tokSpaces`.
+  // Returns the char code of the first none whitespace or comment
 
   function skipSpace() {
     tokComments = null;
     tokSpaces = null;
-    onlySkipSpace();
+    return onlySkipSpace();
   }
+
+  // Returns the char code of the first none whitespace or comment
 
   function onlySkipSpace(dontSkipEOL, dontSkipMacroBoundary, dontSkipComments) {
     var spaceStart = tokPos,
-        lastIsNewlinePos;
+        lastIsNewlinePos,
+        ch;
     for(;;) {
-      var ch = input.charCodeAt(tokPos);
+      ch = input.charCodeAt(tokPos);
       if (ch === 32) { // ' '
         ++tokPos;
-      } else if (ch === 13 && !dontSkipEOL) {
+      } else if (ch === 13) {
+        if (dontSkipEOL) break;
         lastIsNewlinePos = tokPos;
         ++tokPos;
         var next = input.charCodeAt(tokPos);
@@ -910,7 +915,8 @@
           ++tokCurLine;
           tokLineStart = tokPos;
         }
-      } else if (ch === 10 && !dontSkipEOL) {
+      } else if (ch === 10) {
+        if (dontSkipEOL) break;
         lastIsNewlinePos = tokPos;
         ++tokPos;
         if (options.locations) {
@@ -919,7 +925,8 @@
         }
       } else if (ch === 9) {
         ++tokPos;
-      } else if (ch === 47 && !dontSkipComments) { // '/'
+      } else if (ch === 47) { // '/'
+        if (dontSkipComments) break;
         var next = input.charCodeAt(tokPos+1);
         if (next === 42) { // '*'
           if (options.trackSpaces)
@@ -956,7 +963,8 @@
         } else {
           break;
         }
-      } else if (ch === 92 && options.preprocess) { // '\'
+      } else if (ch === 92) { // '\'
+        if (!options.preprocess) break;
         // Check if we have an escaped newline. We are using a relaxed treatment of escaped newlines like gcc.
         // We allow spaces, horizontal and vertical tabs, and form feeds between the backslash and the subsequent newline
         var pos = tokPos + 1;
@@ -978,6 +986,7 @@
         break;
       }
     }
+    return ch;
   }
 
   // ### Token reading
@@ -1037,7 +1046,7 @@
   }
 
   function readToken_lt_gt(code, finisher) { // '<>'
-    if (tokType === _import && options.objj && code === 60) {  // '<'
+    if (code === 60 && (tokType === _import || preTokType === _preInclude) && options.objj) {  // '<'
       for (var start = tokPos + 1;;) {
         var ch = input.charCodeAt(++tokPos);
         if (ch === 62)  // '>'
