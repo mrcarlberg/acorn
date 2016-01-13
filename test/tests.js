@@ -29842,6 +29842,96 @@ test("#if defined FOO\n\"foo\";\n#elif defined BAR\n\"bar\";\n#else\n\"baz\";\n#
   preprocess: true
 });
 
+// #include
+test("a = 1\n#include \"x.h\"\nb = 2", {
+  "type": "Program",
+  "start": 0,
+  "end": 26,
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "start": 0,
+      "end": 5,
+      "expression": {
+        "type": "AssignmentExpression",
+        "start": 0,
+        "end": 5,
+        "operator": "=",
+        "left": {
+          "type": "Identifier",
+          "start": 0,
+          "end": 1,
+          "name": "a"
+        },
+        "right": {
+          "type": "Literal",
+          "start": 4,
+          "end": 5,
+          "value": 1,
+          "raw": "1"
+        }
+      }
+    },
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 9,
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 4,
+          "end": 9,
+          "id": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "a"
+          },
+          "init": {
+            "type": "Literal",
+            "start": 8,
+            "end": 9,
+            "value": 9,
+            "raw": "9"
+          }
+        }
+      ],
+      "kind": "var"
+    },
+    {
+      "type": "ExpressionStatement",
+      "start": 21,
+      "end": 26,
+      "expression": {
+        "type": "AssignmentExpression",
+        "start": 21,
+        "end": 26,
+        "operator": "=",
+        "left": {
+          "type": "Identifier",
+          "start": 21,
+          "end": 22,
+          "name": "b"
+        },
+        "right": {
+          "type": "Literal",
+          "start": 25,
+          "end": 26,
+          "value": 2,
+          "raw": "2"
+        }
+      }
+    }
+  ]
+}, {
+  preprocess: true,
+  preprocessGetIncludeFile: function(filename, islocalfilepath) {
+    return {include: "var a = 9;\n", sourceFile: filename};
+  },
+  locations: true
+});
+
+
 // Comments/spaces are only tracked for sections of code that are not skipped
 // This test is turned off as we don't track comments like this currently
 /*test("x = 0;\n// before #if\n#if 1\n// before 1\nx = 1;\n// after 1\n#else\n// before 2\nx = 2\n// after 2\n#endif\n\n// after #if\nx;\n", {
