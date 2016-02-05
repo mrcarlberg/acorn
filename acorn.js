@@ -2313,7 +2313,7 @@
         }
       }
     }
-    return scanInput.charCodeAt(scanPos) === first && (second == null || scanInput.charCodeAt(scanPos + 1) === second);
+    return scanInput && scanInput.charCodeAt(scanPos) === first && (second == null || scanInput.charCodeAt(scanPos + 1) === second);
   }
 
   // Push macro to stack and start read from it.
