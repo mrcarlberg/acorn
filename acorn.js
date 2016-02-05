@@ -3714,11 +3714,12 @@
   // 'int' can be followed by an optinal 'long'. 'long' can be followed by an optional extra 'long'
 
   function parseObjectiveJType(startFrom) {
-    var node = startFrom ? startNodeFrom(startFrom) : startNode();
+    var node = startFrom ? startNodeFrom(startFrom) : startNode(), allowProtocol = false;
     if (tokType === _name) {
       // It should be a class name
       node.name = tokVal;
       node.typeisclass = true;
+      allowProtocol = true;
       next();
     } else {
       node.typeisclass = false;
@@ -3726,26 +3727,14 @@
       // Do nothing more if it is 'void'
       if (!eat(_void)) {
         if (eat(_id)) {
-          // Is it 'id' followed by a '<' parse protocols. Do nothing more if it is only 'id'
-          if (tokVal === '<') {
-            var first = true,
-                protocols = [];
-            node.protocols = protocols;
-            do {
-              next();
-              if (first)
-                first = false;
-              else
-                eat(_comma);
-              protocols.push(parseIdent(true));
-            } while (tokVal !== '>');
-            next();
-          }
+          allowProtocol = true;
         } else {
           // Now check if it is some basic type or an approved combination of basic types
           var nextKeyWord;
           if (eat(_float) || eat(_boolean) || eat(_SEL) || eat(_double))
+          {
             nextKeyWord = tokType.keyword;
+          }
           else {
             if (eat(_signed) || eat(_unsigned))
               nextKeyWord = tokType.keyword || true;
@@ -3772,13 +3761,31 @@
               // It must be a class name if it was not a basic type. // FIXME: This is not true
               node.name = (!options.forbidReserved && tokType.keyword) || unexpected();
               node.typeisclass = true;
+              allowProtocol = true;
               next();
             }
           }
         }
       }
     }
-   return finishNode(node, "ObjectiveJType");
+    if (allowProtocol) {
+      // Is it 'id' or classname followed by a '<' then parse protocols.
+      if (tokVal === '<') {
+        var first = true,
+            protocols = [];
+        node.protocols = protocols;
+        do {
+          next();
+          if (first)
+            first = false;
+          else
+            eat(_comma);
+          protocols.push(parseIdent(true));
+        } while (tokVal !== '>');
+        next();
+      }
+    }
+    return finishNode(node, "ObjectiveJType");
   }
 
 });
