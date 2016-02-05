@@ -235,10 +235,18 @@
 
   base.Expression = skipThrough;
   base.ThisExpression = ignore;
-  base.ArrayExpression = function(node, st, c) {
+  base.ArrayExpression = base.ArrayLiteral = function(node, st, c) {
     for (var i = 0; i < node.elements.length; ++i) {
       var elt = node.elements[i];
       if (elt) c(elt, st, "Expression");
+    }
+  };
+  base.DictionaryLiteral = function(node, st, c) {
+    for (var i = 0; i < node.keys.length; i++) {
+      var key = node.keys[i];
+      c(key, st, "Expression");
+      var value = node.values[i];
+      c(value, st, "Expression");
     }
   };
   base.ObjectExpression = function(node, st, c) {
@@ -301,6 +309,14 @@
 
   base.ProtocolLiteralExpression = function(node, st, c) {
     c(node.id, st, "Identifier");
+  }
+
+  base.Reference = function(node, st, c) {
+    c(node.element, st, "Expression");
+  }
+
+  base.Dereference = function(node, st, c) {
+    c(node.expr, st, "Expression");
   }
 
   base.TypeDefStatement = ignore;
