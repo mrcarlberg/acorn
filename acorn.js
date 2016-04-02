@@ -2128,7 +2128,7 @@
         // Lets look ahead to find out if we find a '##' for token concatenate
         // We don't want to prescan spaces across macro boundary as the macro stack will fall apart
         // So we do a special prescan if we have to cross a boundary all in the name of speed
-        if (onlySkipSpace(true, true)) { // don't skip EOL and don't skip macro boundary.
+        if (onlySkipSpace(true, true) === true) { // don't skip EOL and don't skip macro boundary.
           if (preprocessPrescanFor(35, 35)) // Prescan across boundary for '##' as we crossed a boundary
             onlyTransformArguments = 2;
         } else if (input.charCodeAt(tokPos) === 35 && input.charCodeAt(tokPos + 1) === 35) { // '##'
@@ -2175,7 +2175,7 @@
         var pos = tokPos;
         var loc;
         if (options.locations) loc = new line_loc_t;
-        if ((onlySkipSpace(true, true) && preprocessPrescanFor(40)) || input.charCodeAt(tokPos) === 40) { // '('
+        if ((onlySkipSpace(true, true) === true && preprocessPrescanFor(40)) || input.charCodeAt(tokPos) === 40) { // '('
           nextIsParenL = true;
         } else {
           // We didn't find a '(' so don't transform to the macro. Return the real tokEndPos so we get correct token end values.
