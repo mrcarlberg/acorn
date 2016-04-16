@@ -135,7 +135,7 @@
     // #endif
     // etc...
     preprocess: true,
-    // Preprocess get include file function. It should return an object with two attributes
+    // Preprocess 'get include file' function. It should return an object with two attributes
     // 'include': a string with the file to be included
     // 'sourceFile': is optional and should be a string with the filename. It will
     // be included in the locations property as 'source'
