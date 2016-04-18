@@ -156,7 +156,12 @@
     macros: null,
     // Turn off lineNoInErrorMessage to exclude line number in error messages
     // Needs to be on to run test cases
-    lineNoInErrorMessage: true
+    lineNoInErrorMessage: true,
+    // Array of files to parse before parsing the main file. Each item is an
+    // object containing the properties 'include' and 'sourceFile'. 'include'
+    // has the content from the file and 'sourceFile' has the file path.
+    // The preprocess options must be turn on for this.
+    preIncludeFiles: null
   };
 
   function setOptions(opts) {
@@ -2323,18 +2328,7 @@
     // If we are evaluation a macro expresion an empty macro definition means true or '1'
     if(!macroString && nextFinisher === preprocessNext) macroString = "1";
     if (macroString) {
-      preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
-      if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
-      preprocessStackLastItem.input = input;
-      preprocessStack.push(preprocessStackLastItem);
-      preprocessOnlyTransformArgumentsForLastToken = onlyTransformArguments;
-      input = macroString;
-      inputLen = macroString.length;
-      tokPosMacroOffset = macro.start;
-      tokPos = 0;
-      tokCurLine = 0;
-      tokLineStart = 0;
-      if (macro.sourceFile) sourceFile = macro.sourceFile;
+      pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments);
     } else if (preConcatenating) {
       // If we are concatenating or stringifying and the macro is empty just make an empty string.
       finishToken(_name, "");
@@ -2344,6 +2338,23 @@
     onlySkipSpace();
     nextFinisher(true, onlyTransformArguments, forceRegexp, true); // Stealth and Preprocess macros
     return true;
+  }
+
+  // Push macro to stack and reset tokPos etc.
+  // macroString is the string from the macro. It is usually 'macro.macro' but the caller can modify it if needed
+  function pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments) {
+    preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
+    if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
+    preprocessStackLastItem.input = input;
+    preprocessStack.push(preprocessStackLastItem);
+    preprocessOnlyTransformArgumentsForLastToken = onlyTransformArguments;
+    input = macroString;
+    inputLen = macroString.length;
+    tokPosMacroOffset = macro.start;
+    tokPos = 0;
+    tokCurLine = 0;
+    tokLineStart = 0;
+    if (macro.sourceFile) sourceFile = macro.sourceFile;
   }
 
   // ident is the identifier name for the macro
@@ -2586,9 +2597,21 @@
   // statements, and wraps them in a Program node.  Optionally takes a
   // `program` argument.  If present, the statements will be appended
   // to its body instead of creating a new node.
+  // If there are any pre include files they will be pushed onto the macro stack
 
   function parseTopLevel(program) {
     lastStart = lastEnd = tokPos;
+
+    if (options.preprocess) {
+      var preIncludeFiles = options.preIncludeFiles;
+      if (preIncludeFiles) for (var i = 0, size = preIncludeFiles.length; i < size; i++) {
+        var preIncludeFile = preIncludeFiles[i];
+        var preIncludeMacro = new Macro(null, preIncludeFile.include, null, 0, false, null, false, null, preIncludeFile.sourceFile);
+        console.log("preIncludeFile: " + JSON.stringify(preIncludeFile));
+        pushMacroToStack(preIncludeMacro, preIncludeMacro.macro, 0, null, null, tokPos);
+      }
+    }
+
     if (options.locations) lastEndLoc = new line_loc_t;
     inFunction = strict = null;
     labels = [];

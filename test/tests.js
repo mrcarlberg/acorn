@@ -29885,6 +29885,64 @@ test("a = 1\n#include \"x.h\"\nb = 2", {
   locations: true
 });
 
+// pre include files
+test("var y =3;", {
+  "type": "Program",
+  "start": 0,
+  "end": 9,
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 5,
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 4,
+          "end": 5,
+          "id": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "x"
+          },
+          "init": null
+        }
+      ],
+      "kind": "var"
+    },
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 8,
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 4,
+          "end": 8,
+          "id": {
+            "type": "Identifier",
+            "start": 4,
+            "end": 5,
+            "name": "y"
+          },
+          "init": {
+            "type": "Literal",
+            "start": 7,
+            "end": 8,
+            "value": 3,
+            "raw": "3"
+          }
+        }
+      ],
+      "kind": "var"
+    }
+  ]
+}, {
+  preprocess: true,
+  preIncludeFiles: [{include:"var x;\n", sourceFile:"preinclude.file"}],
+  locations: true
+});
 
 // Comments/spaces are only tracked for sections of code that are not skipped
 // This test is turned off as we don't track comments like this currently
