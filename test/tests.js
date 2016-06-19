@@ -28349,6 +28349,37 @@ test("#define paste_fail(arg1, arg2)  arg1 ## arg2\nx = paste_fail(\"paste\", + 
   preprocess: true
 });
 
+// Concatenation of tokens is possible when evaluating macros
+test("#define X_FOO 1\n#define X(FEATURE) X_##FEATURE\n#if X(FOO)\nvar x;\n#endif", {
+  "type": "Program",
+  "start": 58,
+  "end": 64,
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 58,
+      "end": 63,
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 62,
+          "end": 63,
+          "id": {
+            "type": "Identifier",
+            "start": 62,
+            "end": 63,
+            "name": "x"
+          },
+          "init": null
+        }
+      ],
+      "kind": "var"
+    }
+  ]
+}, {
+  preprocess: true
+});
+
 // 3.6 Variadic Macros
 
 // Variadic macros may also have named parameters
@@ -29886,10 +29917,10 @@ test("a = 1\n#include \"x.h\"\nb = 2", {
 });
 
 // pre include files
-test("var y =3;", {
+test("var y = 3;", {
   "type": "Program",
   "start": 0,
-  "end": 9,
+  "end": 10,
   "body": [
     {
       "type": "VariableDeclaration",
@@ -29914,12 +29945,12 @@ test("var y =3;", {
     {
       "type": "VariableDeclaration",
       "start": 0,
-      "end": 8,
+      "end": 9,
       "declarations": [
         {
           "type": "VariableDeclarator",
           "start": 4,
-          "end": 8,
+          "end": 9,
           "id": {
             "type": "Identifier",
             "start": 4,
@@ -29928,8 +29959,8 @@ test("var y =3;", {
           },
           "init": {
             "type": "Literal",
-            "start": 7,
-            "end": 8,
+            "start": 8,
+            "end": 9,
             "value": 3,
             "raw": "3"
           }
@@ -29941,6 +29972,80 @@ test("var y =3;", {
 }, {
   preprocess: true,
   preIncludeFiles: [{include:"var x;\n", sourceFile:"preinclude.file"}],
+  locations: true
+});
+
+// two pre include files defining macros with comment row in one
+test("FOO(3);\nBAR(7);", {
+  "type": "Program",
+  "start": 4,
+  "end": 15,
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "start": 4,
+      "end": 7,
+      "expression": {
+        "type": "Literal",
+        "start": 4,
+        "end": 5,
+        "value": 3,
+        "raw": "3"
+      }
+    },
+    {
+      "type": "ExpressionStatement",
+      "start": 12,
+      "end": 15,
+      "expression": {
+        "type": "Literal",
+        "start": 12,
+        "end": 13,
+        "value": 7,
+        "raw": "7"
+      }
+    }
+  ]
+}, {
+  preprocess: true,
+  preIncludeFiles: [{include:"#define FOO(n) n\n", sourceFile:"preinclude1.file"}, {include:"//x\n#define BAR(x) x\n", sourceFile:"preinclude2.file"}],
+  locations: true
+});
+
+// two pre include files defining macros with comment row in one. Should not matter in witch order
+test("FOO(3);\nBAR(7);", {
+  "type": "Program",
+  "start": 4,
+  "end": 15,
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "start": 4,
+      "end": 7,
+      "expression": {
+        "type": "Literal",
+        "start": 4,
+        "end": 5,
+        "value": 3,
+        "raw": "3"
+      }
+    },
+    {
+      "type": "ExpressionStatement",
+      "start": 12,
+      "end": 15,
+      "expression": {
+        "type": "Literal",
+        "start": 12,
+        "end": 13,
+        "value": 7,
+        "raw": "7"
+      }
+    }
+  ]
+}, {
+  preprocess: true,
+  preIncludeFiles: [{include:"//x\n#define BAR(x) x\n", sourceFile:"preinclude2.file"}, {include:"#define FOO(n) n\n", sourceFile:"preinclude1.file"}],
   locations: true
 });
 

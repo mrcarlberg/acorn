@@ -307,7 +307,7 @@
   // tokMacroOffset is the offset to the current macro for the current token
   // tokPosMacroOffset is the offset to the current macro for the current tokPos
 
-  var tokFirstStart, tokStart, tokEnd, tokMacroOffset, tokPosMacroOffset, lastTokMacroOffset;
+  var tokFirstStart, firstLastEnd, tokStart, tokEnd, tokMacroOffset, tokPosMacroOffset, lastTokMacroOffset;
 
   // When `options.locations` is true, these hold objects
   // containing the tokens start and end line/column pairs.
@@ -384,6 +384,7 @@
   var preprocessParameterScope;
   var preTokParameterScope;
   var preprocessOverrideTokEndLoc;
+  var preprocessDontConcatenate;    // Don't concatenate tokens when finishing preprocess tokens
 
   // True if we are concatenating two tokens. This is needed to handle when the second part is an empty macro
   // This is also used when stingifying tokens to get an empty macro
@@ -768,6 +769,7 @@
     preprocessStack = [];
     preprocessStackLastItem = null;
     preprocessOnlyTransformArgumentsForLastToken = null;
+    preprocessDontConcatenate = false;
     preNotSkipping = true;
     preConcatenating = false;
     preIfLevel = [];
@@ -961,6 +963,7 @@
           preprocessParameterScope = lastItem.parameterScope;
           tokPosMacroOffset = lastItem.macroOffset;
           sourceFile = lastItem.sourceFile;
+          firstLastEnd = lastItem.lastEnd;
           // Set the last item
           var lastIndex = preprocessStack.length;
           preprocessStackLastItem = lastIndex ? preprocessStack[lastIndex - 1] : null;
@@ -1251,7 +1254,10 @@
         var includeString = includeDict.include;
         var includeMacro = new Macro(null, includeString, null, 0, false, null, false, null, includeDict.sourceFile);
         preprocessFinishToken(_preprocess, null, null, true); // skipEOL
-        return readTokenFromMacro(includeMacro, tokPosMacroOffset, null, null, tokPos, next);
+        pushMacroToStack(includeMacro, includeMacro.macro, tokPosMacroOffset, null, null, tokPos, null, true); // isIncludeFile
+        skipSpace();
+        return readToken(null, null, true); // Stealth
+        //return readTokenFromMacro(includeMacro, tokPosMacroOffset, null, null, tokPos, next);
 
         break;
 
@@ -1287,6 +1293,10 @@
     preprocessIsParsingPreprocess = true;
     preprocessReadToken();
     var macroIdentifierEnd = preTokEnd;
+
+    // We don't want to concatenate tokens when creating macros
+    preprocessDontConcatenate = true;
+
     var macroIdentifier = preprocessGetIdent();
     // '(' Must follow directly after identifier to be a valid macro with parameters
     if (input.charCodeAt(macroIdentifierEnd) === 40) { // '('
@@ -1306,7 +1316,8 @@
     while(preTokType !== _eol && preTokType !== _eof)
       preprocessReadToken();
 
-    var macroString = input.slice(start, preTokStart);
+    preprocessDontConcatenate = false;
+    var macroString = preTokInput.slice(start, preTokStart);
     macroString = macroString.replace(/\\/g, " ");
     // If variadic get the last parameter for the variadic parameter name
     options.preprocessAddMacro(new Macro(macroIdentifier, macroString, parameters, start, false, null, variadic && parameters[parameters.length - 1], positionOffset));
@@ -1475,8 +1486,8 @@
         }
         // Check if it is the first token on the line
         lineBreak.lastIndex = 0;
-        var match = lineBreak.exec(input.slice(lastEnd, tokPos));
-        if (lastEnd !== 0 && lastEnd !== tokPos && !match) {
+        var match = lineBreak.exec(tokFirstInput.slice(lastEnd, tokFirstStart));
+        if (lastEnd !== 0 && lastEnd !== tokPos && !match && ((preprocessStackLastItem && !preprocessStackLastItem.isIncludeFile) || tokPos !== 0)) {
           if (preprocessStackLastItem) {
             // Stringify next token
             return preprocessStringify();
@@ -1580,10 +1591,12 @@
   // Returns true if it stops at a line break.
 
   function preprocessSkipSpace(skipComments, skipEOL) {
-    onlySkipSpace(!skipEOL);
-    lineBreak.lastIndex = 0;
-    var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
-    return match && match.index === 0;
+    var ch = onlySkipSpace(!skipEOL);
+    // Can't see that this line break test is used anymore
+    //lineBreak.lastIndex = 0;
+    //var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
+    //return (match && match.index === 0);
+    return ch;
   }
 
   function preprocessSkipToElseOrEndif(skipElse) {
@@ -1625,7 +1638,7 @@
 
 // preprocessToken is used to cancel preNotSkipping when calling from readToken_preprocess.
 // FIXME: Refactor to not use this parameter preprocessToken. It is kind of confusing and it should be possible to do in another way
-  function preprocessReadToken(skipComments, preprocessToken, processMacros) {
+  function preprocessReadToken(skipComments, preprocessToken, processMacros, onlyTransformMacroArguments) {
     preTokStart = tokPos;
     preTokInput = input;
     preTokParameterScope = preprocessParameterScope;
@@ -1668,25 +1681,59 @@
     }
   }
 
-  function preprocessReadWord(processMacros) {
+  function preprocessReadWord(processMacros, onlyTransformMacroArguments) {
     var word = readWord1();
     var type = _name;
     if (processMacros && options.preprocess) {
-      var readMacroWordReturn = readMacroWord(word, preprocessNext);
+      var readMacroWordReturn = readMacroWord(word, preprocessNext, onlyTransformMacroArguments);
       if (readMacroWordReturn === true)
         return true;
     }
 
     if (!containsEsc && isKeywordPreprocessor(word)) type = keywordTypesPreprocessor[word];
-    preprocessFinishToken(type, word, readMacroWordReturn); // If readMacroWord returns anything except 'true' it is the real tokEndPos
+    preprocessFinishToken(type, word, readMacroWordReturn, false, processMacros); // If readMacroWord returns anything except 'true' it is the real tokEndPos
   }
 
-  function preprocessFinishToken(type, val, overrideTokEnd, skipEOL) {
+  function preprocessFinishToken(type, val, overrideTokEnd, skipEOL, processMacros) {
     preTokType = type;
     preTokVal = val;
     preTokEnd = overrideTokEnd || tokPos;
     //tokRegexpAllowed = type.beforeExpr;
-    preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    var ch = preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    if (ch === 35 && options.preprocess && !preprocessDontConcatenate && input.charCodeAt(tokPos + 1) === 35) { // '##'
+      var val1 = val != null ? val : type.keyword || type.type;
+      tokPos += 2;
+      if (val1 != null) {
+        // Save current line and current line start. This is needed when option.locations is true
+        var positionOffset = options.locations && new PositionOffset(tokCurLine, tokLineStart);
+        // Save positions on first token to get start and end correct on node if cancatenated token is invalid
+        var saveTokInput = tokInput, saveTokEnd = tokEnd, saveTokStart = tokStart, start = tokStart + tokMacroOffset, variadicName = preprocessStackLastItem && preprocessStackLastItem.macro && preprocessStackLastItem.macro.variadicName;
+        skipSpace();
+        if (variadicName && variadicName === input.slice(tokPos, tokPos + variadicName.length)) var isVariadic = true;
+        preConcatenating = true;
+        preprocessReadToken(null, null, processMacros, 2); // 2 = Don't transform macros only arguments
+        preConcatenating = false;
+        var val2 = preTokVal != null ? preTokVal : preTokType.keyword || preTokType.type;
+        if (val2 != null) {
+          // Skip token if it is a ',' concatenated with an empty variadic parameter
+          if (isVariadic && val1 === "," && val2 === "") return preprocessReadToken();
+          var concat = "" + val1 + val2, val2TokStart = tokStart + tokPosMacroOffset;
+          // If the macro defines anything add it to the preprocess input stack
+          var concatMacro = new Macro(null, concat, null, start, false, null, false, positionOffset);
+          var r = readTokenFromMacro(concatMacro, tokPosMacroOffset, preprocessStackLastItem ? preprocessStackLastItem.parameterDict : null, null, tokPos, preprocessNext, null);
+          // Consumed the whole macro in one bite? If not the tokenizer can't create a single token from the two concatenated tokens
+          if (preprocessStackLastItem && preprocessStackLastItem.macro === concatMacro) {
+            // FIXME: Should change this to 'preTokType' and friends
+            tokType = type;
+            tokStart = saveTokStart;
+            tokEnd = saveTokEnd;
+            tokInput = saveTokInput;
+            tokPosMacroOffset = val2TokStart - val1.length; // reset the macro offset to the second token to get start and end correct on node
+            if (!isVariadic) /*raise(tokStart,*/console.log("Warning: pasting formed '" + concat + "', an invalid preprocessing token");
+          } else return r;
+        }
+      }
+    }
   }
 
 // FIXME: Find out if this is really used?
@@ -1704,7 +1751,7 @@
       preLastStart = tokStart;
       preLastEnd = tokEnd;
     }
-    return preprocessReadToken(false, false, processMacros);
+    return preprocessReadToken(false, false, processMacros, onlyTransformArguments);
   }
 
   // Predicate that tests whether the next token is of the given
@@ -2331,7 +2378,7 @@
       pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments);
     } else if (preConcatenating) {
       // If we are concatenating or stringifying and the macro is empty just make an empty string.
-      finishToken(_name, "");
+      (nextFinisher === next ? finishToken : preprocessFinishToken)(_name, "");
       return true;
     }
     // Now read the next token
@@ -2342,9 +2389,11 @@
 
   // Push macro to stack and reset tokPos etc.
   // macroString is the string from the macro. It is usually 'macro.macro' but the caller can modify it if needed
-  function pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments) {
-    preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
+  // includeFile is true if the macro should be treated as a regular file. In other words don't stringify words after '#'
+  function pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments, isIncludeFile) {
+    preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, lastEnd: lastEnd, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
     if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
+    if (isIncludeFile) preprocessStackLastItem.isIncludeFile = isIncludeFile;
     preprocessStackLastItem.input = input;
     preprocessStack.push(preprocessStackLastItem);
     preprocessOnlyTransformArgumentsForLastToken = onlyTransformArguments;
@@ -2416,6 +2465,7 @@
     }
     nodeMessageSendObjectExpression = null;
     readToken(forceRegexp, onlyTransformArguments, stealth);
+    firstLastEnd = lastEnd;
   }
 
   // Enter strict mode. Re-reads the next token to please pedantic
@@ -2556,7 +2606,7 @@
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(tokFirstInput.slice(lastEnd, tokFirstStart)) ||
+      (tokType === _eof || tokType === _braceR || newline.test(tokFirstInput.slice(firstLastEnd, tokFirstStart)) ||
         (nodeMessageSendObjectExpression && options.objj));
   }
 
@@ -2600,15 +2650,16 @@
   // If there are any pre include files they will be pushed onto the macro stack
 
   function parseTopLevel(program) {
-    lastStart = lastEnd = tokPos;
+    lastStart = firstLastEnd = lastEnd = 0;
 
     if (options.preprocess) {
       var preIncludeFiles = options.preIncludeFiles;
       if (preIncludeFiles) for (var i = 0, size = preIncludeFiles.length; i < size; i++) {
         var preIncludeFile = preIncludeFiles[i];
+
         var preIncludeMacro = new Macro(null, preIncludeFile.include, null, 0, false, null, false, null, preIncludeFile.sourceFile);
-        console.log("preIncludeFile: " + JSON.stringify(preIncludeFile));
-        pushMacroToStack(preIncludeMacro, preIncludeMacro.macro, 0, null, null, tokPos);
+        pushMacroToStack(preIncludeMacro, preIncludeMacro.macro, 0, null, null, tokPos, null, true); // isIncludeFile
+        skipSpace();
       }
     }
 
