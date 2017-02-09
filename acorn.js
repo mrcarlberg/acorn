@@ -1707,7 +1707,7 @@
         // Save current line and current line start. This is needed when option.locations is true
         var positionOffset = options.locations && new PositionOffset(tokCurLine, tokLineStart);
         // Save positions on first token to get start and end correct on node if cancatenated token is invalid
-        var saveTokInput = tokInput, saveTokEnd = tokEnd, saveTokStart = tokStart, start = tokStart + tokMacroOffset, variadicName = preprocessStackLastItem && preprocessStackLastItem.macro && preprocessStackLastItem.macro.variadicName;
+        var saveTokInput = tokInput, saveTokEnd = preTokEnd, saveTokStart = preTokStart, start = preTokStart + tokMacroOffset, variadicName = preprocessStackLastItem && preprocessStackLastItem.macro && preprocessStackLastItem.macro.variadicName;
         skipSpace();
         if (variadicName && variadicName === input.slice(tokPos, tokPos + variadicName.length)) var isVariadic = true;
         preConcatenating = true;
@@ -1717,16 +1717,16 @@
         if (val2 != null) {
           // Skip token if it is a ',' concatenated with an empty variadic parameter
           if (isVariadic && val1 === "," && val2 === "") return preprocessReadToken();
-          var concat = "" + val1 + val2, val2TokStart = tokStart + tokPosMacroOffset;
+          var concat = "" + val1 + val2, val2TokStart = preTokStart + tokPosMacroOffset;
           // If the macro defines anything add it to the preprocess input stack
           var concatMacro = new Macro(null, concat, null, start, false, null, false, positionOffset);
           var r = readTokenFromMacro(concatMacro, tokPosMacroOffset, preprocessStackLastItem ? preprocessStackLastItem.parameterDict : null, null, tokPos, preprocessNext, null);
           // Consumed the whole macro in one bite? If not the tokenizer can't create a single token from the two concatenated tokens
           if (preprocessStackLastItem && preprocessStackLastItem.macro === concatMacro) {
             // FIXME: Should change this to 'preTokType' and friends
-            tokType = type;
-            tokStart = saveTokStart;
-            tokEnd = saveTokEnd;
+            preTokType = type;
+            preTokStart = saveTokStart;
+            preTokEnd = saveTokEnd;
             tokInput = saveTokInput;
             tokPosMacroOffset = val2TokStart - val1.length; // reset the macro offset to the second token to get start and end correct on node
             if (!isVariadic) /*raise(tokStart,*/console.log("Warning: pasting formed '" + concat + "', an invalid preprocessing token");
@@ -1748,8 +1748,8 @@
 
   function preprocessNext(stealth, onlyTransformArguments, forceRegexp, processMacros) {
     if (!stealth) {
-      preLastStart = tokStart;
-      preLastEnd = tokEnd;
+      preLastStart = preTokStart;
+      preLastEnd = preTokEnd;
     }
     return preprocessReadToken(false, false, processMacros, onlyTransformArguments);
   }
