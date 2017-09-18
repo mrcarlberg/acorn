@@ -177,13 +177,16 @@
   var macrosMakeBuiltin = function(name, macro, endPos) {return new Macro(name, macro, null, endPos - name.length)}
 
   var macrosBuiltinMacros = {
-                              __OBJJ__: function() {return macrosMakeBuiltin("__OBJJ__", options.objj ? "1" : null, tokPos)},
-                              __BROWSER__: function() {return macrosMakeBuiltin("__BROWSER__", typeof(window) !== "undefined" ? "1" : null, tokPos)},
-                              __LINE__: function() {return macrosMakeBuiltin("__LINE__", String(options.locations ? tokCurLine : getLineInfo(input, tokPos).line), tokPos)},
+                              __OBJJ__: function() {return macrosMakeBuiltin("__OBJJ__", options.objj ? "1" : null, tokPos)}
                             }
 
+  macrosBuiltinMacros["__" + "BROWSER" + "__"] = function() {return macrosMakeBuiltin("__BROWSER__", typeof(window) !== "undefined" ? "1" : null, tokPos)};
+  macrosBuiltinMacros["__" + "LINE" + "__"] = function() {return macrosMakeBuiltin("__LINE__", String(options.locations ? tokCurLine : getLineInfo(input, tokPos).line), tokPos)};
+  macrosBuiltinMacros["__" + "DATE" + "__"] = function() {var date, day; return macrosMakeBuiltin("__DATE__", (date = new Date(), day = String(date.getDate()), ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][date.getMonth()] + (day.length > 1 ? " " : "  ") + day + " " + date.getFullYear()), tokPos)};
+  macrosBuiltinMacros["__" + "TIME" + "__"] = function() {var date; return macrosMakeBuiltin("__TIME__", (date = new Date(), ("0" + date.getHours()).slice(-2)   + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2)), tokPos)};
+
   function defaultGetIncludeFile(filename) {
-    return {include: "var a = 42;\n", sourceFile: filename};
+    return {include: "#define FOO(x) x\n", sourceFile: filename};
   }
 
   function defaultAddMacro(macro) {
@@ -307,7 +310,19 @@
   // tokMacroOffset is the offset to the current macro for the current token
   // tokPosMacroOffset is the offset to the current macro for the current tokPos
 
-  var tokFirstStart, firstLastEnd, tokStart, tokEnd, tokMacroOffset, tokPosMacroOffset, lastTokMacroOffset;
+  var tokFirstStart, firstTokEnd, tokStart, tokEnd, tokMacroOffset, tokPosMacroOffset, lastTokMacroOffset;
+
+  // This is the end position for the last token in the current `input` buffer. Both regular and preprocess
+  // tokens count. It is '0' when entering a new buffer. It is used to determinate if a preprocess (#if) token
+  // is at the begining of a line
+
+  var localLastEnd;
+
+  // Is null except when a macro has ended and then contains the position of the last position in the tokens macro.
+  // `lastEndOfFile` contains this value for the last token. It is used to allow a semicolon to be inserted at the
+  // end of a macro. You can say an end of file is equivalent to a new line.
+
+  var firstEndOfFile, lastEndOfFile;
 
   // When `options.locations` is true, these hold objects
   // containing the tokens start and end line/column pairs.
@@ -352,7 +367,7 @@
   // Same as input but for the current token. If options.preprocess is used
   // this can differ due to macros.
 
-  var tokInput, preTokInput, tokFirstInput;
+  var tokInput, preTokInput, lastEndInput;
 
   // These store the position of the previous token, which is useful
   // when finishing a node and assigning its `end` position.
@@ -782,10 +797,10 @@
 
   function finishToken(type, val, overrideTokEnd) {
     if (overrideTokEnd) {
-      tokEnd = overrideTokEnd;
+      firstTokEnd = tokEnd = overrideTokEnd;
       if (options.locations) tokEndLoc = preprocessOverrideTokLoc;
     } else {
-      tokEnd = tokPos;
+      firstTokEnd = tokEnd = tokPos;
       if (options.locations) tokEndLoc = new line_loc_t;
     }
     tokType = type;
@@ -948,8 +963,13 @@
         if (options.preprocess) {
           if (dontSkipMacroBoundary) return true;
           if (!preprocessStack.length) break;
+          // If this is the first end of file after the token save to position to allow a semicolon to be inserted
+          // the end of file, if needed.
+          if (firstEndOfFile == null) firstEndOfFile = tokPos;
           // If we are at the end of the input inside a macro continue at last position
           var lastItem = preprocessStack.pop();
+          var saveInputForPrint = input;
+          var saveSourceFileForPrint = sourceFile;
           tokPos = lastItem.end;
           input = lastItem.input;
           inputLen = lastItem.inputLen;
@@ -959,11 +979,12 @@
           preprocessParameterScope = lastItem.parameterScope;
           tokPosMacroOffset = lastItem.macroOffset;
           sourceFile = lastItem.sourceFile;
-          firstLastEnd = lastItem.lastEnd;
+          firstTokEnd = lastItem.lastEnd;
+
           // Set the last item
           var lastIndex = preprocessStack.length;
           preprocessStackLastItem = lastIndex ? preprocessStack[lastIndex - 1] : null;
-          onlySkipSpace(dontSkipEOL);
+          return onlySkipSpace(dontSkipEOL);
         } else {
           break;
         }
@@ -1239,21 +1260,26 @@
         break;
 
       case _preInclude:
+        if (!preNotSkipping) {
+          return finisher(_preInclude);
+        }
         preprocessReadToken();
         if (preTokType === _string)
           var localfilepath = true;
         else if (preTokType ===_filename)
           var localfilepath = false;
         else
-          raise(preTokStart, "Expected \"FILENAME\" or <FILENAME>");
-        var includeDict = options.preprocessGetIncludeFile(preTokVal, localfilepath) || raise(preTokStart, "'" + preTokVal + "' file not found");
+          raise(preTokStart, "Expected \"FILENAME\" or <FILENAME>: " + (preTokType.keyword || preTokType.type));
+
+        var theFileName = preTokVal;
+        var includeDict = options.preprocessGetIncludeFile(preTokVal, localfilepath) || raise(preTokStart, "'" + theFileName + "' file not found");
         var includeString = includeDict.include;
         var includeMacro = new Macro(null, includeString, null, 0, false, null, false, null, includeDict.sourceFile);
         preprocessFinishToken(_preprocess, null, null, true); // skipEOL
         pushMacroToStack(includeMacro, includeMacro.macro, tokPosMacroOffset, null, null, tokPos, null, true); // isIncludeFile
         skipSpace();
-        return readToken(null, null, true); // Stealth
-        //return readTokenFromMacro(includeMacro, tokPosMacroOffset, null, null, tokPos, next);
+        readToken(null, null, true); // Stealth
+        return;
 
         break;
 
@@ -1281,8 +1307,8 @@
       else
         tokSpaces = ["\n"];
     }
-    preprocessFinishToken(_preprocess, null, null, true); // skipEOL
-    return readToken();
+    preprocessFinishToken(preTokType, null, null, true); // skipEOL
+    return next(true) // Stealth
   }
 
   function preprocessParseDefine() {
@@ -1486,7 +1512,7 @@
         }
         // Check if it is the first token on the line
         lineBreak.lastIndex = 0;
-        var match = lineBreak.exec(tokFirstInput.slice(lastEnd, tokFirstStart));
+        var match = lineBreak.exec(input.slice(localLastEnd, tokPos));
         if (lastEnd !== 0 && lastEnd !== tokPos && !match && ((preprocessStackLastItem && !preprocessStackLastItem.isIncludeFile) || tokPos !== 0)) {
           if (preprocessStackLastItem) {
             // Stringify next token
@@ -1585,8 +1611,8 @@
   // Skip whitespaces sometimes without line breaks
   // Returns true if it stops at a line break.
 
-  function preprocessSkipSpace(skipComments, skipEOL) {
-    var ch = onlySkipSpace(!skipEOL);
+  function preprocessSkipSpace(dontSkipComments, skipEOL) {
+    var ch = onlySkipSpace(!skipEOL, false, dontSkipComments);
     // Can't see that this line break test is used anymore
     //lineBreak.lastIndex = 0;
     //var match = lineBreak.exec(input.slice(tokPos, tokPos + 2));
@@ -1696,7 +1722,7 @@
     preTokVal = val;
     preTokEnd = overrideTokEnd || tokPos;
     //tokRegexpAllowed = type.beforeExpr;
-    var ch = preprocessSkipSpace(false, skipEOL); // Dont skip comments
+    var ch = preprocessSkipSpace(false, skipEOL); // Skip comments
     if (ch === 35 && options.preprocess && !preprocessDontConcatenate && input.charCodeAt(tokPos + 1) === 35) { // '##'
       var val1 = val != null ? val : type.keyword || type.type;
       tokPos += 2;
@@ -1737,8 +1763,8 @@
   function preprocessFinishTokenSkipComments(type, val) {
     preTokType = type;
     preTokVal = val;
-    preTokEnd = tokPos;
-    preprocessSkipSpace(true); // 'true' for skip comments
+    firstTokEnd = preTokEnd = tokPos;
+    preprocessSkipSpace(true); // 'true' for don't skip comments
   }
 
   // Continue to the next token.
@@ -1765,7 +1791,7 @@
   // raise with errorMessage or an unexpected token error.
 
   function preprocessExpect(type, errorMessage, processMacros) {
-    if (preTokType === type) preprocessReadToken(processMacros);
+    if (preTokType === type) preprocessNext(false, undefined, null, processMacros);
     else raise(preTokStart, errorMessage || "Unexpected token");
   }
 
@@ -1915,7 +1941,7 @@
     else tokPos = tokStart + 1;
     if (!stealth) {
       tokFirstStart = tokStart;
-      tokFirstInput = input;
+      //tokFirstInput = input;
     }
     tokInput = input;
     tokMacroOffset = tokPosMacroOffset;
@@ -2388,7 +2414,7 @@
   // macroString is the string from the macro. It is usually 'macro.macro' but the caller can modify it if needed
   // includeFile is true if the macro should be treated as a regular file. In other words don't stringify words after '#'
   function pushMacroToStack(macro, macroString, macroOffset, parameters, parameterScope, end, onlyTransformArguments, isIncludeFile) {
-    preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, lastEnd: lastEnd, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
+    preprocessStackLastItem = {macro: macro, macroOffset: macroOffset, parameterDict: parameters, /*start: macroStart,*/ end:end, lastEnd: localLastEnd, inputLen: inputLen, tokStart: tokStart, onlyTransformArgumentsForLastToken: preprocessOnlyTransformArgumentsForLastToken, currentLine: tokCurLine, currentLineStart: tokLineStart, sourceFile: sourceFile};
     if (parameterScope) preprocessStackLastItem.parameterScope = parameterScope;
     if (isIncludeFile) preprocessStackLastItem.isIncludeFile = isIncludeFile;
     preprocessStackLastItem.input = input;
@@ -2400,6 +2426,8 @@
     tokPos = 0;
     tokCurLine = 1;
     tokLineStart = 0;
+    firstTokEnd = 0;
+    localLastEnd = 0;
     if (macro.sourceFile) sourceFile = macro.sourceFile;
   }
 
@@ -2457,12 +2485,14 @@
     if (!stealth) {
       lastStart = tokStart;
       lastEnd = tokEnd;
+      lastEndInput = tokInput;
+      lastEndOfFile = firstEndOfFile;
       lastEndLoc = tokEndLoc;
       lastTokMacroOffset = tokMacroOffset;
     }
-    nodeMessageSendObjectExpression = null;
-    readToken(forceRegexp, onlyTransformArguments, stealth);
-    firstLastEnd = lastEnd;
+    localLastEnd = firstTokEnd;
+    firstEndOfFile = nodeMessageSendObjectExpression = null;
+    return readToken(forceRegexp, onlyTransformArguments, stealth);
   }
 
   // Enter strict mode. Re-reads the next token to please pedantic
@@ -2603,8 +2633,8 @@
 
   function canInsertSemicolon() {
     return !options.strictSemicolons &&
-      (tokType === _eof || tokType === _braceR || newline.test(tokFirstInput.slice(firstLastEnd, tokFirstStart)) ||
-        (nodeMessageSendObjectExpression && options.objj));
+      (tokType === _eof || tokType === _braceR || newline.test(lastEndInput.slice(lastEnd, lastEndOfFile || tokFirstStart)) ||
+        (nodeMessageSendObjectExpression && options.objj) || lastEndOfFile != null);
   }
 
   // Consume a semicolon, or, failing that, see if we are allowed to
@@ -2647,11 +2677,11 @@
   // If there are any pre include files they will be pushed onto the macro stack
 
   function parseTopLevel(program) {
-    lastStart = firstLastEnd = lastEnd = 0;
+    lastStart = localLastEnd = lastEnd = 0;
 
     if (options.preprocess) {
       var preIncludeFiles = options.preIncludeFiles;
-      if (preIncludeFiles) for (var i = 0, size = preIncludeFiles.length; i < size; i++) {
+      if (preIncludeFiles && preIncludeFiles.length) for (var i = preIncludeFiles.length - 1; i >= 0; i--) {
         var preIncludeFile = preIncludeFiles[i];
 
         var preIncludeMacro = new Macro(null, preIncludeFile.include, null, 0, false, null, false, null, preIncludeFile.sourceFile);
