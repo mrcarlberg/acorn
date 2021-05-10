@@ -1718,6 +1718,7 @@
     preTokType = type;
     preTokVal = val;
     preTokEnd = overrideTokEnd || tokPos;
+    if (type !== _eol) firstTokEnd = preTokEnd;
     //tokRegexpAllowed = type.beforeExpr;
     var ch = preprocessSkipSpace(false, skipEOL); // Skip comments
     if (ch === 35 && options.preprocess && !preprocessDontConcatenate && input.charCodeAt(tokPos + 1) === 35) { // '##'
@@ -1771,6 +1772,7 @@
       preLastStart = preTokStart;
       preLastEnd = preTokEnd;
     }
+    localLastEnd = firstTokEnd;
     return preprocessReadToken(false, false, processMacros, onlyTransformArguments);
   }
 
