@@ -1533,11 +1533,12 @@
 
     if (allowEndOfLineToken) {
       if (code === 13 || code === 10 || code === 8232 || code === 8233) {
+        var size = (code === 13 && input.charCodeAt(tokPos+1) === 10) ? 2 : 1;
         if (options.locations) {
           ++tokCurLine;
-          tokLineStart = tokPos;
+          tokLineStart = tokPos + size;
         }
-        return finishOp(_eol, (code === 13 && input.charCodeAt(tokPos+1) === 10) ? 2 : 1, finisher);
+        return finishOp(_eol, size, finisher);
       }
     }
 
