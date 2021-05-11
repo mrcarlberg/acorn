@@ -26286,46 +26286,46 @@ test("{}/=/", {
 // Preprocessor test
 
 test("#define martin\n#ifdef carlberg\nvar b;\n#else\n#ifdef martin\nthis\n#else\nvar i;\n#endif\n#endif\n", {
-  "type": "Program",
-  "start": 58,
-  "end": 62,
-  "loc": {
-    "start": {
-      "line": 6,
-      "column": 0
+  type: "Program",
+  start: 58,
+  end: 62,
+  loc: {
+    start: {
+      line: 6,
+      column: 0
     },
-    "end": {
-      "line": 6,
-      "column": 4
+    end: {
+      line: 6,
+      column: 4
     }
   },
-  "body": [
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 62,
-      "loc": {
-        "start": {
-          "line": 6,
-          "column": 0
+      type: "ExpressionStatement",
+      start: 58,
+      end: 62,
+      loc: {
+        start: {
+          line: 6,
+          column: 0
         },
-        "end": {
-          "line": 6,
-          "column": 4
+        end: {
+          line: 6,
+          column: 4
         },
       },
-      "expression": {
-        "type": "ThisExpression",
-        "start": 58,
-        "end": 62,
-        "loc": {
-          "start": {
-            "line": 6,
-            "column": 0
+      expression: {
+        type: "ThisExpression",
+        start: 58,
+        end: 62,
+        loc: {
+          start: {
+            line: 6,
+            column: 0
           },
-          "end": {
-            "line": 6,
-            "column": 4
+          end: {
+            line: 6,
+            column: 4
           },
         }
       }
@@ -26343,31 +26343,31 @@ test("#define martin\n#ifdef carlberg\nvar b;\n#else\n#ifdef martin\nthis\n#else
 
 // #define may be indented
 test("    #define FOO 7\nfoo = FOO;\n", {
-  "type": "Program",
-  "start": 18,
-  "end": 28,
-  "body": [
+  type: "Program",
+  start: 18,
+  end: 28,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 18,
-      "end": 28,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 18,
-        "end": 17,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 18,
-          "end": 21,
-          "name": "foo"
+      type: "ExpressionStatement",
+      start: 18,
+      end: 28,
+      expression: {
+        type: "AssignmentExpression",
+        start: 18,
+        end: 17,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 18,
+          end: 21,
+          name: "foo"
         },
-        "right": {
-          "type": "Literal",
-          "start": 16,
-          "end": 17,
-          "value": 7,
-          "raw": "7"
+        right: {
+          type: "Literal",
+          start: 16,
+          end: 17,
+          value: 7,
+          raw: "7"
         }
       }
     }
@@ -26378,31 +26378,31 @@ test("    #define FOO 7\nfoo = FOO;\n", {
 
 // # may be separated from directive by whitespace
 test("# /* comment */ define FOO 13\nfoo = FOO;\n", {
-  "type": "Program",
-  "start": 30,
-  "end": 40,
-  "body": [
+  type: "Program",
+  start: 30,
+  end: 40,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 30,
-      "end": 40,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 30,
-        "end": 29,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 30,
-          "end": 33,
-          "name": "foo"
+      type: "ExpressionStatement",
+      start: 30,
+      end: 40,
+      expression: {
+        type: "AssignmentExpression",
+        start: 30,
+        end: 29,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 30,
+          end: 33,
+          name: "foo"
         },
-        "right": {
-          "type": "Literal",
-          "start": 27,
-          "end": 29,
-          "value": 13,
-          "raw": "13"
+        right: {
+          type: "Literal",
+          start: 27,
+          end: 29,
+          value: 13,
+          raw: "13"
         }
       }
     }
@@ -26421,68 +26421,68 @@ testFail("\"foo\"; #define FOO 13\nfoo = FOO;\n",
 // Comments may be used anywhere within a macro
 // This test is turned off as we don't track comments like this currently
 //test("#define COMMENTS(/* an arg */ arg) /* one */ arg /* two */ * 7 /*\nthree */ + 1\nx = /* before */ COMMENTS(13) /* after */;\n", {
-//   "type": "Program",
-//   "start": 79,
-//   "end": 121,
-//   "body": [
+//   type: "Program",
+//   start: 79,
+//   end: 121,
+//   body: [
 //     {
-//       "type": "ExpressionStatement",
-//       "start": 79,
-//       "end": 121,
-//       "expression": {
-//         "type": "AssignmentExpression",
-//         "start": 79,
-//         "end": 78,
-//         "operator": "=",
-//         "left": {
-//           "type": "Identifier",
-//           "start": 79,
-//           "end": 80,
-//           "name": "x"
+//       type: "ExpressionStatement",
+//       start: 79,
+//       end: 121,
+//       expression: {
+//         type: "AssignmentExpression",
+//         start: 79,
+//         end: 78,
+//         operator: "=",
+//         left: {
+//           type: "Identifier",
+//           start: 79,
+//           end: 80,
+//           name: "x"
 //         },
-//         "right": {
-//           "type": "BinaryExpression",
-//           "start": 105,
-//           "end": 78,
-//           "commentsBefore": [
+//         right: {
+//           type: "BinaryExpression",
+//           start: 105,
+//           end: 78,
+//           commentsBefore: [
 //             "/* before */"
 //           ],
-//           "left": {
-//             "type": "BinaryExpression",
-//             "start": 105,
-//             "end": 62,
-//             "left": {
-//               "type": "Literal",
-//               "start": 105,
-//               "end": 107,
-//               "value": 13,
-//               "raw": "13",
-//               "commentsAfter": [
+//           left: {
+//             type: "BinaryExpression",
+//             start: 105,
+//             end: 62,
+//             left: {
+//               type: "Literal",
+//               start: 105,
+//               end: 107,
+//               value: 13,
+//               raw: "13",
+//               commentsAfter: [
 //                 "/* two */"
 //               ]
 //             },
-//             "operator": "*",
-//             "right": {
-//               "type": "Literal",
-//               "start": 61,
-//               "end": 62,
-//               "value": 7,
-//               "raw": "7"
+//             operator: "*",
+//             right: {
+//               type: "Literal",
+//               start: 61,
+//               end: 62,
+//               value: 7,
+//               raw: "7"
 //             },
-//             "commentsAfter": [
+//             commentsAfter: [
 //               "/*\nthree */"
 //             ]
 //           },
-//           "operator": "+",
-//           "right": {
-//             "type": "Literal",
-//             "start": 77,
-//             "end": 78,
-//             "value": 1,
-//             "raw": "1"
+//           operator: "+",
+//           right: {
+//             type: "Literal",
+//             start: 77,
+//             end: 78,
+//             value: 1,
+//             raw: "1"
 //           }
 //         },
-//         "commentsAfter": [
+//         commentsAfter: [
 //           "/* after */"
 //         ]
 //       }
@@ -26495,94 +26495,94 @@ testFail("\"foo\"; #define FOO 13\nfoo = FOO;\n",
 
 // Preprocessor directives do not affect comment/space tracking
 test("function test()\n{\n    // Comments are aggregated\n    #define FOO 7\n    // even if there are\n    #undef FOO\n    // preprocessor directives\n    #define FOO 13\n    // in between.\n    var x = FOO;\n    // These comments\n    #define BAR 7\n    // will appear after.\n    #undef BAR\n    // I hope!\n    x = BAR;\n}\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 303,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 303,
+  body: [
     {
-      "type": "FunctionDeclaration",
-      "start": 0,
-      "end": 303,
-      "id": {
-        "type": "Identifier",
-        "start": 9,
-        "end": 13,
-        "name": "test"
+      type: "FunctionDeclaration",
+      start: 0,
+      end: 303,
+      id: {
+        type: "Identifier",
+        start: 9,
+        end: 13,
+        name: "test"
       },
-      "params": [],
-      "body": {
-        "type": "BlockStatement",
-        "start": 16,
-        "end": 303,
-        "body": [
+      params: [],
+      body: {
+        type: "BlockStatement",
+        start: 16,
+        end: 303,
+        body: [
           {
-            "type": "VariableDeclaration",
-            "start": 180,
-            "end": 156,
-            "commentsBefore": [
+            type: "VariableDeclaration",
+            start: 180,
+            end: 156,
+            commentsBefore: [
               "// Comments are aggregated",
               "// even if there are",
               "// preprocessor directives",
               "// in between."
             ],
-            "spacesBefore": [
+            spacesBefore: [
               "\n    ",
               "\n    ",
               "\n    ",
               "\n    "
             ],
-            "declarations": [
+            declarations: [
               {
-                "type": "VariableDeclarator",
-                "start": 184,
-                "end": 156,
-                "id": {
-                  "type": "Identifier",
-                  "start": 184,
-                  "end": 185,
-                  "name": "x"
+                type: "VariableDeclarator",
+                start: 184,
+                end: 156,
+                id: {
+                  type: "Identifier",
+                  start: 184,
+                  end: 185,
+                  name: "x"
                 },
-                "init": {
-                  "type": "Literal",
-                  "start": 154,
-                  "end": 156,
-                  "value": 13,
-                  "raw": "13"
+                init: {
+                  type: "Literal",
+                  start: 154,
+                  end: 156,
+                  value: 13,
+                  raw: "13"
                 }
               }
             ],
-            "kind": "var"
+            kind: "var"
           },
           {
-            "type": "ExpressionStatement",
-            "start": 293,
-            "end": 301,
-            "commentsBefore": [
+            type: "ExpressionStatement",
+            start: 293,
+            end: 301,
+            commentsBefore: [
               "// These comments",
               "// will appear after.",
               "// I hope!"
             ],
-            "spacesBefore": [
+            spacesBefore: [
               "\n    ",
               "\n    ",
               "\n    "
             ],
-            "expression": {
-              "type": "AssignmentExpression",
-              "start": 293,
-              "end": 300,
-              "operator": "=",
-              "left": {
-                "type": "Identifier",
-                "start": 293,
-                "end": 294,
-                "name": "x"
+            expression: {
+              type: "AssignmentExpression",
+              start: 293,
+              end: 300,
+              operator: "=",
+              left: {
+                type: "Identifier",
+                start: 293,
+                end: 294,
+                name: "x"
               },
-              "right": {
-                "type": "Identifier",
-                "start": 297,
-                "end": 300,
-                "name": "BAR"
+              right: {
+                type: "Identifier",
+                start: 297,
+                end: 300,
+                name: "BAR"
               }
             }
           }
@@ -26597,83 +26597,83 @@ test("function test()\n{\n    // Comments are aggregated\n    #define FOO 7\n   
 });
 
 test("function test()\n{\n    var y = 0;\n    // Comments are aggregated\n    #define FOO 7\n    // even if there are\n    #undef FOO\n    // preprocessor directives\n    #define FOO 13\n    // in between.\n    var x = FOO;\n}\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 209,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 209,
+  body: [
     {
-      "type": "FunctionDeclaration",
-      "start": 0,
-      "end": 209,
-      "id": {
-        "type": "Identifier",
-        "start": 9,
-        "end": 13,
-        "name": "test"
+      type: "FunctionDeclaration",
+      start: 0,
+      end: 209,
+      id: {
+        type: "Identifier",
+        start: 9,
+        end: 13,
+        name: "test"
       },
-      "params": [],
-      "body": {
-        "type": "BlockStatement",
-        "start": 16,
-        "end": 209,
-        "body": [
+      params: [],
+      body: {
+        type: "BlockStatement",
+        start: 16,
+        end: 209,
+        body: [
           {
-            "type": "VariableDeclaration",
-            "start": 22,
-            "end": 31,
-            "declarations": [
+            type: "VariableDeclaration",
+            start: 22,
+            end: 31,
+            declarations: [
               {
-                "type": "VariableDeclarator",
-                "start": 26,
-                "end": 31,
-                "id": {
-                  "type": "Identifier",
-                  "start": 26,
-                  "end": 27,
-                  "name": "y"
+                type: "VariableDeclarator",
+                start: 26,
+                end: 31,
+                id: {
+                  type: "Identifier",
+                  start: 26,
+                  end: 27,
+                  name: "y"
                 },
-                "init": {
-                  "type": "Literal",
-                  "start": 30,
-                  "end": 31,
-                  "value": 0,
-                  "raw": "0"
+                init: {
+                  type: "Literal",
+                  start: 30,
+                  end: 31,
+                  value: 0,
+                  raw: "0"
                 }
               }
             ],
-            "kind": "var"
+            kind: "var"
           },
           {
-            "type": "VariableDeclaration",
-            "start": 195,
-            "end": 171,
-            "commentsBefore": [
+            type: "VariableDeclaration",
+            start: 195,
+            end: 171,
+            commentsBefore: [
               "// Comments are aggregated",
               "// even if there are",
               "// preprocessor directives",
               "// in between."
             ],
-            "declarations": [
+            declarations: [
               {
-                "type": "VariableDeclarator",
-                "start": 199,
-                "end": 171,
-                "id": {
-                  "type": "Identifier",
-                  "start": 199,
-                  "end": 200,
-                  "name": "x"
+                type: "VariableDeclarator",
+                start: 199,
+                end: 171,
+                id: {
+                  type: "Identifier",
+                  start: 199,
+                  end: 200,
+                  name: "x"
                 },
-                "init": {
-                  "type": "Literal",
-                  "start": 169,
-                  "end": 171,
-                  "value": 13,
-                  "raw": "13"
+                init: {
+                  type: "Literal",
+                  start: 169,
+                  end: 171,
+                  value: 13,
+                  raw: "13"
                 }
               }
             ],
-            "kind": "var"
+            kind: "var"
           }
         ]
       }
@@ -26686,31 +26686,31 @@ test("function test()\n{\n    var y = 0;\n    // Comments are aggregated\n    #d
 
 // Macros may be passed in options.macros, either as macro objects or text definitions
 test("x = FOO;\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 8,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 8,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 0,
-      "end": 8,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 0,
-        "end": 5,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 0,
-          "end": 1,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 0,
+      end: 8,
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 5,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 1,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 4,
-          "end": 5,
-          "value": 7,
-          "raw": "7"
+        right: {
+          type: "Literal",
+          start: 4,
+          end: 5,
+          value: 7,
+          raw: "7"
         }
       }
     }
@@ -26724,50 +26724,50 @@ test("x = FOO;\n", {
 
 // Macros may span multiple lines
 test("#define NUMBERS 1, \\\n                2, \\\n                3\nx = [NUMBERS];\n", {
-  "type": "Program",
-  "start": 60,
-  "end": 74,
-  "body": [
+  type: "Program",
+  start: 60,
+  end: 74,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 60,
-      "end": 74,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 60,
-        "end": 73,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 60,
-          "end": 61,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 60,
+      end: 74,
+      expression: {
+        type: "AssignmentExpression",
+        start: 60,
+        end: 73,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 60,
+          end: 61,
+          name: "x"
         },
-        "right": {
-          "type": "ArrayExpression",
-          "start": 64,
-          "end": 73,
-          "elements": [
+        right: {
+          type: "ArrayExpression",
+          start: 64,
+          end: 73,
+          elements: [
             {
-              "type": "Literal",
-              "start": 16,
-              "end": 17,
-              "value": 1,
-              "raw": "1"
+              type: "Literal",
+              start: 16,
+              end: 17,
+              value: 1,
+              raw: "1"
             },
             {
-              "type": "Literal",
-              "start": 37,
-              "end": 38,
-              "value": 2,
-              "raw": "2"
+              type: "Literal",
+              start: 37,
+              end: 38,
+              value: 2,
+              raw: "2"
             },
             {
-              "type": "Literal",
-              "start": 58,
-              "end": 59,
-              "value": 3,
-              "raw": "3"
+              type: "Literal",
+              start: 58,
+              end: 59,
+              value: 3,
+              raw: "3"
             }
           ]
         }
@@ -26780,54 +26780,54 @@ test("#define NUMBERS 1, \\\n                2, \\\n                3\nx = [NUMB
 
 // Macros only take effect from point of definition
 test("foo = X;\n#define X 4\nbar = X;\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 29,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 29,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 0,
-      "end": 8,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 0,
-        "end": 7,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 0,
-          "end": 3,
-          "name": "foo"
+      type: "ExpressionStatement",
+      start: 0,
+      end: 8,
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 7,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 3,
+          name: "foo"
         },
-        "right": {
-          "type": "Identifier",
-          "start": 6,
-          "end": 7,
-          "name": "X"
+        right: {
+          type: "Identifier",
+          start: 6,
+          end: 7,
+          name: "X"
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 21,
-      "end": 29,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 21,
-        "end": 20,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 21,
-          "end": 24,
-          "name": "bar"
+      type: "ExpressionStatement",
+      start: 21,
+      end: 29,
+      expression: {
+        type: "AssignmentExpression",
+        start: 21,
+        end: 20,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 21,
+          end: 24,
+          name: "bar"
         },
-        "right": {
-          "type": "Literal",
-          "start": 19,
-          "end": 20,
-          "value": 4,
-          "raw": "4"
+        right: {
+          type: "Literal",
+          start: 19,
+          end: 20,
+          value: 4,
+          raw: "4"
         }
       }
     }
@@ -26838,31 +26838,31 @@ test("foo = X;\n#define X 4\nbar = X;\n", {
 
 // Macros are evaluated when expanded
 test("#define TABLESIZE BUFSIZE\n#define BUFSIZE 1024\nfoo = TABLESIZE;\n", {
-  "type": "Program",
-  "start": 47,
-  "end": 63,
-  "body": [
+  type: "Program",
+  start: 47,
+  end: 63,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 47,
-      "end": 63,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 47,
-        "end": 46,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 47,
-          "end": 50,
-          "name": "foo"
+      type: "ExpressionStatement",
+      start: 47,
+      end: 63,
+      expression: {
+        type: "AssignmentExpression",
+        start: 47,
+        end: 46,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 47,
+          end: 50,
+          name: "foo"
         },
-        "right": {
-          "type": "Literal",
-          "start": 42,
-          "end": 46,
-          "value": 1024,
-          "raw": "1024"
+        right: {
+          type: "Literal",
+          start: 42,
+          end: 46,
+          value: 1024,
+          raw: "1024"
         }
       }
     }
@@ -26873,55 +26873,55 @@ test("#define TABLESIZE BUFSIZE\n#define BUFSIZE 1024\nfoo = TABLESIZE;\n", {
 
 // Macros can be redefined
 test("#define BUFSIZE 1020\n#define TABLESIZE BUFSIZE\nfoo = TABLESIZE;\n#undef BUFSIZE\n#define BUFSIZE 37\nfoo = TABLESIZE;\n", {
-  "type": "Program",
-  "start": 47,
-  "end": 114,
-  "body": [
+  type: "Program",
+  start: 47,
+  end: 114,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 47,
-      "end": 63,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 47,
-        "end": 20,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 47,
-          "end": 50,
-          "name": "foo"
+      type: "ExpressionStatement",
+      start: 47,
+      end: 63,
+      expression: {
+        type: "AssignmentExpression",
+        start: 47,
+        end: 20,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 47,
+          end: 50,
+          name: "foo"
         },
-        "right": {
-          "type": "Literal",
-          "start": 16,
-          "end": 20,
-          "value": 1020,
-          "raw": "1020"
+        right: {
+          type: "Literal",
+          start: 16,
+          end: 20,
+          value: 1020,
+          raw: "1020"
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 98,
-      "end": 114,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 98,
-        "end": 97,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 98,
-          "end": 101,
-          "name": "foo"
+      type: "ExpressionStatement",
+      start: 98,
+      end: 114,
+      expression: {
+        type: "AssignmentExpression",
+        start: 98,
+        end: 97,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 98,
+          end: 101,
+          name: "foo"
         },
-        "right": {
-          "type": "Literal",
-          "start": 95,
-          "end": 97,
-          "value": 37,
-          "raw": "37"
+        right: {
+          type: "Literal",
+          start: 95,
+          end: 97,
+          value: 37,
+          raw: "37"
         }
       }
     }
@@ -26934,25 +26934,25 @@ test("#define BUFSIZE 1020\n#define TABLESIZE BUFSIZE\nfoo = TABLESIZE;\n#undef 
 
 // Macros can be called like functions
 test("#define lang_init()  c_init()\nlang_init();\n", {
-  "type": "Program",
-  "start": 21,
-  "end": 42,
-  "body": [
+  type: "Program",
+  start: 21,
+  end: 42,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 21,
-      "end": 42,
-      "expression": {
-        "type": "CallExpression",
-        "start": 21,
-        "end": 29,
-        "callee": {
-          "type": "Identifier",
-          "start": 21,
-          "end": 27,
-          "name": "c_init"
+      type: "ExpressionStatement",
+      start: 21,
+      end: 42,
+      expression: {
+        type: "CallExpression",
+        start: 21,
+        end: 29,
+        callee: {
+          type: "Identifier",
+          start: 21,
+          end: 27,
+          name: "c_init"
         },
-        "arguments": []
+        arguments: []
       }
     }
   ]
@@ -26962,59 +26962,59 @@ test("#define lang_init()  c_init()\nlang_init();\n", {
 
 // Function macros used without args are not expanded
 test("function foobar() { console.log(\"out of line\"); }\n#define foobar()  console.log(\"inline\");\nfoobar();\nfuncptr = foobar;\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 118,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 118,
+  body: [
     {
-      "type": "FunctionDeclaration",
-      "start": 0,
-      "end": 49,
-      "id": {
-        "type": "Identifier",
-        "start": 9,
-        "end": 15,
-        "name": "foobar"
+      type: "FunctionDeclaration",
+      start: 0,
+      end: 49,
+      id: {
+        type: "Identifier",
+        start: 9,
+        end: 15,
+        name: "foobar"
       },
-      "params": [],
-      "body": {
-        "type": "BlockStatement",
-        "start": 18,
-        "end": 49,
-        "body": [
+      params: [],
+      body: {
+        type: "BlockStatement",
+        start: 18,
+        end: 49,
+        body: [
           {
-            "type": "ExpressionStatement",
-            "start": 20,
-            "end": 47,
-            "expression": {
-              "type": "CallExpression",
-              "start": 20,
-              "end": 46,
-              "callee": {
-                "type": "MemberExpression",
-                "start": 20,
-                "end": 31,
-                "object": {
-                  "type": "Identifier",
-                  "start": 20,
-                  "end": 27,
-                  "name": "console"
+            type: "ExpressionStatement",
+            start: 20,
+            end: 47,
+            expression: {
+              type: "CallExpression",
+              start: 20,
+              end: 46,
+              callee: {
+                type: "MemberExpression",
+                start: 20,
+                end: 31,
+                object: {
+                  type: "Identifier",
+                  start: 20,
+                  end: 27,
+                  name: "console"
                 },
-                "property": {
-                  "type": "Identifier",
-                  "start": 28,
-                  "end": 31,
-                  "name": "log"
+                property: {
+                  type: "Identifier",
+                  start: 28,
+                  end: 31,
+                  name: "log"
                 },
-                "computed": false
+                computed: false
               },
-              "arguments": [
+              arguments: [
                 {
-                  "type": "Literal",
-                  "start": 32,
-                  "end": 45,
-                  "value": "out of line",
-                  "raw": "\"out of line\""
+                  type: "Literal",
+                  start: 32,
+                  end: 45,
+                  value: "out of line",
+                  raw: "\"out of line\""
                 }
               ]
             }
@@ -27023,67 +27023,67 @@ test("function foobar() { console.log(\"out of line\"); }\n#define foobar()  con
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 68,
-      "end": 90,
-      "expression": {
-        "type": "CallExpression",
-        "start": 68,
-        "end": 89,
-        "callee": {
-          "type": "MemberExpression",
-          "start": 68,
-          "end": 79,
-          "object": {
-            "type": "Identifier",
-            "start": 68,
-            "end": 75,
-            "name": "console"
+      type: "ExpressionStatement",
+      start: 68,
+      end: 90,
+      expression: {
+        type: "CallExpression",
+        start: 68,
+        end: 89,
+        callee: {
+          type: "MemberExpression",
+          start: 68,
+          end: 79,
+          object: {
+            type: "Identifier",
+            start: 68,
+            end: 75,
+            name: "console"
           },
-          "property": {
-            "type": "Identifier",
-            "start": 76,
-            "end": 79,
-            "name": "log"
+          property: {
+            type: "Identifier",
+            start: 76,
+            end: 79,
+            name: "log"
           },
-          "computed": false
+          computed: false
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 80,
-            "end": 88,
-            "value": "inline",
-            "raw": "\"inline\""
+            type: "Literal",
+            start: 80,
+            end: 88,
+            value: "inline",
+            raw: "\"inline\""
           }
         ]
       }
     },
     {
-      "type": "EmptyStatement",
-      "start": 99,
-      "end": 100
+      type: "EmptyStatement",
+      start: 99,
+      end: 100
     },
     {
-      "type": "ExpressionStatement",
-      "start": 101,
-      "end": 118,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 101,
-        "end": 117,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 101,
-          "end": 108,
-          "name": "funcptr"
+      type: "ExpressionStatement",
+      start: 101,
+      end: 118,
+      expression: {
+        type: "AssignmentExpression",
+        start: 101,
+        end: 117,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 101,
+          end: 108,
+          name: "funcptr"
         },
-        "right": {
-          "type": "Identifier",
-          "start": 111,
-          "end": 117,
-          "name": "foobar"
+        right: {
+          type: "Identifier",
+          start: 111,
+          end: 117,
+          name: "foobar"
         }
       }
     }
@@ -27094,42 +27094,42 @@ test("function foobar() { console.log(\"out of line\"); }\n#define foobar()  con
 
 // Macro parameters must immediately follow the name
 test("#define lang_init (arg);    c_init()\nlang_init();\n", {
-  "type": "Program",
-  "start": 18,
-  "end": 49,
-  "body": [
+  type: "Program",
+  start: 18,
+  end: 49,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 18,
-      "end": 24,
-      "expression": {
-        "type": "Identifier",
-        "start": 18,
-        "end": 23,
-        "name": "arg"
+      type: "ExpressionStatement",
+      start: 18,
+      end: 24,
+      expression: {
+        type: "Identifier",
+        start: 18,
+        end: 23,
+        name: "arg"
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 28,
-      "end": 49,
-      "expression": {
-        "type": "CallExpression",
-        "start": 28,
-        "end": 48,
-        "callee": {
-          "type": "CallExpression",
-          "start": 28,
-          "end": 36,
-          "callee": {
-            "type": "Identifier",
-            "start": 28,
-            "end": 34,
-            "name": "c_init"
+      type: "ExpressionStatement",
+      start: 28,
+      end: 49,
+      expression: {
+        type: "CallExpression",
+        start: 28,
+        end: 48,
+        callee: {
+          type: "CallExpression",
+          start: 28,
+          end: 36,
+          callee: {
+            type: "Identifier",
+            start: 28,
+            end: 34,
+            name: "c_init"
           },
-          "arguments": []
+          arguments: []
         },
-        "arguments": []
+        arguments: []
       }
     }
   ]
@@ -27141,192 +27141,192 @@ test("#define lang_init (arg);    c_init()\nlang_init();\n", {
 
 // Macros can take arguments
 test("#define min(X, Y)  ((X) < (Y) ? (X) : (Y))\nx = min(a, b);\ny = min(1, 2);\nz = min(a + 28, p);\n", {
-  "type": "Program",
-  "start": 43,
-  "end": 92,
-  "body": [
+  type: "Program",
+  start: 43,
+  end: 92,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 43,
-      "end": 57,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 43,
-        "end": 42,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 43,
-          "end": 44,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 43,
+      end: 57,
+      expression: {
+        type: "AssignmentExpression",
+        start: 43,
+        end: 42,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 43,
+          end: 44,
+          name: "x"
         },
-        "right": {
-          "type": "ConditionalExpression",
-          "start": 19,
-          "end": 42,
-          "test": {
-            "type": "BinaryExpression",
-            "start": 20,
-            "end": 29,
-            "left": {
-              "type": "Identifier",
-              "start": 20,
-              "end": 23,
-              "name": "a"
+        right: {
+          type: "ConditionalExpression",
+          start: 19,
+          end: 42,
+          test: {
+            type: "BinaryExpression",
+            start: 20,
+            end: 29,
+            left: {
+              type: "Identifier",
+              start: 20,
+              end: 23,
+              name: "a"
             },
-            "operator": "<",
-            "right": {
-              "type": "Identifier",
-              "start": 26,
-              "end": 29,
-              "name": "b"
+            operator: "<",
+            right: {
+              type: "Identifier",
+              start: 26,
+              end: 29,
+              name: "b"
             }
           },
-          "consequent": {
-            "type": "Identifier",
-            "start": 32,
-            "end": 35,
-            "name": "a"
+          consequent: {
+            type: "Identifier",
+            start: 32,
+            end: 35,
+            name: "a"
           },
-          "alternate": {
-            "type": "Identifier",
-            "start": 38,
-            "end": 41,
-            "name": "b"
+          alternate: {
+            type: "Identifier",
+            start: 38,
+            end: 41,
+            name: "b"
           }
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 72,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 58,
-        "end": 42,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 58,
-          "end": 59,
-          "name": "y"
+      type: "ExpressionStatement",
+      start: 58,
+      end: 72,
+      expression: {
+        type: "AssignmentExpression",
+        start: 58,
+        end: 42,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 58,
+          end: 59,
+          name: "y"
         },
-        "right": {
-          "type": "ConditionalExpression",
-          "start": 19,
-          "end": 42,
-          "test": {
-            "type": "BinaryExpression",
-            "start": 20,
-            "end": 29,
-            "left": {
-              "type": "Literal",
-              "start": 20,
-              "end": 23,
-              "value": 1,
-              "raw": "1"
+        right: {
+          type: "ConditionalExpression",
+          start: 19,
+          end: 42,
+          test: {
+            type: "BinaryExpression",
+            start: 20,
+            end: 29,
+            left: {
+              type: "Literal",
+              start: 20,
+              end: 23,
+              value: 1,
+              raw: "1"
             },
-            "operator": "<",
-            "right": {
-              "type": "Literal",
-              "start": 26,
-              "end": 29,
-              "value": 2,
-              "raw": "2"
+            operator: "<",
+            right: {
+              type: "Literal",
+              start: 26,
+              end: 29,
+              value: 2,
+              raw: "2"
             }
           },
-          "consequent": {
-            "type": "Literal",
-            "start": 32,
-            "end": 35,
-            "value": 1,
-            "raw": "1"
+          consequent: {
+            type: "Literal",
+            start: 32,
+            end: 35,
+            value: 1,
+            raw: "1"
           },
-          "alternate": {
-            "type": "Literal",
-            "start": 38,
-            "end": 41,
-            "value": 2,
-            "raw": "2"
+          alternate: {
+            type: "Literal",
+            start: 38,
+            end: 41,
+            value: 2,
+            raw: "2"
           }
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 73,
-      "end": 92,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 73,
-        "end": 42,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 73,
-          "end": 74,
-          "name": "z"
+      type: "ExpressionStatement",
+      start: 73,
+      end: 92,
+      expression: {
+        type: "AssignmentExpression",
+        start: 73,
+        end: 42,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 73,
+          end: 74,
+          name: "z"
         },
-        "right": {
-          "type": "ConditionalExpression",
-          "start": 19,
-          "end": 42,
-          "test": {
-            "type": "BinaryExpression",
-            "start": 20,
-            "end": 29,
-            "left": {
-              "type": "BinaryExpression",
-              "start": 20,
-              "end": 23,
-              "left": {
-                "type": "Identifier",
-                "start": 81,
-                "end": 82,
-                "name": "a"
+        right: {
+          type: "ConditionalExpression",
+          start: 19,
+          end: 42,
+          test: {
+            type: "BinaryExpression",
+            start: 20,
+            end: 29,
+            left: {
+              type: "BinaryExpression",
+              start: 20,
+              end: 23,
+              left: {
+                type: "Identifier",
+                start: 81,
+                end: 82,
+                name: "a"
               },
-              "operator": "+",
-              "right": {
-                "type": "Literal",
-                "start": 85,
-                "end": 87,
-                "value": 28,
-                "raw": "28"
+              operator: "+",
+              right: {
+                type: "Literal",
+                start: 85,
+                end: 87,
+                value: 28,
+                raw: "28"
               }
             },
-            "operator": "<",
-            "right": {
-              "type": "Identifier",
-              "start": 26,
-              "end": 29,
-              "name": "p"
+            operator: "<",
+            right: {
+              type: "Identifier",
+              start: 26,
+              end: 29,
+              name: "p"
             }
           },
-          "consequent": {
-            "type": "BinaryExpression",
-            "start": 32,
-            "end": 35,
-            "left": {
-              "type": "Identifier",
-              "start": 81,
-              "end": 82,
-              "name": "a"
+          consequent: {
+            type: "BinaryExpression",
+            start: 32,
+            end: 35,
+            left: {
+              type: "Identifier",
+              start: 81,
+              end: 82,
+              name: "a"
             },
-            "operator": "+",
-            "right": {
-              "type": "Literal",
-              "start": 85,
-              "end": 87,
-              "value": 28,
-              "raw": "28"
+            operator: "+",
+            right: {
+              type: "Literal",
+              start: 85,
+              end: 87,
+              value: 28,
+              raw: "28"
             }
           },
-          "alternate": {
-            "type": "Identifier",
-            "start": 38,
-            "end": 41,
-            "name": "p"
+          alternate: {
+            type: "Identifier",
+            start: 38,
+            end: 41,
+            name: "p"
           }
         }
       }
@@ -27338,109 +27338,109 @@ test("#define min(X, Y)  ((X) < (Y) ? (X) : (Y))\nx = min(a, b);\ny = min(1, 2);
 
 // Leading and trailing whitespace is trimmed, whitespace between tokens is reduced to single space
 test("#define min(X, Y)  ((X) < (Y) ? (X) : (Y))\nx = min(  a   +   7,\n         b\n         -\n         13  );\n", {
-  "type": "Program",
-  "start": 43,
-  "end": 101,
-  "body": [
+  type: "Program",
+  start: 43,
+  end: 101,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 43,
-      "end": 101,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 43,
-        "end": 42,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 43,
-          "end": 44,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 43,
+      end: 101,
+      expression: {
+        type: "AssignmentExpression",
+        start: 43,
+        end: 42,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 43,
+          end: 44,
+          name: "x"
         },
-        "right": {
-          "type": "ConditionalExpression",
-          "start": 19,
-          "end": 42,
-          "test": {
-            "type": "BinaryExpression",
-            "start": 20,
-            "end": 29,
-            "left": {
-              "type": "BinaryExpression",
-              "start": 20,
-              "end": 23,
-              "left": {
-                "type": "Identifier",
-                "start": 53,
-                "end": 54,
-                "name": "a"
+        right: {
+          type: "ConditionalExpression",
+          start: 19,
+          end: 42,
+          test: {
+            type: "BinaryExpression",
+            start: 20,
+            end: 29,
+            left: {
+              type: "BinaryExpression",
+              start: 20,
+              end: 23,
+              left: {
+                type: "Identifier",
+                start: 53,
+                end: 54,
+                name: "a"
               },
-              "operator": "+",
-              "right": {
-                "type": "Literal",
-                "start": 61,
-                "end": 62,
-                "value": 7,
-                "raw": "7"
+              operator: "+",
+              right: {
+                type: "Literal",
+                start: 61,
+                end: 62,
+                value: 7,
+                raw: "7"
               }
             },
-            "operator": "<",
-            "right": {
-              "type": "BinaryExpression",
-              "start": 26,
-              "end": 29,
-              "left": {
-                "type": "Identifier",
-                "start": 73,
-                "end": 74,
-                "name": "b"
+            operator: "<",
+            right: {
+              type: "BinaryExpression",
+              start: 26,
+              end: 29,
+              left: {
+                type: "Identifier",
+                start: 73,
+                end: 74,
+                name: "b"
               },
-              "operator": "-",
-              "right": {
-                "type": "Literal",
-                "start": 95,
-                "end": 97,
-                "value": 13,
-                "raw": "13"
+              operator: "-",
+              right: {
+                type: "Literal",
+                start: 95,
+                end: 97,
+                value: 13,
+                raw: "13"
               }
             }
           },
-          "consequent": {
-            "type": "BinaryExpression",
-            "start": 32,
-            "end": 35,
-            "left": {
-              "type": "Identifier",
-              "start": 53,
-              "end": 54,
-              "name": "a"
+          consequent: {
+            type: "BinaryExpression",
+            start: 32,
+            end: 35,
+            left: {
+              type: "Identifier",
+              start: 53,
+              end: 54,
+              name: "a"
             },
-            "operator": "+",
-            "right": {
-              "type": "Literal",
-              "start": 61,
-              "end": 62,
-              "value": 7,
-              "raw": "7"
+            operator: "+",
+            right: {
+              type: "Literal",
+              start: 61,
+              end: 62,
+              value: 7,
+              raw: "7"
             }
           },
-          "alternate": {
-            "type": "BinaryExpression",
-            "start": 38,
-            "end": 41,
-            "left": {
-              "type": "Identifier",
-              "start": 73,
-              "end": 74,
-              "name": "b"
+          alternate: {
+            type: "BinaryExpression",
+            start: 38,
+            end: 41,
+            left: {
+              type: "Identifier",
+              start: 73,
+              end: 74,
+              name: "b"
             },
-            "operator": "-",
-            "right": {
-              "type": "Literal",
-              "start": 95,
-              "end": 97,
-              "value": 13,
-              "raw": "13"
+            operator: "-",
+            right: {
+              type: "Literal",
+              start: 95,
+              end: 97,
+              value: 13,
+              raw: "13"
             }
           }
         }
@@ -27453,35 +27453,35 @@ test("#define min(X, Y)  ((X) < (Y) ? (X) : (Y))\nx = min(  a   +   7,\n        
 
 // Square brackets do not have to balance
 test("#define square_brackets(arg1, arg2)  arg1 ## arg2\na = square_brackets([x, y]);\n", {
-  "type": "Program",
-  "start": 50,
-  "end": 78,
-  "body": [
+  type: "Program",
+  start: 50,
+  end: 78,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 50,
-      "end": 78,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 50,
-        "end": 76,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 50,
-          "end": 51,
-          "name": "a"
+      type: "ExpressionStatement",
+      start: 50,
+      end: 78,
+      expression: {
+        type: "AssignmentExpression",
+        start: 50,
+        end: 76,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 50,
+          end: 51,
+          name: "a"
         },
-        "right": {
-          "type": "ArrayExpression",
-          "start": 70,
-          "end": 76,
-          "elements": [
+        right: {
+          type: "ArrayExpression",
+          start: 70,
+          end: 76,
+          elements: [
             {
-              "type": "Identifier",
-              "start": 71,
-              "end": 73,
-              "name": "xy"
+              type: "Identifier",
+              start: 71,
+              end: 73,
+              name: "xy"
             }
           ]
         }
@@ -27494,64 +27494,64 @@ test("#define square_brackets(arg1, arg2)  arg1 ## arg2\na = square_brackets([x,
 
 // Commas may be within arguments
 test("#define comma(arg)  arg;\ncomma((x = 0, y = 1));\n", {
-  "type": "Program",
-  "start": 31,
-  "end": 47,
-  "body": [
+  type: "Program",
+  start: 31,
+  end: 47,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 31,
-      "end": 24,
-      "expression": {
-        "type": "SequenceExpression",
-        "start": 31,
-        "end": 45,
-        "expressions": [
+      type: "ExpressionStatement",
+      start: 31,
+      end: 24,
+      expression: {
+        type: "SequenceExpression",
+        start: 31,
+        end: 45,
+        expressions: [
           {
-            "type": "AssignmentExpression",
-            "start": 32,
-            "end": 37,
-            "operator": "=",
-            "left": {
-              "type": "Identifier",
-              "start": 32,
-              "end": 33,
-              "name": "x"
+            type: "AssignmentExpression",
+            start: 32,
+            end: 37,
+            operator: "=",
+            left: {
+              type: "Identifier",
+              start: 32,
+              end: 33,
+              name: "x"
             },
-            "right": {
-              "type": "Literal",
-              "start": 36,
-              "end": 37,
-              "value": 0,
-              "raw": "0"
+            right: {
+              type: "Literal",
+              start: 36,
+              end: 37,
+              value: 0,
+              raw: "0"
             }
           },
           {
-            "type": "AssignmentExpression",
-            "start": 39,
-            "end": 44,
-            "operator": "=",
-            "left": {
-              "type": "Identifier",
-              "start": 39,
-              "end": 40,
-              "name": "y"
+            type: "AssignmentExpression",
+            start: 39,
+            end: 44,
+            operator: "=",
+            left: {
+              type: "Identifier",
+              start: 39,
+              end: 40,
+              name: "y"
             },
-            "right": {
-              "type": "Literal",
-              "start": 43,
-              "end": 44,
-              "value": 1,
-              "raw": "1"
+            right: {
+              type: "Literal",
+              start: 43,
+              end: 44,
+              value: 1,
+              raw: "1"
             }
           }
         ]
       }
     },
     {
-      "type": "EmptyStatement",
-      "start": 46,
-      "end": 47
+      type: "EmptyStatement",
+      start: 46,
+      end: 47
     }
   ]
 }, {
@@ -27560,61 +27560,61 @@ test("#define comma(arg)  arg;\ncomma((x = 0, y = 1));\n", {
 
 // Arguments are macro-expanded before substitution
 test("#define DOUBLE(arg)  (arg) * 2\nx = min(DOUBLE(a), 10);\n", {
-  "type": "Program",
-  "start": 31,
-  "end": 54,
-  "body": [
+  type: "Program",
+  start: 31,
+  end: 54,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 31,
-      "end": 54,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 31,
-        "end": 53,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 31,
-          "end": 32,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 31,
+      end: 54,
+      expression: {
+        type: "AssignmentExpression",
+        start: 31,
+        end: 53,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 31,
+          end: 32,
+          name: "x"
         },
-        "right": {
-          "type": "CallExpression",
-          "start": 35,
-          "end": 53,
-          "callee": {
-            "type": "Identifier",
-            "start": 35,
-            "end": 38,
-            "name": "min"
+        right: {
+          type: "CallExpression",
+          start: 35,
+          end: 53,
+          callee: {
+            type: "Identifier",
+            start: 35,
+            end: 38,
+            name: "min"
           },
-          "arguments": [
+          arguments: [
             {
-              "type": "BinaryExpression",
-              "start": 21,
-              "end": 30,
-              "left": {
-                "type": "Identifier",
-                "start": 21,
-                "end": 26,
-                "name": "a"
+              type: "BinaryExpression",
+              start: 21,
+              end: 30,
+              left: {
+                type: "Identifier",
+                start: 21,
+                end: 26,
+                name: "a"
               },
-              "operator": "*",
-              "right": {
-                "type": "Literal",
-                "start": 29,
-                "end": 30,
-                "value": 2,
-                "raw": "2"
+              operator: "*",
+              right: {
+                type: "Literal",
+                start: 29,
+                end: 30,
+                value: 2,
+                raw: "2"
               }
             },
             {
-              "type": "Literal",
-              "start": 50,
-              "end": 52,
-              "value": 10,
-              "raw": "10"
+              type: "Literal",
+              start: 50,
+              end: 52,
+              value: 10,
+              raw: "10"
             }
           ]
         }
@@ -27641,106 +27641,106 @@ test("#define DOUBLE(arg)  (arg) * 2\nx = min(DOUBLE(a), 10);\n", {
 // ==> x = DOUBLE(7) * 2;
 // x = 7 * 2 * 2;
 test("#define DOUBLE(arg)  (arg) * 2\n#define QUADRUPLE(arg)  DOUBLE(arg) * 2\nx = QUADRUPLE(7);\n#define paste_arg(arg1, arg2)  arg1 ## arg2\nx = paste_arg(QUAD, RUPLE(7));\n", {
-  "type": "Program",
-  "start": 71,
-  "end": 163,
-  "body": [
+  type: "Program",
+  start: 71,
+  end: 163,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 71,
-      "end": 88,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 71,
-        "end": 70,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 71,
-          "end": 72,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 71,
+      end: 88,
+      expression: {
+        type: "AssignmentExpression",
+        start: 71,
+        end: 70,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 71,
+          end: 72,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 21,
-          "end": 70,
-          "left": {
-            "type": "BinaryExpression",
-            "start": 21,
-            "end": 30,
-            "left": {
-              "type": "Literal",
-              "start": 21,
-              "end": 26,
-              "value": 7,
-              "raw": "7"
+        right: {
+          type: "BinaryExpression",
+          start: 21,
+          end: 70,
+          left: {
+            type: "BinaryExpression",
+            start: 21,
+            end: 30,
+            left: {
+              type: "Literal",
+              start: 21,
+              end: 26,
+              value: 7,
+              raw: "7"
             },
-            "operator": "*",
-            "right": {
-              "type": "Literal",
-              "start": 29,
-              "end": 30,
-              "value": 2,
-              "raw": "2"
+            operator: "*",
+            right: {
+              type: "Literal",
+              start: 29,
+              end: 30,
+              value: 2,
+              raw: "2"
             }
           },
-          "operator": "*",
-          "right": {
-            "type": "Literal",
-            "start": 69,
-            "end": 70,
-            "value": 2,
-            "raw": "2"
+          operator: "*",
+          right: {
+            type: "Literal",
+            start: 69,
+            end: 70,
+            value: 2,
+            raw: "2"
           }
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 133,
-      "end": 163,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 133,
-        "end": 70,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 133,
-          "end": 134,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 133,
+      end: 163,
+      expression: {
+        type: "AssignmentExpression",
+        start: 133,
+        end: 70,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 133,
+          end: 134,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 21,
-          "end": 70,
-          "left": {
-            "type": "BinaryExpression",
-            "start": 21,
-            "end": 30,
-            "left": {
-              "type": "Literal",
-              "start": 21,
-              "end": 26,
-              "value": 7,
-              "raw": "7"
+        right: {
+          type: "BinaryExpression",
+          start: 21,
+          end: 70,
+          left: {
+            type: "BinaryExpression",
+            start: 21,
+            end: 30,
+            left: {
+              type: "Literal",
+              start: 21,
+              end: 26,
+              value: 7,
+              raw: "7"
             },
-            "operator": "*",
-            "right": {
-              "type": "Literal",
-              "start": 29,
-              "end": 30,
-              "value": 2,
-              "raw": "2"
+            operator: "*",
+            right: {
+              type: "Literal",
+              start: 29,
+              end: 30,
+              value: 2,
+              raw: "2"
             }
           },
-          "operator": "*",
-          "right": {
-            "type": "Literal",
-            "start": 69,
-            "end": 70,
-            "value": 2,
-            "raw": "2"
+          operator: "*",
+          right: {
+            type: "Literal",
+            start: 69,
+            end: 70,
+            value: 2,
+            raw: "2"
           }
         }
       }
@@ -27752,37 +27752,37 @@ test("#define DOUBLE(arg)  (arg) * 2\n#define QUADRUPLE(arg)  DOUBLE(arg) * 2\nx
 
 // Arguments may be empty
 test("#define ARGS(arg, arg2)  arg arg2\nARGS(,);\nARGS(, 2);\nARGS(1,);\n", {
-  "type": "Program",
-  "start": 41,
-  "end": 63,
-  "body": [
+  type: "Program",
+  start: 41,
+  end: 63,
+  body: [
     {
-      "type": "EmptyStatement",
-      "start": 41,
-      "end": 42
+      type: "EmptyStatement",
+      start: 41,
+      end: 42
     },
     {
-      "type": "ExpressionStatement",
-      "start": 50,
-      "end": 53,
-      "expression": {
-        "type": "Literal",
-        "start": 50,
-        "end": 51,
-        "value": 2,
-        "raw": "2"
+      type: "ExpressionStatement",
+      start: 50,
+      end: 53,
+      expression: {
+        type: "Literal",
+        start: 50,
+        end: 51,
+        value: 2,
+        raw: "2"
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 59,
-      "end": 63,
-      "expression": {
-        "type": "Literal",
-        "start": 59,
-        "end": 60,
-        "value": 1,
-        "raw": "1"
+      type: "ExpressionStatement",
+      start: 59,
+      end: 63,
+      expression: {
+        type: "Literal",
+        start: 59,
+        end: 60,
+        value: 1,
+        raw: "1"
       }
     }
   ]
@@ -27792,31 +27792,31 @@ test("#define ARGS(arg, arg2)  arg arg2\nARGS(,);\nARGS(, 2);\nARGS(1,);\n", {
 
 // Macro parameters appearing inside string literals are not replaced by their corresponding actual arguments
 test("#define literal(arg)  arg; \"arg\"\nliteral(test);\n", {
-  "type": "Program",
-  "start": 41,
-  "end": 47,
-  "body": [
+  type: "Program",
+  start: 41,
+  end: 47,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 41,
-      "end": 26,
-      "expression": {
-        "type": "Identifier",
-        "start": 41,
-        "end": 45,
-        "name": "test"
+      type: "ExpressionStatement",
+      start: 41,
+      end: 26,
+      expression: {
+        type: "Identifier",
+        start: 41,
+        end: 45,
+        name: "test"
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 27,
-      "end": 47,
-      "expression": {
-        "type": "Literal",
-        "start": 27,
-        "end": 32,
-        "value": "arg",
-        "raw": "\"arg\""
+      type: "ExpressionStatement",
+      start: 27,
+      end: 47,
+      expression: {
+        type: "Literal",
+        start: 27,
+        end: 32,
+        value: "arg",
+        raw: "\"arg\""
       }
     }
   ]
@@ -27829,55 +27829,55 @@ test("#define literal(arg)  arg; \"arg\"\nliteral(test);\n", {
 // The preprocessor backslash-escapes the quotes surrounding embedded string constants,
 // and all backslashes within string and character constants
 test("#define stringify(arg)  #arg\nx = stringify(p = \"foo\\n\");\nx = stringify(p = 'foo\\n');\n", {
-  "type": "Program",
-  "start": 29,
-  "end": 84,
-  "body": [
+  type: "Program",
+  start: 29,
+  end: 84,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 29,
-      "end": 56,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 29,
-        "end": 59,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 29,
-          "end": 30,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 29,
+      end: 56,
+      expression: {
+        type: "AssignmentExpression",
+        start: 29,
+        end: 59,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 29,
+          end: 30,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 43,
-          "end": 59,
-          "value": "p = \"foo\\n\"",
-          "raw": "\"p = \\\"foo\\\\n\\\"\""
+        right: {
+          type: "Literal",
+          start: 43,
+          end: 59,
+          value: "p = \"foo\\n\"",
+          raw: "\"p = \\\"foo\\\\n\\\"\""
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 57,
-      "end": 84,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 57,
-        "end": 85,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 57,
-          "end": 58,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 57,
+      end: 84,
+      expression: {
+        type: "AssignmentExpression",
+        start: 57,
+        end: 85,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 57,
+          end: 58,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 71,
-          "end": 85,
-          "value": "p = 'foo\\n'",
-          "raw": "\"p = 'foo\\\\n'\""
+        right: {
+          type: "Literal",
+          start: 71,
+          end: 85,
+          value: "p = 'foo\\n'",
+          raw: "\"p = 'foo\\\\n'\""
         }
       }
     }
@@ -27889,31 +27889,31 @@ test("#define stringify(arg)  #arg\nx = stringify(p = \"foo\\n\");\nx = stringif
 // Backslashes that are not inside string or character constants are not duplicated
 // "foo bar" has a tab between the words, which is stringified to "\t".
 test("#define stringify(arg)  #arg\nx = stringify(\"foo\tbar\");\n", {
-  "type": "Program",
-  "start": 29,
-  "end": 54,
-  "body": [
+  type: "Program",
+  start: 29,
+  end: 54,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 29,
-      "end": 54,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 29,
-        "end": 58,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 29,
-          "end": 30,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 29,
+      end: 54,
+      expression: {
+        type: "AssignmentExpression",
+        start: 29,
+        end: 58,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 29,
+          end: 30,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 43,
-          "end": 58,
-          "value": "\"foo\\tbar\"",
-          "raw": "\"\\\"foo\\\\tbar\\\"\""
+        right: {
+          type: "Literal",
+          start: 43,
+          end: 58,
+          value: "\"foo\\tbar\"",
+          raw: "\"\\\"foo\\\\tbar\\\"\""
         }
       }
     }
@@ -27926,31 +27926,31 @@ test("#define stringify(arg)  #arg\nx = stringify(\"foo\tbar\");\n", {
 // Any sequence of whitespace in the middle of the text is converted to a single space
 // in the stringified result.
 test("#define stringify(arg)  #arg\nx = stringify(   foo  =\n                '  b a r  '   );\n", {
-  "type": "Program",
-  "start": 29,
-  "end": 85,
-  "body": [
+  type: "Program",
+  start: 29,
+  end: 85,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 29,
-      "end": 85,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 29,
-        "end": 65,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 29,
-          "end": 30,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 29,
+      end: 85,
+      expression: {
+        type: "AssignmentExpression",
+        start: 29,
+        end: 65,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 29,
+          end: 30,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 46,
-          "end": 65,
-          "value": "foo = '  b a r  '",
-          "raw": "\"foo = '  b a r  '\""
+        right: {
+          type: "Literal",
+          start: 46,
+          end: 65,
+          value: "foo = '  b a r  '",
+          raw: "\"foo = '  b a r  '\""
         }
       }
     }
@@ -27962,55 +27962,55 @@ test("#define stringify(arg)  #arg\nx = stringify(   foo  =\n                '  
 // If you want to stringify the result of expansion of a macro argument,
 // you have to use two levels of macros.
 test("#define xstr(s) str(s)\n#define str(s) #s\n#define foo 4\nx = str (foo);\nx = xstr (foo);\n", {
-  "type": "Program",
-  "start": 55,
-  "end": 85,
-  "body": [
+  type: "Program",
+  start: 55,
+  end: 85,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 55,
-      "end": 69,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 55,
-        "end": 69,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 55,
-          "end": 56,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 55,
+      end: 69,
+      expression: {
+        type: "AssignmentExpression",
+        start: 55,
+        end: 69,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 55,
+          end: 56,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 64,
-          "end": 69,
-          "value": "foo",
-          "raw": "\"foo\""
+        right: {
+          type: "Literal",
+          start: 64,
+          end: 69,
+          value: "foo",
+          raw: "\"foo\""
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 70,
-      "end": 85,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 70,
-        "end": 56,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 70,
-          "end": 71,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 70,
+      end: 85,
+      expression: {
+        type: "AssignmentExpression",
+        start: 70,
+        end: 56,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 70,
+          end: 71,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 53,
-          "end": 56,
-          "value": "4",
-          "raw": "\"4\""
+        right: {
+          type: "Literal",
+          start: 53,
+          end: 56,
+          value: "4",
+          raw: "\"4\""
         }
       }
     }
@@ -28021,31 +28021,31 @@ test("#define xstr(s) str(s)\n#define str(s) #s\n#define foo 4\nx = str (foo);\n
 
 // Empty arg becomes empty string
 test("#define stringify2(arg1, arg2)  #arg2\nx = stringify2(foo,);\n", {
-  "type": "Program",
-  "start": 38,
-  "end": 59,
-  "body": [
+  type: "Program",
+  start: 38,
+  end: 59,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 38,
-      "end": 59,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 38,
-        "end": 35,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 38,
-          "end": 39,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 38,
+      end: 59,
+      expression: {
+        type: "AssignmentExpression",
+        start: 38,
+        end: 35,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 38,
+          end: 39,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 33,
-          "end": 35,
-          "value": "",
-          "raw": "\"\""
+        right: {
+          type: "Literal",
+          start: 33,
+          end: 35,
+          value: "",
+          raw: "\"\""
         }
       }
     }
@@ -28058,42 +28058,42 @@ test("#define stringify2(arg1, arg2)  #arg2\nx = stringify2(foo,);\n", {
 
 // As with stringification, the actual argument is not macro-expanded first.
 test("#define foo 4\n#define concatenate(arg1, arg2)  arg1 + arg1 ## arg2 ## 7\nx = concatenate(foo, bar);\n", {
-  "type": "Program",
-  "start": 72,
-  "end": 98,
-  "body": [
+  type: "Program",
+  start: 72,
+  end: 98,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 72,
-      "end": 98,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 72,
-        "end": 95,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 72,
-          "end": 73,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 72,
+      end: 98,
+      expression: {
+        type: "AssignmentExpression",
+        start: 72,
+        end: 95,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 72,
+          end: 73,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 12,
-          "end": 95,
-          "left": {
-            "type": "Literal",
-            "start": 12,
-            "end": 13,
-            "value": 4,
-            "raw": "4"
+        right: {
+          type: "BinaryExpression",
+          start: 12,
+          end: 95,
+          left: {
+            type: "Literal",
+            start: 12,
+            end: 13,
+            value: 4,
+            raw: "4"
           },
-          "operator": "+",
-          "right": {
-            "type": "Identifier",
-            "start": 88,
-            "end": 95,
-            "name": "foobar7"
+          operator: "+",
+          right: {
+            type: "Identifier",
+            start: 88,
+            end: 95,
+            name: "foobar7"
           }
         }
       }
@@ -28105,42 +28105,42 @@ test("#define foo 4\n#define concatenate(arg1, arg2)  arg1 + arg1 ## arg2 ## 7\n
 
 // If the argument is empty, that `##' has no effect.
 test("#define foo 4\n#define concatenate(arg1, arg2)  arg1 + arg1 ## arg2 ## 7\nx = concatenate(foo, );\n", {
-  "type": "Program",
-  "start": 72,
-  "end": 95,
-  "body": [
+  type: "Program",
+  start: 72,
+  end: 95,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 72,
-      "end": 95,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 72,
-        "end": 92,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 72,
-          "end": 73,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 72,
+      end: 95,
+      expression: {
+        type: "AssignmentExpression",
+        start: 72,
+        end: 92,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 72,
+          end: 73,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 12,
-          "end": 92,
-          "left": {
-            "type": "Literal",
-            "start": 12,
-            "end": 13,
-            "value": 4,
-            "raw": "4"
+        right: {
+          type: "BinaryExpression",
+          start: 12,
+          end: 92,
+          left: {
+            type: "Literal",
+            start: 12,
+            end: 13,
+            value: 4,
+            raw: "4"
           },
-          "operator": "+",
-          "right": {
-            "type": "Identifier",
-            "start": 88,
-            "end": 92,
-            "name": "foo7"
+          operator: "+",
+          right: {
+            type: "Identifier",
+            start: 88,
+            end: 92,
+            name: "foo7"
           }
         }
       }
@@ -28152,81 +28152,81 @@ test("#define foo 4\n#define concatenate(arg1, arg2)  arg1 + arg1 ## arg2 ## 7\n
 
 // Only the leading and trailing tokens in argument are pasted
 test("#define foo 4\n#define concatenate(arg1, arg2)  arg1 + arg1 ## arg2 ## 7\nx = concatenate(foo + 1, 7 + foo);\n", {
-  "type": "Program",
-  "start": 72,
-  "end": 106,
-  "body": [
+  type: "Program",
+  start: 72,
+  end: 106,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 72,
-      "end": 106,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 72,
-        "end": 105,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 72,
-          "end": 73,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 72,
+      end: 106,
+      expression: {
+        type: "AssignmentExpression",
+        start: 72,
+        end: 105,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 72,
+          end: 73,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 12,
-          "end": 105,
-          "left": {
-            "type": "BinaryExpression",
-            "start": 12,
-            "end": 96,
-            "left": {
-              "type": "BinaryExpression",
-              "start": 12,
-              "end": 13,
-              "left": {
-                "type": "BinaryExpression",
-                "start": 12,
-                "end": 95,
-                "left": {
-                  "type": "Literal",
-                  "start": 12,
-                  "end": 13,
-                  "value": 4,
-                  "raw": "4"
+        right: {
+          type: "BinaryExpression",
+          start: 12,
+          end: 105,
+          left: {
+            type: "BinaryExpression",
+            start: 12,
+            end: 96,
+            left: {
+              type: "BinaryExpression",
+              start: 12,
+              end: 13,
+              left: {
+                type: "BinaryExpression",
+                start: 12,
+                end: 95,
+                left: {
+                  type: "Literal",
+                  start: 12,
+                  end: 13,
+                  value: 4,
+                  raw: "4"
                 },
-                "operator": "+",
-                "right": {
-                  "type": "Literal",
-                  "start": 94,
-                  "end": 95,
-                  "value": 1,
-                  "raw": "1"
+                operator: "+",
+                right: {
+                  type: "Literal",
+                  start: 94,
+                  end: 95,
+                  value: 1,
+                  raw: "1"
                 }
               },
-              "operator": "+",
-              "right": {
-                "type": "Literal",
-                "start": 12,
-                "end": 13,
-                "value": 4,
-                "raw": "4"
+              operator: "+",
+              right: {
+                type: "Literal",
+                start: 12,
+                end: 13,
+                value: 4,
+                raw: "4"
               }
             },
-            "operator": "+",
-            "right": {
-              "type": "Literal",
-              "start": 94,
-              "end": 96,
-              "value": 17,
-              "raw": "17"
+            operator: "+",
+            right: {
+              type: "Literal",
+              start: 94,
+              end: 96,
+              value: 17,
+              raw: "17"
             }
           },
-          "operator": "+",
-          "right": {
-            "type": "Identifier",
-            "start": 101,
-            "end": 105,
-            "name": "foo7"
+          operator: "+",
+          right: {
+            type: "Identifier",
+            start: 101,
+            end: 105,
+            name: "foo7"
           }
         }
       }
@@ -28237,60 +28237,60 @@ test("#define foo 4\n#define concatenate(arg1, arg2)  arg1 + arg1 ## arg2 ## 7\n
 });
 
 test("#define COMMAND(NAME)  { name: #NAME, command: NAME ## _command }\nx = COMMAND(foo);\n", {
-  "type": "Program",
-  "start": 66,
-  "end": 83,
-  "body": [
+  type: "Program",
+  start: 66,
+  end: 83,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 66,
-      "end": 83,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 66,
-        "end": 65,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 66,
-          "end": 67,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 66,
+      end: 83,
+      expression: {
+        type: "AssignmentExpression",
+        start: 66,
+        end: 65,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 66,
+          end: 67,
+          name: "x"
         },
-        "right": {
-          "type": "ObjectExpression",
-          "start": 23,
-          "end": 65,
-          "properties": [
+        right: {
+          type: "ObjectExpression",
+          start: 23,
+          end: 65,
+          properties: [
             {
-              "key": {
-                "type": "Identifier",
-                "start": 25,
-                "end": 29,
-                "name": "name"
+              key: {
+                type: "Identifier",
+                start: 25,
+                end: 29,
+                name: "name"
               },
-              "value": {
-                "type": "Literal",
-                "start": 78,
-                "end": 83,
-                "value": "foo",
-                "raw": "\"foo\""
+              value: {
+                type: "Literal",
+                start: 78,
+                end: 83,
+                value: "foo",
+                raw: "\"foo\""
               },
-              "kind": "init"
+              kind: "init"
             },
             {
-              "key": {
-                "type": "Identifier",
-                "start": 38,
-                "end": 45,
-                "name": "command"
+              key: {
+                type: "Identifier",
+                start: 38,
+                end: 45,
+                name: "command"
               },
-              "value": {
-                "type": "Identifier",
-                "start": 78,
-                "end": 89,
-                "name": "foo_command"
+              value: {
+                type: "Identifier",
+                start: 78,
+                end: 89,
+                name: "foo_command"
               },
-              "kind": "init"
+              kind: "init"
             }
           ]
         }
@@ -28303,43 +28303,43 @@ test("#define COMMAND(NAME)  { name: #NAME, command: NAME ## _command }\nx = COM
 
 // If the pasted token is invalid, a warning is issued and the two tokens are left as is
 test("#define paste_fail(arg1, arg2)  arg1 ## arg2\nx = paste_fail(\"paste\", + \"me\");\n", {
-  "type": "Program",
-  "start": 45,
-  "end": 77,
-  "body": [
+  type: "Program",
+  start: 45,
+  end: 77,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 45,
-      "end": 77,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 45,
-        "end": 75,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 45,
-          "end": 46,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 45,
+      end: 77,
+      expression: {
+        type: "AssignmentExpression",
+        start: 45,
+        end: 75,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 45,
+          end: 46,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 60,
-          "end": 75,
-          "left": {
-            "type": "Literal",
-            "start": 60,
-            "end": 67,
-            "value": "paste",
-            "raw": "\"paste\""
+        right: {
+          type: "BinaryExpression",
+          start: 60,
+          end: 75,
+          left: {
+            type: "Literal",
+            start: 60,
+            end: 67,
+            value: "paste",
+            raw: "\"paste\""
           },
-          "operator": "+",
-          "right": {
-            "type": "Literal",
-            "start": 71,
-            "end": 75,
-            "value": "me",
-            "raw": "\"me\""
+          operator: "+",
+          right: {
+            type: "Literal",
+            start: 71,
+            end: 75,
+            value: "me",
+            raw: "\"me\""
           }
         }
       }
@@ -28351,29 +28351,29 @@ test("#define paste_fail(arg1, arg2)  arg1 ## arg2\nx = paste_fail(\"paste\", + 
 
 // Concatenation of tokens is possible when evaluating macros
 test("#define X_FOO 1\n#define X(FEATURE) X_##FEATURE\n#if X(FOO)\nvar x;\n#endif", {
-  "type": "Program",
-  "start": 58,
-  "end": 64,
-  "body": [
+  type: "Program",
+  start: 58,
+  end: 64,
+  body: [
     {
-      "type": "VariableDeclaration",
-      "start": 58,
-      "end": 63,
-      "declarations": [
+      type: "VariableDeclaration",
+      start: 58,
+      end: 63,
+      declarations: [
         {
-          "type": "VariableDeclarator",
-          "start": 62,
-          "end": 63,
-          "id": {
-            "type": "Identifier",
-            "start": 62,
-            "end": 63,
-            "name": "x"
+          type: "VariableDeclarator",
+          start: 62,
+          end: 63,
+          id: {
+            type: "Identifier",
+            start: 62,
+            end: 63,
+            name: "x"
           },
-          "init": null
+          init: null
         }
       ],
-      "kind": "var"
+      kind: "var"
     }
   ]
 }, {
@@ -28384,31 +28384,31 @@ test("#define X_FOO 1\n#define X(FEATURE) X_##FEATURE\n#if X(FOO)\nvar x;\n#endi
 
 // Variadic macros may also have named parameters
 test("#define variadic(arg, ...)  arg __VA_ARGS__\nx = variadic(7);\n", {
-  "type": "Program",
-  "start": 44,
-  "end": 60,
-  "body": [
+  type: "Program",
+  start: 44,
+  end: 60,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 44,
-      "end": 60,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 44,
-        "end": 58,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 44,
-          "end": 45,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 44,
+      end: 60,
+      expression: {
+        type: "AssignmentExpression",
+        start: 44,
+        end: 58,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 44,
+          end: 45,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 57,
-          "end": 58,
-          "value": 7,
-          "raw": "7"
+        right: {
+          type: "Literal",
+          start: 57,
+          end: 58,
+          value: 7,
+          raw: "7"
         }
       }
     }
@@ -28419,58 +28419,58 @@ test("#define variadic(arg, ...)  arg __VA_ARGS__\nx = variadic(7);\n", {
 
 // The named parameter may be empty in the arguments, args are macro-expanded
 test("#define ignore_arg(arg, ...)  arg someFunction(__VA_ARGS__)\n#define increment(arg)  arg + 1\nignore_arg(, \"foo\", increment(7), 13);\n", {
-  "type": "Program",
-  "start": 34,
-  "end": 130,
-  "body": [
+  type: "Program",
+  start: 34,
+  end: 130,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 34,
-      "end": 130,
-      "expression": {
-        "type": "CallExpression",
-        "start": 34,
-        "end": 59,
-        "callee": {
-          "type": "Identifier",
-          "start": 34,
-          "end": 46,
-          "name": "someFunction"
+      type: "ExpressionStatement",
+      start: 34,
+      end: 130,
+      expression: {
+        type: "CallExpression",
+        start: 34,
+        end: 59,
+        callee: {
+          type: "Identifier",
+          start: 34,
+          end: 46,
+          name: "someFunction"
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 105,
-            "end": 110,
-            "value": "foo",
-            "raw": "\"foo\""
+            type: "Literal",
+            start: 105,
+            end: 110,
+            value: "foo",
+            raw: "\"foo\""
           },
           {
-            "type": "BinaryExpression",
-            "start": 122,
-            "end": 91,
-            "left": {
-              "type": "Literal",
-              "start": 122,
-              "end": 123,
-              "value": 7,
-              "raw": "7"
+            type: "BinaryExpression",
+            start: 122,
+            end: 91,
+            left: {
+              type: "Literal",
+              start: 122,
+              end: 123,
+              value: 7,
+              raw: "7"
             },
-            "operator": "+",
-            "right": {
-              "type": "Literal",
-              "start": 90,
-              "end": 91,
-              "value": 1,
-              "raw": "1"
+            operator: "+",
+            right: {
+              type: "Literal",
+              start: 90,
+              end: 91,
+              value: 1,
+              raw: "1"
             }
           },
           {
-            "type": "Literal",
-            "start": 126,
-            "end": 128,
-            "value": 13,
-            "raw": "13"
+            type: "Literal",
+            start: 126,
+            end: 128,
+            value: 13,
+            raw: "13"
           }
         ]
       }
@@ -28482,79 +28482,79 @@ test("#define ignore_arg(arg, ...)  arg someFunction(__VA_ARGS__)\n#define incre
 
 // Both named and variadic parameters may be used together
 test("#define debuglog(format, ...)  if (debugging) console.log(format, __VA_ARGS__)\ndebuglog(\"%s: (%d, %d)\", \"foo\", 13.27, 31.7);\n", {
-  "type": "Program",
-  "start": 31,
-  "end": 124,
-  "body": [
+  type: "Program",
+  start: 31,
+  end: 124,
+  body: [
     {
-      "type": "IfStatement",
-      "start": 31,
-      "end": 124,
-      "test": {
-        "type": "Identifier",
-        "start": 35,
-        "end": 44,
-        "name": "debugging"
+      type: "IfStatement",
+      start: 31,
+      end: 124,
+      test: {
+        type: "Identifier",
+        start: 35,
+        end: 44,
+        name: "debugging"
       },
-      "consequent": {
-        "type": "ExpressionStatement",
-        "start": 46,
-        "end": 124,
-        "expression": {
-          "type": "CallExpression",
-          "start": 46,
-          "end": 78,
-          "callee": {
-            "type": "MemberExpression",
-            "start": 46,
-            "end": 57,
-            "object": {
-              "type": "Identifier",
-              "start": 46,
-              "end": 53,
-              "name": "console"
+      consequent: {
+        type: "ExpressionStatement",
+        start: 46,
+        end: 124,
+        expression: {
+          type: "CallExpression",
+          start: 46,
+          end: 78,
+          callee: {
+            type: "MemberExpression",
+            start: 46,
+            end: 57,
+            object: {
+              type: "Identifier",
+              start: 46,
+              end: 53,
+              name: "console"
             },
-            "property": {
-              "type": "Identifier",
-              "start": 54,
-              "end": 57,
-              "name": "log"
+            property: {
+              type: "Identifier",
+              start: 54,
+              end: 57,
+              name: "log"
             },
-            "computed": false
+            computed: false
           },
-          "arguments": [
+          arguments: [
             {
-              "type": "Literal",
-              "start": 88,
-              "end": 102,
-              "value": "%s: (%d, %d)",
-              "raw": "\"%s: (%d, %d)\""
+              type: "Literal",
+              start: 88,
+              end: 102,
+              value: "%s: (%d, %d)",
+              raw: "\"%s: (%d, %d)\""
             },
             {
-              "type": "Literal",
-              "start": 104,
-              "end": 109,
-              "value": "foo",
-              "raw": "\"foo\""
+              type: "Literal",
+              start: 104,
+              end: 109,
+              value: "foo",
+              raw: "\"foo\""
             },
             {
-              "type": "Literal",
-              "start": 111,
-              "end": 116,
-              "value": 13.27,
-              "raw": "13.27"
+              type: "Literal",
+              start: 111,
+              end: 116,
+              value: 13.27,
+              raw: "13.27"
             },
             {
-              "type": "Literal",
-              "start": 118,
-              "end": 122,
-              "value": 31.7,
-              "raw": "31.7"
+              type: "Literal",
+              start: 118,
+              end: 122,
+              value: 31.7,
+              raw: "31.7"
             }
           ]
         }
       },
-      "alternate": null
+      alternate: null
     }
   ]
 }, {
@@ -28562,76 +28562,76 @@ test("#define debuglog(format, ...)  if (debugging) console.log(format, __VA_ARG
 });
 
 test("#define variadic2(...)  __VA_ARGS__\nvariadic2();\nvariadic2(var x = 1, y = 2, z = 3);\n", {
-  "type": "Program",
-  "start": 47,
-  "end": 84,
-  "body": [
+  type: "Program",
+  start: 47,
+  end: 84,
+  body: [
     {
-      "type": "EmptyStatement",
-      "start": 47,
-      "end": 48
+      type: "EmptyStatement",
+      start: 47,
+      end: 48
     },
     {
-      "type": "VariableDeclaration",
-      "start": 59,
-      "end": 82,
-      "declarations": [
+      type: "VariableDeclaration",
+      start: 59,
+      end: 82,
+      declarations: [
         {
-          "type": "VariableDeclarator",
-          "start": 63,
-          "end": 68,
-          "id": {
-            "type": "Identifier",
-            "start": 63,
-            "end": 64,
-            "name": "x"
+          type: "VariableDeclarator",
+          start: 63,
+          end: 68,
+          id: {
+            type: "Identifier",
+            start: 63,
+            end: 64,
+            name: "x"
           },
-          "init": {
-            "type": "Literal",
-            "start": 67,
-            "end": 68,
-            "value": 1,
-            "raw": "1"
+          init: {
+            type: "Literal",
+            start: 67,
+            end: 68,
+            value: 1,
+            raw: "1"
           }
         },
         {
-          "type": "VariableDeclarator",
-          "start": 70,
-          "end": 75,
-          "id": {
-            "type": "Identifier",
-            "start": 70,
-            "end": 71,
-            "name": "y"
+          type: "VariableDeclarator",
+          start: 70,
+          end: 75,
+          id: {
+            type: "Identifier",
+            start: 70,
+            end: 71,
+            name: "y"
           },
-          "init": {
-            "type": "Literal",
-            "start": 74,
-            "end": 75,
-            "value": 2,
-            "raw": "2"
+          init: {
+            type: "Literal",
+            start: 74,
+            end: 75,
+            value: 2,
+            raw: "2"
           }
         },
         {
-          "type": "VariableDeclarator",
-          "start": 77,
-          "end": 82,
-          "id": {
-            "type": "Identifier",
-            "start": 77,
-            "end": 78,
-            "name": "z"
+          type: "VariableDeclarator",
+          start: 77,
+          end: 82,
+          id: {
+            type: "Identifier",
+            start: 77,
+            end: 78,
+            name: "z"
           },
-          "init": {
-            "type": "Literal",
-            "start": 81,
-            "end": 82,
-            "value": 3,
-            "raw": "3"
+          init: {
+            type: "Literal",
+            start: 81,
+            end: 82,
+            value: 3,
+            raw: "3"
           }
         }
       ],
-      "kind": "var"
+      kind: "var"
     }
   ]
 }, {
@@ -28640,63 +28640,63 @@ test("#define variadic2(...)  __VA_ARGS__\nvariadic2();\nvariadic2(var x = 1, y 
 
 // The variadic parameters may be named
 test("#define variadic3(args...) console.log(args);\nvariadic3(\"(%d, %d)\", x, y);\n", {
-  "type": "Program",
-  "start": 27,
-  "end": 74,
-  "body": [
+  type: "Program",
+  start: 27,
+  end: 74,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 27,
-      "end": 45,
-      "expression": {
-        "type": "CallExpression",
-        "start": 27,
-        "end": 44,
-        "callee": {
-          "type": "MemberExpression",
-          "start": 27,
-          "end": 38,
-          "object": {
-            "type": "Identifier",
-            "start": 27,
-            "end": 34,
-            "name": "console"
+      type: "ExpressionStatement",
+      start: 27,
+      end: 45,
+      expression: {
+        type: "CallExpression",
+        start: 27,
+        end: 44,
+        callee: {
+          type: "MemberExpression",
+          start: 27,
+          end: 38,
+          object: {
+            type: "Identifier",
+            start: 27,
+            end: 34,
+            name: "console"
           },
-          "property": {
-            "type": "Identifier",
-            "start": 35,
-            "end": 38,
-            "name": "log"
+          property: {
+            type: "Identifier",
+            start: 35,
+            end: 38,
+            name: "log"
           },
-          "computed": false
+          computed: false
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 56,
-            "end": 66,
-            "value": "(%d, %d)",
-            "raw": "\"(%d, %d)\""
+            type: "Literal",
+            start: 56,
+            end: 66,
+            value: "(%d, %d)",
+            raw: "\"(%d, %d)\""
           },
           {
-            "type": "Identifier",
-            "start": 68,
-            "end": 69,
-            "name": "x"
+            type: "Identifier",
+            start: 68,
+            end: 69,
+            name: "x"
           },
           {
-            "type": "Identifier",
-            "start": 71,
-            "end": 72,
-            "name": "y"
+            type: "Identifier",
+            start: 71,
+            end: 72,
+            name: "y"
           }
         ]
       }
     },
     {
-      "type": "EmptyStatement",
-      "start": 73,
-      "end": 74
+      type: "EmptyStatement",
+      start: 73,
+      end: 74
     }
   ]
 }, {
@@ -28705,92 +28705,92 @@ test("#define variadic3(args...) console.log(args);\nvariadic3(\"(%d, %d)\", x, 
 
 // ## between a comma and the variadic parameter name allows the variadic args to be omitted.
 test("#define emptyVariadic(format, args...) console.log(format, ##args)\nemptyVariadic(\"(%d, %d)\", x, y);\nemptyVariadic(\"(%d, %d)\");\n", {
-  "type": "Program",
-  "start": 39,
-  "end": 126,
-  "body": [
+  type: "Program",
+  start: 39,
+  end: 126,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 39,
-      "end": 99,
-      "expression": {
-        "type": "CallExpression",
-        "start": 39,
-        "end": 66,
-        "callee": {
-          "type": "MemberExpression",
-          "start": 39,
-          "end": 50,
-          "object": {
-            "type": "Identifier",
-            "start": 39,
-            "end": 46,
-            "name": "console"
+      type: "ExpressionStatement",
+      start: 39,
+      end: 99,
+      expression: {
+        type: "CallExpression",
+        start: 39,
+        end: 66,
+        callee: {
+          type: "MemberExpression",
+          start: 39,
+          end: 50,
+          object: {
+            type: "Identifier",
+            start: 39,
+            end: 46,
+            name: "console"
           },
-          "property": {
-            "type": "Identifier",
-            "start": 47,
-            "end": 50,
-            "name": "log"
+          property: {
+            type: "Identifier",
+            start: 47,
+            end: 50,
+            name: "log"
           },
-          "computed": false
+          computed: false
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 81,
-            "end": 91,
-            "value": "(%d, %d)",
-            "raw": "\"(%d, %d)\""
+            type: "Literal",
+            start: 81,
+            end: 91,
+            value: "(%d, %d)",
+            raw: "\"(%d, %d)\""
           },
           {
-            "type": "Identifier",
-            "start": 93,
-            "end": 94,
-            "name": "x"
+            type: "Identifier",
+            start: 93,
+            end: 94,
+            name: "x"
           },
           {
-            "type": "Identifier",
-            "start": 96,
-            "end": 97,
-            "name": "y"
+            type: "Identifier",
+            start: 96,
+            end: 97,
+            name: "y"
           }
         ]
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 39,
-      "end": 126,
-      "expression": {
-        "type": "CallExpression",
-        "start": 39,
-        "end": 66,
-        "callee": {
-          "type": "MemberExpression",
-          "start": 39,
-          "end": 50,
-          "object": {
-            "type": "Identifier",
-            "start": 39,
-            "end": 46,
-            "name": "console"
+      type: "ExpressionStatement",
+      start: 39,
+      end: 126,
+      expression: {
+        type: "CallExpression",
+        start: 39,
+        end: 66,
+        callee: {
+          type: "MemberExpression",
+          start: 39,
+          end: 50,
+          object: {
+            type: "Identifier",
+            start: 39,
+            end: 46,
+            name: "console"
           },
-          "property": {
-            "type": "Identifier",
-            "start": 47,
-            "end": 50,
-            "name": "log"
+          property: {
+            type: "Identifier",
+            start: 47,
+            end: 50,
+            name: "log"
           },
-          "computed": false
+          computed: false
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 114,
-            "end": 124,
-            "value": "(%d, %d)",
-            "raw": "\"(%d, %d)\""
+            type: "Literal",
+            start: 114,
+            end: 124,
+            value: "(%d, %d)",
+            raw: "\"(%d, %d)\""
           }
         ]
       }
@@ -28802,19 +28802,19 @@ test("#define emptyVariadic(format, args...) console.log(format, ##args)\nemptyV
 
 // Using a predefined macro to change the definition of another variadic macro
 test("#if DEBUG\n#define LOG(format, args...) console.log(format, ##args)\n#else\n#define LOG(...)\n#endif\n\nLOG(\"(%d, %d)\", x, y);\nLOG(\"This is awesome!\");\n", {
-  "type": "Program",
-  "start": 119,
-  "end": 145,
-  "body": [
+  type: "Program",
+  start: 119,
+  end: 145,
+  body: [
     {
-      "type": "EmptyStatement",
-      "start": 119,
-      "end": 120
+      type: "EmptyStatement",
+      start: 119,
+      end: 120
     },
     {
-      "type": "EmptyStatement",
-      "start": 144,
-      "end": 145
+      type: "EmptyStatement",
+      start: 144,
+      end: 145
     }
   ]
 }, {
@@ -28823,92 +28823,92 @@ test("#if DEBUG\n#define LOG(format, args...) console.log(format, ##args)\n#else
 
 // Using a predefined macro to change the definition of another variadic macro
 test("#if DEBUG\n#define LOG(format, args...) console.log(format, ##args)\n#else\n#define LOG(...)\n#endif\n\nLOG(\"(@d, @d)\", x, y);\nLOG(\"This is awesome!\");\n", {
-  "type": "Program",
-  "start": 39,
-  "end": 145,
-  "body": [
+  type: "Program",
+  start: 39,
+  end: 145,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 39,
-      "end": 120,
-      "expression": {
-        "type": "CallExpression",
-        "start": 39,
-        "end": 66,
-        "callee": {
-          "type": "MemberExpression",
-          "start": 39,
-          "end": 50,
-          "object": {
-            "type": "Identifier",
-            "start": 39,
-            "end": 46,
-            "name": "console"
+      type: "ExpressionStatement",
+      start: 39,
+      end: 120,
+      expression: {
+        type: "CallExpression",
+        start: 39,
+        end: 66,
+        callee: {
+          type: "MemberExpression",
+          start: 39,
+          end: 50,
+          object: {
+            type: "Identifier",
+            start: 39,
+            end: 46,
+            name: "console"
           },
-          "property": {
-            "type": "Identifier",
-            "start": 47,
-            "end": 50,
-            "name": "log"
+          property: {
+            type: "Identifier",
+            start: 47,
+            end: 50,
+            name: "log"
           },
-          "computed": false
+          computed: false
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 102,
-            "end": 112,
-            "value": "(@d, @d)",
-            "raw": "\"(@d, @d)\""
+            type: "Literal",
+            start: 102,
+            end: 112,
+            value: "(@d, @d)",
+            raw: "\"(@d, @d)\""
           },
           {
-            "type": "Identifier",
-            "start": 114,
-            "end": 115,
-            "name": "x"
+            type: "Identifier",
+            start: 114,
+            end: 115,
+            name: "x"
           },
           {
-            "type": "Identifier",
-            "start": 117,
-            "end": 118,
-            "name": "y"
+            type: "Identifier",
+            start: 117,
+            end: 118,
+            name: "y"
           }
         ]
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 39,
-      "end": 145,
-      "expression": {
-        "type": "CallExpression",
-        "start": 39,
-        "end": 66,
-        "callee": {
-          "type": "MemberExpression",
-          "start": 39,
-          "end": 50,
-          "object": {
-            "type": "Identifier",
-            "start": 39,
-            "end": 46,
-            "name": "console"
+      type: "ExpressionStatement",
+      start: 39,
+      end: 145,
+      expression: {
+        type: "CallExpression",
+        start: 39,
+        end: 66,
+        callee: {
+          type: "MemberExpression",
+          start: 39,
+          end: 50,
+          object: {
+            type: "Identifier",
+            start: 39,
+            end: 46,
+            name: "console"
           },
-          "property": {
-            "type": "Identifier",
-            "start": 47,
-            "end": 50,
-            "name": "log"
+          property: {
+            type: "Identifier",
+            start: 47,
+            end: 50,
+            name: "log"
           },
-          "computed": false
+          computed: false
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Literal",
-            "start": 125,
-            "end": 143,
-            "value": "This is awesome!",
-            "raw": "\"This is awesome!\""
+            type: "Literal",
+            start: 125,
+            end: 143,
+            value: "This is awesome!",
+            raw: "\"This is awesome!\""
           }
         ]
       }
@@ -28922,31 +28922,31 @@ test("#if DEBUG\n#define LOG(format, args...) console.log(format, ##args)\n#else
 // 3.7.1 Standard Predefined Macros
 
 test("objj = __OBJJ__;\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 16,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 16,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 0,
-      "end": 16,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 0,
-        "end": 8,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 0,
-          "end": 4,
-          "name": "objj"
+      type: "ExpressionStatement",
+      start: 0,
+      end: 16,
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 8,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 4,
+          name: "objj"
         },
-        "right": {
-          "type": "Literal",
-          "start": 7,
-          "end": 8,
-          "value": 1,
-          "raw": "1"
+        right: {
+          type: "Literal",
+          start: 7,
+          end: 8,
+          value: 1,
+          raw: "1"
         }
       }
     }
@@ -28957,30 +28957,30 @@ test("objj = __OBJJ__;\n", {
 });
 
 test("objj = __OBJJ__;\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 16,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 16,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 0,
-      "end": 16,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 0,
-        "end": 15,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 0,
-          "end": 4,
-          "name": "objj"
+      type: "ExpressionStatement",
+      start: 0,
+      end: 16,
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 15,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 4,
+          name: "objj"
         },
-        "right": {
-          "type": "Identifier",
-          "start": 7,
-          "end": 15,
-          "name": "__OBJJ__"
+        right: {
+          type: "Identifier",
+          start: 7,
+          end: 15,
+          name: "__OBJJ__"
         }
       }
     }
@@ -28992,20 +28992,20 @@ test("objj = __OBJJ__;\n", {
 
 if (typeof(window) !== "undefined")
   test("#ifdef __BROWSER__\n\"browser\";\n#else\n\"CommonJS\";\n#endif\n", {
-    "type": "Program",
-    "start": 19,
-    "end": 29,
-    "body": [
+    type: "Program",
+    start: 19,
+    end: 29,
+    body: [
       {
-        "type": "ExpressionStatement",
-        "start": 19,
-        "end": 29,
-        "expression": {
-          "type": "Literal",
-          "start": 19,
-          "end": 28,
-          "value": "browser",
-          "raw": "\"browser\""
+        type: "ExpressionStatement",
+        start: 19,
+        end: 29,
+        expression: {
+          type: "Literal",
+          start: 19,
+          end: 28,
+          value: "browser",
+          raw: "\"browser\""
         }
       }
     ]
@@ -29014,20 +29014,20 @@ if (typeof(window) !== "undefined")
   });
 else
   test("#ifdef __BROWSER__\n\"browser\";\n#else\n\"CommonJS\";\n#endif\n", {
-    "type": "Program",
-    "start": 0,
-    "end": 54,
-    "body": [
+    type: "Program",
+    start: 0,
+    end: 54,
+    body: [
       {
-        "type": "ExpressionStatement",
-        "start": 36,
-        "end": 47,
-        "expression": {
-          "type": "Literal",
-          "start": 36,
-          "end": 46,
-          "value": "CommonJS",
-          "raw": "\"CommonJS\""
+        type: "ExpressionStatement",
+        start: 36,
+        end: 47,
+        expression: {
+          type: "Literal",
+          start: 36,
+          end: 46,
+          value: "CommonJS",
+          raw: "\"CommonJS\""
         }
       }
     ]
@@ -29038,32 +29038,32 @@ else
 // 3.10.1 Misnesting
 
 test("#define twice(x) (2*(x))\n#define call_with_1(x) x(1)\ncall_with_1 (twice);\n", {
-  "type": "Program",
-  "start": 17,
-  "end": 73,
-  "body": [
+  type: "Program",
+  start: 17,
+  end: 73,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 17,
-      "end": 73,
-      "expression": {
-        "type": "BinaryExpression",
-        "start": 17,
-        "end": 24,
-        "left": {
-          "type": "Literal",
-          "start": 18,
-          "end": 19,
-          "value": 2,
-          "raw": "2"
+      type: "ExpressionStatement",
+      start: 17,
+      end: 73,
+      expression: {
+        type: "BinaryExpression",
+        start: 17,
+        end: 24,
+        left: {
+          type: "Literal",
+          start: 18,
+          end: 19,
+          value: 2,
+          raw: "2"
         },
-        "operator": "*",
-        "right": {
-          "type": "Literal",
-          "start": 20,
-          "end": 23,
-          "value": 1,
-          "raw": "1"
+        operator: "*",
+        right: {
+          type: "Literal",
+          start: 20,
+          end: 23,
+          value: 1,
+          raw: "1"
         }
       }
     }
@@ -29073,50 +29073,50 @@ test("#define twice(x) (2*(x))\n#define call_with_1(x) x(1)\ncall_with_1 (twice)
 });
 
 test("#define strange(file) fprintf (file, \"%s %d\",\nstrange(stderr) p, 35);\n", {
-  "type": "Program",
-  "start": 22,
-  "end": 69,
-  "body": [
+  type: "Program",
+  start: 22,
+  end: 69,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 22,
-      "end": 69,
-      "expression": {
-        "type": "CallExpression",
-        "start": 22,
-        "end": 68,
-        "callee": {
-          "type": "Identifier",
-          "start": 22,
-          "end": 29,
-          "name": "fprintf"
+      type: "ExpressionStatement",
+      start: 22,
+      end: 69,
+      expression: {
+        type: "CallExpression",
+        start: 22,
+        end: 68,
+        callee: {
+          type: "Identifier",
+          start: 22,
+          end: 29,
+          name: "fprintf"
         },
-        "arguments": [
+        arguments: [
           {
-            "type": "Identifier",
-            "start": 54,
-            "end": 60,
-            "name": "stderr"
+            type: "Identifier",
+            start: 54,
+            end: 60,
+            name: "stderr"
           },
           {
-            "type": "Literal",
-            "start": 37,
-            "end": 44,
-            "value": "%s %d",
-            "raw": "\"%s %d\""
+            type: "Literal",
+            start: 37,
+            end: 44,
+            value: "%s %d",
+            raw: "\"%s %d\""
           },
           {
-            "type": "Identifier",
-            "start": 62,
-            "end": 63,
-            "name": "p"
+            type: "Identifier",
+            start: 62,
+            end: 63,
+            name: "p"
           },
           {
-            "type": "Literal",
-            "start": 65,
-            "end": 67,
-            "value": 35,
-            "raw": "35"
+            type: "Literal",
+            start: 65,
+            end: 67,
+            value: 35,
+            raw: "35"
           }
         ]
       }
@@ -29129,42 +29129,42 @@ test("#define strange(file) fprintf (file, \"%s %d\",\nstrange(stderr) p, 35);\n
 // 3.10.5 Self-Referential Macros
 
 test("#define self_reference (4 + self_reference)\nx = self_reference;\n", {
-  "type": "Program",
-  "start": 44,
-  "end": 63,
-  "body": [
+  type: "Program",
+  start: 44,
+  end: 63,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 44,
-      "end": 63,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 44,
-        "end": 43,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 44,
-          "end": 45,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 44,
+      end: 63,
+      expression: {
+        type: "AssignmentExpression",
+        start: 44,
+        end: 43,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 44,
+          end: 45,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 23,
-          "end": 43,
-          "left": {
-            "type": "Literal",
-            "start": 24,
-            "end": 25,
-            "value": 4,
-            "raw": "4"
+        right: {
+          type: "BinaryExpression",
+          start: 23,
+          end: 43,
+          left: {
+            type: "Literal",
+            start: 24,
+            end: 25,
+            value: 4,
+            raw: "4"
           },
-          "operator": "+",
-          "right": {
-            "type": "Identifier",
-            "start": 28,
-            "end": 42,
-            "name": "self_reference"
+          operator: "+",
+          right: {
+            type: "Identifier",
+            start: 28,
+            end: 42,
+            name: "self_reference"
           }
         }
       }
@@ -29175,30 +29175,30 @@ test("#define self_reference (4 + self_reference)\nx = self_reference;\n", {
 });
 
 test("#define EPERM EPERM\nx = EPERM;\n", {
-  "type": "Program",
-  "start": 20,
-  "end": 30,
-  "body": [
+  type: "Program",
+  start: 20,
+  end: 30,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 20,
-      "end": 30,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 20,
-        "end": 19,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 20,
-          "end": 21,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 20,
+      end: 30,
+      expression: {
+        type: "AssignmentExpression",
+        start: 20,
+        end: 19,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 20,
+          end: 21,
+          name: "x"
         },
-        "right": {
-          "type": "Identifier",
-          "start": 14,
-          "end": 19,
-          "name": "EPERM"
+        right: {
+          type: "Identifier",
+          start: 14,
+          end: 19,
+          name: "EPERM"
         }
       }
     }
@@ -29208,103 +29208,103 @@ test("#define EPERM EPERM\nx = EPERM;\n", {
 });
 
 test("#define ref1 (4 + ref2)\n#define ref2 (2 * ref1)\nx = ref1;\ny = ref2;\n", {
-  "type": "Program",
-  "start": 48,
-  "end": 67,
-  "body": [
+  type: "Program",
+  start: 48,
+  end: 67,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 48,
-      "end": 57,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 48,
-        "end": 23,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 48,
-          "end": 49,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 48,
+      end: 57,
+      expression: {
+        type: "AssignmentExpression",
+        start: 48,
+        end: 23,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 48,
+          end: 49,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 13,
-          "end": 23,
-          "left": {
-            "type": "Literal",
-            "start": 14,
-            "end": 15,
-            "value": 4,
-            "raw": "4"
+        right: {
+          type: "BinaryExpression",
+          start: 13,
+          end: 23,
+          left: {
+            type: "Literal",
+            start: 14,
+            end: 15,
+            value: 4,
+            raw: "4"
           },
-          "operator": "+",
-          "right": {
-            "type": "BinaryExpression",
-            "start": 37,
-            "end": 47,
-            "left": {
-              "type": "Literal",
-              "start": 38,
-              "end": 39,
-              "value": 2,
-              "raw": "2"
+          operator: "+",
+          right: {
+            type: "BinaryExpression",
+            start: 37,
+            end: 47,
+            left: {
+              type: "Literal",
+              start: 38,
+              end: 39,
+              value: 2,
+              raw: "2"
             },
-            "operator": "*",
-            "right": {
-              "type": "Identifier",
-              "start": 42,
-              "end": 46,
-              "name": "ref1"
+            operator: "*",
+            right: {
+              type: "Identifier",
+              start: 42,
+              end: 46,
+              name: "ref1"
             }
           }
         }
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 67,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 58,
-        "end": 47,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 58,
-          "end": 59,
-          "name": "y"
+      type: "ExpressionStatement",
+      start: 58,
+      end: 67,
+      expression: {
+        type: "AssignmentExpression",
+        start: 58,
+        end: 47,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 58,
+          end: 59,
+          name: "y"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 37,
-          "end": 47,
-          "left": {
-            "type": "Literal",
-            "start": 38,
-            "end": 39,
-            "value": 2,
-            "raw": "2"
+        right: {
+          type: "BinaryExpression",
+          start: 37,
+          end: 47,
+          left: {
+            type: "Literal",
+            start: 38,
+            end: 39,
+            value: 2,
+            raw: "2"
           },
-          "operator": "*",
-          "right": {
-            "type": "BinaryExpression",
-            "start": 13,
-            "end": 23,
-            "left": {
-              "type": "Literal",
-              "start": 14,
-              "end": 15,
-              "value": 4,
-              "raw": "4"
+          operator: "*",
+          right: {
+            type: "BinaryExpression",
+            start: 13,
+            end: 23,
+            left: {
+              type: "Literal",
+              start: 14,
+              end: 15,
+              value: 4,
+              raw: "4"
             },
-            "operator": "+",
-            "right": {
-              "type": "Identifier",
-              "start": 18,
-              "end": 22,
-              "name": "ref2"
+            operator: "+",
+            right: {
+              type: "Identifier",
+              start: 18,
+              end: 22,
+              name: "ref2"
             }
           }
         }
@@ -29318,69 +29318,69 @@ test("#define ref1 (4 + ref2)\n#define ref2 (2 * ref1)\nx = ref1;\ny = ref2;\n",
 // 3.10.6 Argument Prescan
 
 test("#define f(arg) arg * 2\nx = f (f (f(1)));\n", {
-  "type": "Program",
-  "start": 23,
-  "end": 40,
-  "body": [
+  type: "Program",
+  start: 23,
+  end: 40,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 23,
-      "end": 40,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 23,
-        "end": 22,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 23,
-          "end": 24,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 23,
+      end: 40,
+      expression: {
+        type: "AssignmentExpression",
+        start: 23,
+        end: 22,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 23,
+          end: 24,
+          name: "x"
         },
-        "right": {
-          "type": "BinaryExpression",
-          "start": 35,
-          "end": 22,
-          "left": {
-            "type": "BinaryExpression",
-            "start": 35,
-            "end": 22,
-            "left": {
-              "type": "BinaryExpression",
-              "start": 35,
-              "end": 22,
-              "left": {
-                "type": "Literal",
-                "start": 35,
-                "end": 36,
-                "value": 1,
-                "raw": "1"
+        right: {
+          type: "BinaryExpression",
+          start: 35,
+          end: 22,
+          left: {
+            type: "BinaryExpression",
+            start: 35,
+            end: 22,
+            left: {
+              type: "BinaryExpression",
+              start: 35,
+              end: 22,
+              left: {
+                type: "Literal",
+                start: 35,
+                end: 36,
+                value: 1,
+                raw: "1"
               },
-              "operator": "*",
-              "right": {
-                "type": "Literal",
-                "start": 21,
-                "end": 22,
-                "value": 2,
-                "raw": "2"
+              operator: "*",
+              right: {
+                type: "Literal",
+                start: 21,
+                end: 22,
+                value: 2,
+                raw: "2"
               }
             },
-            "operator": "*",
-            "right": {
-              "type": "Literal",
-              "start": 21,
-              "end": 22,
-              "value": 2,
-              "raw": "2"
+            operator: "*",
+            right: {
+              type: "Literal",
+              start: 21,
+              end: 22,
+              value: 2,
+              raw: "2"
             }
           },
-          "operator": "*",
-          "right": {
-            "type": "Literal",
-            "start": 21,
-            "end": 22,
-            "value": 2,
-            "raw": "2"
+          operator: "*",
+          right: {
+            type: "Literal",
+            start: 21,
+            end: 22,
+            value: 2,
+            raw: "2"
           }
         }
       }
@@ -29391,51 +29391,51 @@ test("#define f(arg) arg * 2\nx = f (f (f(1)));\n", {
 });
 
 test("#define AFTERX(x) X_ ## x\n#define XAFTERX(x) AFTERX(x)\n#define TABLESIZE 1024\n#define BUFSIZE TABLESIZE\nvar a = AFTERX(BUFSIZE),\n    b = XAFTERX(BUFSIZE);\n", {
-  "type": "Program",
-  "start": 104,
-  "end": 154,
-  "body": [
+  type: "Program",
+  start: 104,
+  end: 154,
+  body: [
     {
-      "type": "VariableDeclaration",
-      "start": 104,
-      "end": 24,
-      "declarations": [
+      type: "VariableDeclaration",
+      start: 104,
+      end: 24,
+      declarations: [
         {
-          "type": "VariableDeclarator",
-          "start": 108,
-          "end": 27,
-          "id": {
-            "type": "Identifier",
-            "start": 108,
-            "end": 109,
-            "name": "a"
+          type: "VariableDeclarator",
+          start: 108,
+          end: 27,
+          id: {
+            type: "Identifier",
+            start: 108,
+            end: 109,
+            name: "a"
           },
-          "init": {
-            "type": "Identifier",
-            "start": 18,
-            "end": 27,
-            "name": "X_BUFSIZE"
+          init: {
+            type: "Identifier",
+            start: 18,
+            end: 27,
+            name: "X_BUFSIZE"
           }
         },
         {
-          "type": "VariableDeclarator",
-          "start": 133,
-          "end": 24,
-          "id": {
-            "type": "Identifier",
-            "start": 133,
-            "end": 134,
-            "name": "b"
+          type: "VariableDeclarator",
+          start: 133,
+          end: 24,
+          id: {
+            type: "Identifier",
+            start: 133,
+            end: 134,
+            name: "b"
           },
-          "init": {
-            "type": "Identifier",
-            "start": 18,
-            "end": 24,
-            "name": "X_1024"
+          init: {
+            type: "Identifier",
+            start: 18,
+            end: 24,
+            name: "X_1024"
           }
         }
       ],
-      "kind": "var"
+      kind: "var"
     }
   ]
 }, {
@@ -29443,42 +29443,42 @@ test("#define AFTERX(x) X_ ## x\n#define XAFTERX(x) AFTERX(x)\n#define TABLESIZE
 });
 
 test("#define foo  (a,b)\n#define bar(x) lose(x)\n#define lose(x) (1 + (x))\nbar(foo);\n", {
-  "type": "Program",
-  "start": 58,
-  "end": 77,
-  "body": [
+  type: "Program",
+  start: 58,
+  end: 77,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 77,
-      "expression": {
-        "type": "BinaryExpression",
-        "start": 58,
-        "end": 67,
-        "left": {
-          "type": "Literal",
-          "start": 59,
-          "end": 60,
-          "value": 1,
-          "raw": "1"
+      type: "ExpressionStatement",
+      start: 58,
+      end: 77,
+      expression: {
+        type: "BinaryExpression",
+        start: 58,
+        end: 67,
+        left: {
+          type: "Literal",
+          start: 59,
+          end: 60,
+          value: 1,
+          raw: "1"
         },
-        "operator": "+",
-        "right": {
-          "type": "SequenceExpression",
-          "start": 63,
-          "end": 66,
-          "expressions": [
+        operator: "+",
+        right: {
+          type: "SequenceExpression",
+          start: 63,
+          end: 66,
+          expressions: [
             {
-              "type": "Identifier",
-              "start": 14,
-              "end": 15,
-              "name": "a"
+              type: "Identifier",
+              start: 14,
+              end: 15,
+              name: "a"
             },
             {
-              "type": "Identifier",
-              "start": 16,
-              "end": 17,
-              "name": "b"
+              type: "Identifier",
+              start: 16,
+              end: 17,
+              name: "b"
             }
           ]
         }
@@ -29490,42 +29490,42 @@ test("#define foo  (a,b)\n#define bar(x) lose(x)\n#define lose(x) (1 + (x))\nbar
 });
 
 test("#define lose(x) (1 + (x))\n#define foo  a,b\n#define bar(x) lose((x))\nbar(foo);\n", {
-  "type": "Program",
-  "start": 16,
-  "end": 77,
-  "body": [
+  type: "Program",
+  start: 16,
+  end: 77,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 16,
-      "end": 77,
-      "expression": {
-        "type": "BinaryExpression",
-        "start": 16,
-        "end": 25,
-        "left": {
-          "type": "Literal",
-          "start": 17,
-          "end": 18,
-          "value": 1,
-          "raw": "1"
+      type: "ExpressionStatement",
+      start: 16,
+      end: 77,
+      expression: {
+        type: "BinaryExpression",
+        start: 16,
+        end: 25,
+        left: {
+          type: "Literal",
+          start: 17,
+          end: 18,
+          value: 1,
+          raw: "1"
         },
-        "operator": "+",
-        "right": {
-          "type": "SequenceExpression",
-          "start": 21,
-          "end": 24,
-          "expressions": [
+        operator: "+",
+        right: {
+          type: "SequenceExpression",
+          start: 21,
+          end: 24,
+          expressions: [
             {
-              "type": "Identifier",
-              "start": 39,
-              "end": 40,
-              "name": "a"
+              type: "Identifier",
+              start: 39,
+              end: 40,
+              name: "a"
             },
             {
-              "type": "Identifier",
-              "start": 41,
-              "end": 42,
-              "name": "b"
+              type: "Identifier",
+              start: 41,
+              end: 42,
+              name: "b"
             }
           ]
         }
@@ -29540,32 +29540,32 @@ test("#define lose(x) (1 + (x))\n#define foo  a,b\n#define bar(x) lose((x))\nbar
 
 // #ifdef fails if macro is undefined, succeeds if it is defined. #ifndef does the opposite.
 test("#ifdef FOO\n\"foo defined\";\n#endif\n\n#ifndef FOO\n\"foo undefined\";\n#endif\n\n#ifdef __OBJJ__\n\"objj defined\";\n#endif\n\n#ifndef __OBJJ__\n\"objj undefined\";\n#endif\n", {
-  "type": "Program",
-  "start": 46,
-  "end": 102,
-  "body": [
+  type: "Program",
+  start: 46,
+  end: 102,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 46,
-      "end": 62,
-      "expression": {
-        "type": "Literal",
-        "start": 46,
-        "end": 61,
-        "value": "foo undefined",
-        "raw": "\"foo undefined\""
+      type: "ExpressionStatement",
+      start: 46,
+      end: 62,
+      expression: {
+        type: "Literal",
+        start: 46,
+        end: 61,
+        value: "foo undefined",
+        raw: "\"foo undefined\""
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 87,
-      "end": 102,
-      "expression": {
-        "type": "Literal",
-        "start": 87,
-        "end": 101,
-        "value": "objj defined",
-        "raw": "\"objj defined\""
+      type: "ExpressionStatement",
+      start: 87,
+      end: 102,
+      expression: {
+        type: "Literal",
+        start: 87,
+        end: 101,
+        value: "objj defined",
+        raw: "\"objj defined\""
       }
     }
   ]
@@ -29576,20 +29576,20 @@ test("#ifdef FOO\n\"foo defined\";\n#endif\n\n#ifndef FOO\n\"foo undefined\";\n#
 
 // #if with arithmetic and logical OR operators. Only the last test in the expression succeeds.
 test("#if (1 + 1 === 3) || (2 - 1 === 0) || (2 * 2 === 5) || (2 / 2 === 2) || (3 % 2 === 1)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 86,
-  "end": 91,
-  "body": [
+  type: "Program",
+  start: 86,
+  end: 91,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 86,
-      "end": 91,
-      "expression": {
-        "type": "Literal",
-        "start": 86,
-        "end": 90,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 86,
+      end: 91,
+      expression: {
+        type: "Literal",
+        start: 86,
+        end: 90,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29599,20 +29599,20 @@ test("#if (1 + 1 === 3) || (2 - 1 === 0) || (2 * 2 === 5) || (2 / 2 === 2) || (3
 
 // #if with arithmetic and logical AND operators. All of the tests in the expression succeed.
 test("#if (1 + 1 === 2) && (2 - 1 === 1) && (2 * 2 === 4) && (2 / 2 === 1) && (3 % 2 === 1)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 86,
-  "end": 91,
-  "body": [
+  type: "Program",
+  start: 86,
+  end: 91,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 86,
-      "end": 91,
-      "expression": {
-        "type": "Literal",
-        "start": 86,
-        "end": 90,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 86,
+      end: 91,
+      expression: {
+        type: "Literal",
+        start: 86,
+        end: 90,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29622,30 +29622,30 @@ test("#if (1 + 1 === 2) && (2 - 1 === 1) && (2 * 2 === 4) && (2 / 2 === 1) && (3
 
 // #if with arithmetic and logical AND operators. All of the tests except the last in the expression succeed.
 test("#if (1 + 1 === 2) && (2 - 1 === 1) && (2 * 2 === 4) && (2 / 2 === 1) && (3 % 2 === 0)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 99,
-  "end": 0,
-  "body": []
+  type: "Program",
+  start: 99,
+  end: 0,
+  body: []
 }, {
   preprocess: true
 });
 
 // #if with bitwise and logical AND operators. All of the tests in the expression succeed.
 test("#if ((3 & 1) === 1) && ((3 | 0) === 3) && ((3 ^ 3) === 0) && (~1 === -2) && (1 << 2 === 4) && (-2 >> 1 === -1) && (-2 >>> 1 === 2147483647)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 140,
-  "end": 145,
-  "body": [
+  type: "Program",
+  start: 140,
+  end: 145,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 140,
-      "end": 145,
-      "expression": {
-        "type": "Literal",
-        "start": 140,
-        "end": 144,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 140,
+      end: 145,
+      expression: {
+        type: "Literal",
+        start: 140,
+        end: 144,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29655,20 +29655,20 @@ test("#if ((3 & 1) === 1) && ((3 | 0) === 3) && ((3 ^ 3) === 0) && (~1 === -2) &
 
 // #if with comparison and logical AND operators. All of the tests in the expression succeed.
 test("#if (7 == 7) && (7 == \"7\") && (7 === 7) && (7 != 13) && (7 != \"13\") && (7 !== 13) && (13 > 7) && (13 >= 13) && (13 < 27) && (27 <= 27)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 135,
-  "end": 140,
-  "body": [
+  type: "Program",
+  start: 135,
+  end: 140,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 135,
-      "end": 140,
-      "expression": {
-        "type": "Literal",
-        "start": 135,
-        "end": 139,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 135,
+      end: 140,
+      expression: {
+        type: "Literal",
+        start: 135,
+        end: 139,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29678,20 +29678,20 @@ test("#if (7 == 7) && (7 == \"7\") && (7 === 7) && (7 != 13) && (7 != \"13\") &&
 
 // #if with logical ! operator.
 test("#if (1 == 0) || !(1 == 0)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 26,
-  "end": 31,
-  "body": [
+  type: "Program",
+  start: 26,
+  end: 31,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 26,
-      "end": 31,
-      "expression": {
-        "type": "Literal",
-        "start": 26,
-        "end": 30,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 26,
+      end: 31,
+      expression: {
+        type: "Literal",
+        start: 26,
+        end: 30,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29701,20 +29701,20 @@ test("#if (1 == 0) || !(1 == 0)\ntrue;\n#endif\n", {
 
 // Macros are expanded within the #if expression
 test("#define FOO(arg) arg * 2\n\n#if FOO(3) === 6\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 43,
-  "end": 48,
-  "body": [
+  type: "Program",
+  start: 43,
+  end: 48,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 43,
-      "end": 48,
-      "expression": {
-        "type": "Literal",
-        "start": 43,
-        "end": 47,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 43,
+      end: 48,
+      expression: {
+        type: "Literal",
+        start: 43,
+        end: 47,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29725,20 +29725,20 @@ test("#define FOO(arg) arg * 2\n\n#if FOO(3) === 6\ntrue;\n#endif\n", {
 // Identifiers that are not macros are considered to be the number zero.
 // Function macros that are used without arguments are also treated as zero.
 test("#define FOO(arg) arg * 2\n\n#if FOO === 0 && BAR === 0\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 53,
-  "end": 58,
-  "body": [
+  type: "Program",
+  start: 53,
+  end: 58,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 53,
-      "end": 58,
-      "expression": {
-        "type": "Literal",
-        "start": 53,
-        "end": 57,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 53,
+      end: 58,
+      expression: {
+        type: "Literal",
+        start: 53,
+        end: 57,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29748,20 +29748,20 @@ test("#define FOO(arg) arg * 2\n\n#if FOO === 0 && BAR === 0\ntrue;\n#endif\n", 
 
 // `defined` may be used to test existence of a macro. Both 'defined FOO' and 'defined(FOO)' are accepted.
 test("#define FOO(arg) arg * 2\n\n#if defined FOO && defined(FOO)\ntrue;\n#endif\n", {
-  "type": "Program",
-  "start": 58,
-  "end": 63,
-  "body": [
+  type: "Program",
+  start: 58,
+  end: 63,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 58,
-      "end": 63,
-      "expression": {
-        "type": "Literal",
-        "start": 58,
-        "end": 62,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 58,
+      end: 63,
+      expression: {
+        type: "Literal",
+        start: 58,
+        end: 62,
+        value: true,
+        raw: "true"
       }
     }
   ]
@@ -29771,32 +29771,32 @@ test("#define FOO(arg) arg * 2\n\n#if defined FOO && defined(FOO)\ntrue;\n#endif
 
 // #else
 test("#define FOO(arg) arg * 2\n\n#if defined FOO\ntrue;\n#else\nfalse;\n#endif\n\n#if defined BAR\ntrue;\n#else\nfalse;\n#endif\n", {
-  "type": "Program",
-  "start": 42,
-  "end": 103,
-  "body": [
+  type: "Program",
+  start: 42,
+  end: 103,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 42,
-      "end": 47,
-      "expression": {
-        "type": "Literal",
-        "start": 42,
-        "end": 46,
-        "value": true,
-        "raw": "true"
+      type: "ExpressionStatement",
+      start: 42,
+      end: 47,
+      expression: {
+        type: "Literal",
+        start: 42,
+        end: 46,
+        value: true,
+        raw: "true"
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 97,
-      "end": 103,
-      "expression": {
-        "type": "Literal",
-        "start": 97,
-        "end": 102,
-        "value": false,
-        "raw": "false"
+      type: "ExpressionStatement",
+      start: 97,
+      end: 103,
+      expression: {
+        type: "Literal",
+        start: 97,
+        end: 102,
+        value: false,
+        raw: "false"
       }
     }
   ]
@@ -29806,20 +29806,20 @@ test("#define FOO(arg) arg * 2\n\n#if defined FOO\ntrue;\n#else\nfalse;\n#endif\
 
 // #elif
 test("#if defined FOO\n\"foo\";\n#elif defined BAR\n\"bar\";\n#else\n\"baz\";\n#endif\n", {
-  "type": "Program",
-  "start": 54,
-  "end": 60,
-  "body": [
+  type: "Program",
+  start: 54,
+  end: 60,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 54,
-      "end": 60,
-      "expression": {
-        "type": "Literal",
-        "start": 54,
-        "end": 59,
-        "value": "baz",
-        "raw": "\"baz\""
+      type: "ExpressionStatement",
+      start: 54,
+      end: 60,
+      expression: {
+        type: "Literal",
+        start: 54,
+        end: 59,
+        value: "baz",
+        raw: "\"baz\""
       }
     }
   ]
@@ -29829,81 +29829,81 @@ test("#if defined FOO\n\"foo\";\n#elif defined BAR\n\"bar\";\n#else\n\"baz\";\n#
 
 // #include
 test("a = 1\n#include \"x.h\"\nb = 2", {
-  "type": "Program",
-  "start": 0,
-  "end": 26,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 26,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 0,
-      "end": 5,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 0,
-        "end": 5,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 0,
-          "end": 1,
-          "name": "a"
+      type: "ExpressionStatement",
+      start: 0,
+      end: 5,
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 5,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 1,
+          name: "a"
         },
-        "right": {
-          "type": "Literal",
-          "start": 4,
-          "end": 5,
-          "value": 1,
-          "raw": "1"
+        right: {
+          type: "Literal",
+          start: 4,
+          end: 5,
+          value: 1,
+          raw: "1"
         }
       }
     },
     {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 9,
-      "declarations": [
+      type: "VariableDeclaration",
+      start: 0,
+      end: 9,
+      declarations: [
         {
-          "type": "VariableDeclarator",
-          "start": 4,
-          "end": 9,
-          "id": {
-            "type": "Identifier",
-            "start": 4,
-            "end": 5,
-            "name": "a"
+          type: "VariableDeclarator",
+          start: 4,
+          end: 9,
+          id: {
+            type: "Identifier",
+            start: 4,
+            end: 5,
+            name: "a"
           },
-          "init": {
-            "type": "Literal",
-            "start": 8,
-            "end": 9,
-            "value": 9,
-            "raw": "9"
+          init: {
+            type: "Literal",
+            start: 8,
+            end: 9,
+            value: 9,
+            raw: "9"
           }
         }
       ],
-      "kind": "var"
+      kind: "var"
     },
     {
-      "type": "ExpressionStatement",
-      "start": 21,
-      "end": 26,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 21,
-        "end": 26,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 21,
-          "end": 22,
-          "name": "b"
+      type: "ExpressionStatement",
+      start: 21,
+      end: 26,
+      expression: {
+        type: "AssignmentExpression",
+        start: 21,
+        end: 26,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 21,
+          end: 22,
+          name: "b"
         },
-        "right": {
-          "type": "Literal",
-          "start": 25,
-          "end": 26,
-          "value": 2,
-          "raw": "2"
+        right: {
+          type: "Literal",
+          start: 25,
+          end: 26,
+          value: 2,
+          raw: "2"
         }
       }
     }
@@ -29916,57 +29916,280 @@ test("a = 1\n#include \"x.h\"\nb = 2", {
   locations: true
 });
 
-// pre include files
-test("var y = 3;", {
-  "type": "Program",
-  "start": 0,
-  "end": 10,
-  "body": [
+// #include with an #if/#else/#endif
+test("c = 1\n#include \"x.h\"\nb = 2", {
+  type: "Program",
+  start: 0,
+  end: 26,
+  loc: {
+    start: {
+      line: 1,
+      column: 0
+    },
+    end: {
+      line: 3,
+      column: 5
+    }
+  },
+  body: [
     {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 5,
-      "declarations": [
-        {
-          "type": "VariableDeclarator",
-          "start": 4,
-          "end": 5,
-          "id": {
-            "type": "Identifier",
-            "start": 4,
-            "end": 5,
-            "name": "x"
-          },
-          "init": null
+      type: "ExpressionStatement",
+      start: 0,
+      end: 5,
+      loc: {
+        start: {
+          line: 1,
+          column: 0
+        },
+        end: {
+          line: 1,
+          column: 5
         }
-      ],
-      "kind": "var"
+      },
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 5,
+        loc: {
+          start: {
+            line: 1,
+            column: 0
+          },
+          end: {
+            line: 1,
+            column: 5
+          }
+        },
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 1,
+          loc: {
+            start: {
+              line: 1,
+              column: 0
+            },
+            end: {
+              line: 1,
+              column: 1
+            }
+          },
+          name: "c"
+        },
+        right: {
+          type: "Literal",
+          start: 4,
+          end: 5,
+          loc: {
+            start: {
+              line: 1,
+              column: 4
+            },
+            end: {
+              line: 1,
+              column: 5
+            }
+          },
+          value: 1,
+          raw: "1"
+        }
+      }
     },
     {
-      "type": "VariableDeclaration",
-      "start": 0,
-      "end": 9,
-      "declarations": [
+      type: "VariableDeclaration",
+      start: 27,
+      end: 36,
+      loc: {
+        start: {
+          line: 4,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 9
+        },
+        source: "x.h"
+      },
+      declarations: [
         {
-          "type": "VariableDeclarator",
-          "start": 4,
-          "end": 9,
-          "id": {
-            "type": "Identifier",
-            "start": 4,
-            "end": 5,
-            "name": "y"
+          type: "VariableDeclarator",
+          start: 31,
+          end: 36,
+          loc: {
+            start: {
+              line: 4,
+              column: 4
+            },
+            end: {
+              line: 4,
+              column: 9
+            },
+            source: "x.h"
           },
-          "init": {
-            "type": "Literal",
-            "start": 8,
-            "end": 9,
-            "value": 3,
-            "raw": "3"
+          id: {
+            type: "Identifier",
+            start: 31,
+            end: 32,
+            loc: {
+              start: {
+                line: 4,
+                column: 4
+              },
+              end: {
+                line: 4,
+                column: 5
+              },
+              source: "x.h"
+            },
+            name: "a"
+          },
+          init: {
+            type: "Literal",
+            start: 35,
+            end: 36,
+            loc: {
+              start: {
+                line: 4,
+                column: 8
+              },
+              end: {
+                line: 4,
+                column: 9
+              },
+              source: "x.h"
+            },
+            value: 1,
+            raw: "1"
           }
         }
       ],
-      "kind": "var"
+      kind: "var"
+    },
+    {
+      type: "ExpressionStatement",
+      start: 21,
+      end: 26,
+      loc: {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 3,
+          column: 5
+        }
+      },
+      expression: {
+        type: "AssignmentExpression",
+        start: 21,
+        end: 26,
+        loc: {
+          start: {
+            line: 3,
+            column: 0
+          },
+          end: {
+            line: 3,
+            column: 5
+          }
+        },
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 21,
+          end: 22,
+          loc: {
+            start: {
+              line: 3,
+              column: 0
+            },
+            end: {
+              line: 3,
+              column: 1
+            }
+          },
+          name: "b"
+        },
+        right: {
+          type: "Literal",
+          start: 25,
+          end: 26,
+          loc: {
+            start: {
+              line: 3,
+              column: 4
+            },
+            end: {
+              line: 3,
+              column: 5
+            }
+          },
+          value: 2,
+          raw: "2"
+        }
+      }
+    }
+  ]
+}, {
+  preprocess: true,
+  preprocessGetIncludeFile: function(filename, islocalfilepath) {
+    return {include: "#if DEBUG\nvar a = 9;\n#else\nvar a = 1;\n#endif\n", sourceFile: filename};
+  },
+  locations: true
+});
+
+// pre include files
+test("var y = 3;", {
+  type: "Program",
+  start: 0,
+  end: 10,
+  body: [
+    {
+      type: "VariableDeclaration",
+      start: 0,
+      end: 5,
+      declarations: [
+        {
+          type: "VariableDeclarator",
+          start: 4,
+          end: 5,
+          id: {
+            type: "Identifier",
+            start: 4,
+            end: 5,
+            name: "x"
+          },
+          init: null
+        }
+      ],
+      kind: "var"
+    },
+    {
+      type: "VariableDeclaration",
+      start: 0,
+      end: 9,
+      declarations: [
+        {
+          type: "VariableDeclarator",
+          start: 4,
+          end: 9,
+          id: {
+            type: "Identifier",
+            start: 4,
+            end: 5,
+            name: "y"
+          },
+          init: {
+            type: "Literal",
+            start: 8,
+            end: 9,
+            value: 3,
+            raw: "3"
+          }
+        }
+      ],
+      kind: "var"
     }
   ]
 }, {
@@ -29977,32 +30200,32 @@ test("var y = 3;", {
 
 // two pre include files defining macros with comment row in one
 test("FOO(3);\nBAR(7);", {
-  "type": "Program",
-  "start": 4,
-  "end": 15,
-  "body": [
+  type: "Program",
+  start: 4,
+  end: 15,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 4,
-      "end": 7,
-      "expression": {
-        "type": "Literal",
-        "start": 4,
-        "end": 5,
-        "value": 3,
-        "raw": "3"
+      type: "ExpressionStatement",
+      start: 4,
+      end: 7,
+      expression: {
+        type: "Literal",
+        start: 4,
+        end: 5,
+        value: 3,
+        raw: "3"
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 12,
-      "end": 15,
-      "expression": {
-        "type": "Literal",
-        "start": 12,
-        "end": 13,
-        "value": 7,
-        "raw": "7"
+      type: "ExpressionStatement",
+      start: 12,
+      end: 15,
+      expression: {
+        type: "Literal",
+        start: 12,
+        end: 13,
+        value: 7,
+        raw: "7"
       }
     }
   ]
@@ -30014,32 +30237,32 @@ test("FOO(3);\nBAR(7);", {
 
 // two pre include files defining macros with comment row in one. Should not matter in witch order
 test("FOO(3);\nBAR(7);", {
-  "type": "Program",
-  "start": 4,
-  "end": 15,
-  "body": [
+  type: "Program",
+  start: 4,
+  end: 15,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 4,
-      "end": 7,
-      "expression": {
-        "type": "Literal",
-        "start": 4,
-        "end": 5,
-        "value": 3,
-        "raw": "3"
+      type: "ExpressionStatement",
+      start: 4,
+      end: 7,
+      expression: {
+        type: "Literal",
+        start: 4,
+        end: 5,
+        value: 3,
+        raw: "3"
       }
     },
     {
-      "type": "ExpressionStatement",
-      "start": 12,
-      "end": 15,
-      "expression": {
-        "type": "Literal",
-        "start": 12,
-        "end": 13,
-        "value": 7,
-        "raw": "7"
+      type: "ExpressionStatement",
+      start: 12,
+      end: 15,
+      expression: {
+        type: "Literal",
+        start: 12,
+        end: 13,
+        value: 7,
+        raw: "7"
       }
     }
   ]
@@ -30049,86 +30272,379 @@ test("FOO(3);\nBAR(7);", {
   locations: true
 });
 
+// #include with an #if/#else/#endif
+test("//xxxxx\na = 1\n#include \"x.h\"\n#define DEBUG 1\n#include \"x.h\"\nb = 2", {
+  type: "Program",
+  start: 8,
+  end: 65,
+  loc: {
+    start: {
+      line: 2,
+      column: 0
+    },
+    end: {
+      line: 6,
+      column: 5
+    }
+  },
+  body: [
+    {
+      type: "ExpressionStatement",
+      start: 8,
+      end: 13,
+      loc: {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 5
+        }
+      },
+      expression: {
+        type: "AssignmentExpression",
+        start: 8,
+        end: 13,
+        loc: {
+          start: {
+            line: 2,
+            column: 0
+          },
+          end: {
+            line: 2,
+            column: 5
+          }
+        },
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 8,
+          end: 9,
+          loc: {
+            start: {
+              line: 2,
+              column: 0
+            },
+            end: {
+              line: 2,
+              column: 1
+            }
+          },
+          name: "a"
+        },
+        right: {
+          type: "Literal",
+          start: 12,
+          end: 13,
+          loc: {
+            start: {
+              line: 2,
+              column: 4
+            },
+            end: {
+              line: 2,
+              column: 5
+            }
+          },
+          value: 1,
+          raw: "1"
+        }
+      }
+    },
+    {
+      type: "VariableDeclaration",
+      start: 27,
+      end: 36,
+      loc: {
+        start: {
+          line: 4,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 9
+        },
+        source: "x.h"
+      },
+      declarations: [
+        {
+          type: "VariableDeclarator",
+          start: 31,
+          end: 36,
+          loc: {
+            start: {
+              line: 4,
+              column: 4
+            },
+            end: {
+              line: 4,
+              column: 9
+            },
+            source: "x.h"
+          },
+          id: {
+            type: "Identifier",
+            start: 31,
+            end: 32,
+            loc: {
+              start: {
+                line: 4,
+                column: 4
+              },
+              end: {
+                line: 4,
+                column: 5
+              },
+              source: "x.h"
+            },
+            name: "a"
+          },
+          init: {
+            type: "Literal",
+            start: 35,
+            end: 36,
+            loc: {
+              start: {
+                line: 4,
+                column: 8
+              },
+              end: {
+                line: 4,
+                column: 9
+              },
+              source: "x.h"
+            },
+            value: 1,
+            raw: "1"
+          }
+        }
+      ],
+      kind: "var"
+    },
+    {
+      type: "VariableDeclaration",
+      start: 10,
+      end: 19,
+      loc: {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 9
+        },
+        source: "x.h"
+      },
+      declarations: [
+        {
+          type: "VariableDeclarator",
+          start: 14,
+          end: 19,
+          loc: {
+            start: {
+              line: 2,
+              column: 4
+            },
+            end: {
+              line: 2,
+              column: 9
+            },
+            source: "x.h"
+          },
+          id: {
+            type: "Identifier",
+            start: 14,
+            end: 15,
+            loc: {
+              start: {
+                line: 2,
+                column: 4
+              },
+              end: {
+                line: 2,
+                column: 5
+              },
+              source: "x.h"
+            },
+            name: "a"
+          },
+          init: {
+            type: "Literal",
+            start: 18,
+            end: 19,
+            loc: {
+              start: {
+                line: 2,
+                column: 8
+              },
+              end: {
+                line: 2,
+                column: 9
+              },
+              source: "x.h"
+            },
+            value: 9,
+            raw: "9"
+          }
+        }
+      ],
+      kind: "var"
+    },
+    {
+      type: "ExpressionStatement",
+      start: 60,
+      end: 65,
+      loc: {
+        start: {
+          line: 6,
+          column: 0
+        },
+        end: {
+          line: 6,
+          column: 5
+        }
+      },
+      expression: {
+        type: "AssignmentExpression",
+        start: 60,
+        end: 65,
+        loc: {
+          start: {
+            line: 6,
+            column: 0
+          },
+          end: {
+            line: 6,
+            column: 5
+          }
+        },
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 60,
+          end: 61,
+          loc: {
+            start: {
+              line: 6,
+              column: 0
+            },
+            end: {
+              line: 6,
+              column: 1
+            }
+          },
+          name: "b"
+        },
+        right: {
+          type: "Literal",
+          start: 64,
+          end: 65,
+          loc: {
+            start: {
+              line: 6,
+              column: 4
+            },
+            end: {
+              line: 6,
+              column: 5
+            }
+          },
+          value: 2,
+          raw: "2"
+        }
+      }
+    }
+  ]
+}, {
+  preprocess: true,
+  preprocessGetIncludeFile: function(filename, islocalfilepath) {
+    return {include: "#if DEBUG\nvar a = 9;\n#else\nvar a = 1;\n#endif\n", sourceFile: filename};
+  },
+  locations: true
+});
+
 // Comments/spaces are only tracked for sections of code that are not skipped
 // This test is turned off as we don't track comments like this currently
 /*test("x = 0;\n// before #if\n#if 1\n// before 1\nx = 1;\n// after 1\n#else\n// before 2\nx = 2\n// after 2\n#endif\n\n// after #if\nx;\n", {
-  "type": "Program",
-  "start": 0,
-  "end": 115,
-  "body": [
+  type: "Program",
+  start: 0,
+  end: 115,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 0,
-      "end": 6,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 0,
-        "end": 5,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 0,
-          "end": 1,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 0,
+      end: 6,
+      expression: {
+        type: "AssignmentExpression",
+        start: 0,
+        end: 5,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 0,
+          end: 1,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 4,
-          "end": 5,
-          "value": 0,
-          "raw": "0"
+        right: {
+          type: "Literal",
+          start: 4,
+          end: 5,
+          value: 0,
+          raw: "0"
         }
       },
-      "commentsAfter": [
+      commentsAfter: [
         "// before #if",
         "// before 1"
       ]
     },
     {
-      "type": "ExpressionStatement",
-      "start": 39,
-      "end": 45,
-      "commentsBefore": [
+      type: "ExpressionStatement",
+      start: 39,
+      end: 45,
+      commentsBefore: [
         "// before #if",
         "// before 1"
       ],
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 39,
-        "end": 44,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 39,
-          "end": 40,
-          "name": "x"
+      expression: {
+        type: "AssignmentExpression",
+        start: 39,
+        end: 44,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 39,
+          end: 40,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 43,
-          "end": 44,
-          "value": 1,
-          "raw": "1"
+        right: {
+          type: "Literal",
+          start: 43,
+          end: 44,
+          value: 1,
+          raw: "1"
         }
       },
-      "commentsAfter": [
+      commentsAfter: [
         "// after 1",
         "// after #if"
       ]
     },
     {
-      "type": "ExpressionStatement",
-      "start": 113,
-      "end": 115,
-      "commentsBefore": [
+      type: "ExpressionStatement",
+      start: 113,
+      end: 115,
+      commentsBefore: [
         "// after 1",
         "// after #if"
       ],
-      "expression": {
-        "type": "Identifier",
-        "start": 113,
-        "end": 114,
-        "name": "x"
+      expression: {
+        type: "Identifier",
+        start: 113,
+        end: 114,
+        name: "x"
       }
     }
   ]
@@ -30140,34 +30656,34 @@ test("FOO(3);\nBAR(7);", {
 // Complex nesting with comment tracking
 // This test is turned off as we don't track comments like this currently
 // test("x = 0;\n// before #if\n#if 0\n// before 1\nx = 1;\n// after 1\n// before #elif 1\n#elif 1\n    // after #elif 1\n    // before #ifndef FOO\n    #ifndef FOO\n        // after #ifndef FOO\n        x = 7;\n        // after x = 7\n    #else\n        // after #else\n        x = 13;\n        // before inner #endif\n    #endif\n    // after inner #endif\n\n// before 2\nx = 2\n// after 2\n#endif\n\n// after outer #endif\nx;\n", {
-//   "type": "Program",
-//   "start": 0,
-//   "end": 392,
-//   "body": [
+//   type: "Program",
+//   start: 0,
+//   end: 392,
+//   body: [
 //     {
-//       "type": "ExpressionStatement",
-//       "start": 0,
-//       "end": 6,
-//       "expression": {
-//         "type": "AssignmentExpression",
-//         "start": 0,
-//         "end": 5,
-//         "operator": "=",
-//         "left": {
-//           "type": "Identifier",
-//           "start": 0,
-//           "end": 1,
-//           "name": "x"
+//       type: "ExpressionStatement",
+//       start: 0,
+//       end: 6,
+//       expression: {
+//         type: "AssignmentExpression",
+//         start: 0,
+//         end: 5,
+//         operator: "=",
+//         left: {
+//           type: "Identifier",
+//           start: 0,
+//           end: 1,
+//           name: "x"
 //         },
-//         "right": {
-//           "type": "Literal",
-//           "start": 4,
-//           "end": 5,
-//           "value": 0,
-//           "raw": "0"
+//         right: {
+//           type: "Literal",
+//           start: 4,
+//           end: 5,
+//           value: 0,
+//           raw: "0"
 //         }
 //       },
-//       "commentsAfter": [
+//       commentsAfter: [
 //         "// before #if",
 //         "// after #elif 1",
 //         "// before #ifndef FOO",
@@ -30175,86 +30691,86 @@ test("FOO(3);\nBAR(7);", {
 //       ]
 //     },
 //     {
-//       "type": "ExpressionStatement",
-//       "start": 183,
-//       "end": 189,
-//       "commentsBefore": [
+//       type: "ExpressionStatement",
+//       start: 183,
+//       end: 189,
+//       commentsBefore: [
 //         "// before #if",
 //         "// after #elif 1",
 //         "// before #ifndef FOO",
 //         "// after #ifndef FOO"
 //       ],
-//       "expression": {
-//         "type": "AssignmentExpression",
-//         "start": 183,
-//         "end": 188,
-//         "operator": "=",
-//         "left": {
-//           "type": "Identifier",
-//           "start": 183,
-//           "end": 184,
-//           "name": "x"
+//       expression: {
+//         type: "AssignmentExpression",
+//         start: 183,
+//         end: 188,
+//         operator: "=",
+//         left: {
+//           type: "Identifier",
+//           start: 183,
+//           end: 184,
+//           name: "x"
 //         },
-//         "right": {
-//           "type": "Literal",
-//           "start": 187,
-//           "end": 188,
-//           "value": 7,
-//           "raw": "7"
+//         right: {
+//           type: "Literal",
+//           start: 187,
+//           end: 188,
+//           value: 7,
+//           raw: "7"
 //         }
 //       },
-//       "commentsAfter": [
+//       commentsAfter: [
 //         "// after x = 7",
 //         "// after inner #endif",
 //         "// before 2"
 //       ]
 //     },
 //     {
-//       "type": "ExpressionStatement",
-//       "start": 343,
-//       "end": 348,
-//       "commentsBefore": [
+//       type: "ExpressionStatement",
+//       start: 343,
+//       end: 348,
+//       commentsBefore: [
 //         "// after x = 7",
 //         "// after inner #endif",
 //         "// before 2"
 //       ],
-//       "expression": {
-//         "type": "AssignmentExpression",
-//         "start": 343,
-//         "end": 348,
-//         "operator": "=",
-//         "left": {
-//           "type": "Identifier",
-//           "start": 343,
-//           "end": 344,
-//           "name": "x"
+//       expression: {
+//         type: "AssignmentExpression",
+//         start: 343,
+//         end: 348,
+//         operator: "=",
+//         left: {
+//           type: "Identifier",
+//           start: 343,
+//           end: 344,
+//           name: "x"
 //         },
-//         "right": {
-//           "type": "Literal",
-//           "start": 347,
-//           "end": 348,
-//           "value": 2,
-//           "raw": "2"
+//         right: {
+//           type: "Literal",
+//           start: 347,
+//           end: 348,
+//           value: 2,
+//           raw: "2"
 //         }
 //       },
-//       "commentsAfter": [
+//       commentsAfter: [
 //         "// after 2",
 //         "// after outer #endif"
 //       ]
 //     },
 //     {
-//       "type": "ExpressionStatement",
-//       "start": 390,
-//       "end": 392,
-//       "commentsBefore": [
+//       type: "ExpressionStatement",
+//       start: 390,
+//       end: 392,
+//       commentsBefore: [
 //         "// after 2",
 //         "// after outer #endif"
 //       ],
-//       "expression": {
-//         "type": "Identifier",
-//         "start": 390,
-//         "end": 391,
-//         "name": "x"
+//       expression: {
+//         type: "Identifier",
+//         start: 390,
+//         end: 391,
+//         name: "x"
 //       }
 //     }
 //   ]
@@ -30287,10 +30803,10 @@ testFail("#error \"This is \" + \"a test\"\nx = 7;\n",
 
 // #warning
 test("#ifndef FOO\n#warning \"This warning should be here: FOO is not defined!\"\n#endif\n", {
-  "type": "Program",
-  "start": 79,
-  "end": 0,
-  "body": []
+  type: "Program",
+  start: 79,
+  end: 0,
+  body: []
 }, {
   preprocess: true
 });
@@ -30299,31 +30815,31 @@ test("#ifndef FOO\n#warning \"This warning should be here: FOO is not defined!\"
 
 // #pragma is accepted but ignored
 test("#pragma mark -\nx = 7;\n", {
-  "type": "Program",
-  "start": 15,
-  "end": 21,
-  "body": [
+  type: "Program",
+  start: 15,
+  end: 21,
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 15,
-      "end": 21,
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 15,
-        "end": 20,
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 15,
-          "end": 16,
-          "name": "x"
+      type: "ExpressionStatement",
+      start: 15,
+      end: 21,
+      expression: {
+        type: "AssignmentExpression",
+        start: 15,
+        end: 20,
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 15,
+          end: 16,
+          name: "x"
         },
-        "right": {
-          "type": "Literal",
-          "start": 19,
-          "end": 20,
-          "value": 7,
-          "raw": "7"
+        right: {
+          type: "Literal",
+          start: 19,
+          end: 20,
+          value: 7,
+          raw: "7"
         }
       }
     }
@@ -30334,159 +30850,159 @@ test("#pragma mark -\nx = 7;\n", {
 
 // Test locations in macros. As the parameter generate a macro it will be nested macros in two levels.
 test("#define GLOBAL(name) name\n\nGLOBAL(martin) = function(a, b) {\n    return true;\n}", {
-  "type": "Program",
-  "start": 34,
-  "end": 79,
-  "loc": {
-    "start": {
-      "line": 3,
-      "column": 7
+  type: "Program",
+  start: 34,
+  end: 79,
+  loc: {
+    start: {
+      line: 3,
+      column: 7
     },
-    "end": {
-      "line": 5,
-      "column": 1
+    end: {
+      line: 5,
+      column: 1
     }
   },
-  "body": [
+  body: [
     {
-      "type": "ExpressionStatement",
-      "start": 34,
-      "end": 79,
-      "loc": {
-        "start": {
-          "line": 3,
-          "column": 7
+      type: "ExpressionStatement",
+      start: 34,
+      end: 79,
+      loc: {
+        start: {
+          line: 3,
+          column: 7
         },
-        "end": {
-          "line": 5,
-          "column": 1
+        end: {
+          line: 5,
+          column: 1
         }
       },
-      "expression": {
-        "type": "AssignmentExpression",
-        "start": 34,
-        "end": 79,
-        "loc": {
-          "start": {
-            "line": 3,
-            "column": 7
+      expression: {
+        type: "AssignmentExpression",
+        start: 34,
+        end: 79,
+        loc: {
+          start: {
+            line: 3,
+            column: 7
           },
-          "end": {
-            "line": 5,
-            "column": 1
+          end: {
+            line: 5,
+            column: 1
           }
         },
-        "operator": "=",
-        "left": {
-          "type": "Identifier",
-          "start": 34,
-          "end": 40,
-          "loc": {
-            "start": {
-              "line": 3,
-              "column": 7
+        operator: "=",
+        left: {
+          type: "Identifier",
+          start: 34,
+          end: 40,
+          loc: {
+            start: {
+              line: 3,
+              column: 7
             },
-            "end": {
-              "line": 3,
-              "column": 13
+            end: {
+              line: 3,
+              column: 13
             }
           },
-          "name": "martin"
+          name: "martin"
         },
-        "right": {
-          "type": "FunctionExpression",
-          "start": 44,
-          "end": 79,
-          "loc": {
-            "start": {
-              "line": 3,
-              "column": 17
+        right: {
+          type: "FunctionExpression",
+          start: 44,
+          end: 79,
+          loc: {
+            start: {
+              line: 3,
+              column: 17
             },
-            "end": {
-              "line": 5,
-              "column": 1
+            end: {
+              line: 5,
+              column: 1
             }
           },
-          "id": null,
-          "params": [
+          id: null,
+          params: [
             {
-              "type": "Identifier",
-              "start": 53,
-              "end": 54,
-              "loc": {
-                "start": {
-                  "line": 3,
-                  "column": 26
+              type: "Identifier",
+              start: 53,
+              end: 54,
+              loc: {
+                start: {
+                  line: 3,
+                  column: 26
                 },
-                "end": {
-                  "line": 3,
-                  "column": 27
+                end: {
+                  line: 3,
+                  column: 27
                 }
               },
-              "name": "a"
+              name: "a"
             },
             {
-              "type": "Identifier",
-              "start": 56,
-              "end": 57,
-              "loc": {
-                "start": {
-                  "line": 3,
-                  "column": 29
+              type: "Identifier",
+              start: 56,
+              end: 57,
+              loc: {
+                start: {
+                  line: 3,
+                  column: 29
                 },
-                "end": {
-                  "line": 3,
-                  "column": 30
+                end: {
+                  line: 3,
+                  column: 30
                 }
               },
-              "name": "b"
+              name: "b"
             }
           ],
-          "body": {
-            "type": "BlockStatement",
-            "start": 59,
-            "end": 79,
-            "loc": {
-              "start": {
-                "line": 3,
-                "column": 32
+          body: {
+            type: "BlockStatement",
+            start: 59,
+            end: 79,
+            loc: {
+              start: {
+                line: 3,
+                column: 32
               },
-              "end": {
-                "line": 5,
-                "column": 1
+              end: {
+                line: 5,
+                column: 1
               }
             },
-            "body": [
+            body: [
               {
-                "type": "ReturnStatement",
-                "start": 65,
-                "end": 77,
-                "loc": {
-                  "start": {
-                    "line": 4,
-                    "column": 4
+                type: "ReturnStatement",
+                start: 65,
+                end: 77,
+                loc: {
+                  start: {
+                    line: 4,
+                    column: 4
                   },
-                  "end": {
-                    "line": 4,
-                    "column": 16
+                  end: {
+                    line: 4,
+                    column: 16
                   }
                 },
-                "argument": {
-                  "type": "Literal",
-                  "start": 72,
-                  "end": 76,
-                  "loc": {
-                    "start": {
-                      "line": 4,
-                      "column": 11
+                argument: {
+                  type: "Literal",
+                  start: 72,
+                  end: 76,
+                  loc: {
+                    start: {
+                      line: 4,
+                      column: 11
                     },
-                    "end": {
-                      "line": 4,
-                      "column": 15
+                    end: {
+                      line: 4,
+                      column: 15
                     }
                   },
-                  "value": true,
-                  "raw": "true"
+                  value: true,
+                  raw: "true"
                 }
               }
             ]
