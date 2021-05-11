@@ -29015,8 +29015,8 @@ if (typeof(window) !== "undefined")
 else
   test("#ifdef __BROWSER__\n\"browser\";\n#else\n\"CommonJS\";\n#endif\n", {
     type: "Program",
-    start: 0,
-    end: 54,
+    start: 36,
+    end: 47,
     body: [
       {
         type: "ExpressionStatement",
