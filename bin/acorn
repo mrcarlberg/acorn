@@ -7,7 +7,7 @@ var acorn = require('../acorn.js');
 var infile, parsed, options = {}, silent = false, compact = false;
 
 function help(status) {
-  console.log("usage: " + path.basename(process.argv[1]) + " infile [--ecma3|--ecma5] [--strictSemicolons] [--trackComments] [--trackSpaces]");
+  console.log("usage: " + path.basename(process.argv[1]) + " infile [--ecma3|--ecma5|--ecma8] [--strictSemicolons] [--trackComments] [--trackSpaces]");
   console.log("        [--locations] [--no-objj] [--no-preprocess] [--compact] [--silent] [--help]");
   process.exit(status);
 }
@@ -16,6 +16,7 @@ for (var i = 2; i < process.argv.length; ++i) {
   var arg = process.argv[i];
   if (arg == "--ecma3") options.ecmaVersion = 3;
   else if (arg == "--ecma5") options.ecmaVersion = 5;
+  else if (arg == "--ecma8") options.ecmaVersion = 8;
   else if (arg == "--strictSemicolons") options.strictSemicolons = true;
   else if (arg == "--trackComments") options.trackComments = true;
   else if (arg == "--trackSpaces") options.trackSpaces = true;

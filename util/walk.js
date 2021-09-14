@@ -180,7 +180,7 @@
         c(cs.consequent[j], st, "Statement");
     }
   };
-  base.ReturnStatement = function(node, st, c) {
+  base.ReturnStatement = base.AwaitExpression = function(node, st, c) {
     if (node.argument) c(node.argument, st, "Expression");
   };
   base.ThrowStatement = function(node, st, c) {
